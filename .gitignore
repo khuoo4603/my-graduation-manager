@@ -1,0 +1,18 @@
+# ===== Backend (Spring Boot / Gradle) =====
+/backend/build/
+/backend/.gradle/
+.idea/
+*.iml
+
+# ===== Frontend =====
+/frontend/node_modules/
+/frontend/dist/
+
+# ===== Infra / Secrets =====
+.env
+*.kubeconfig
+*.pem
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
