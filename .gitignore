@@ -12,7 +12,34 @@
 .env
 *.kubeconfig
 *.pem
+infra/db/postgres/.env
+infra/db/postgres/data/
 
 # ===== OS =====
 .DS_Store
 Thumbs.db
+
+# ===== IDE / Tooling =====
+**/out/
+.vscode/
+.classpath
+.project
+.settings/
+
+# ===== Java/Gradle misc =====
+**/*.class
+**/.gradletasknamecache
+
+# ===== Frontend tooling caches =====
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+**/.vite/
+**/.cache/
+
+# ===== Infra safety =====
+**/*.key
+**/*.crt
+**/secrets*.yaml
+**/*secret*.yaml
