@@ -1,11 +1,5 @@
 package com.khuoo.gradmanager.api;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -49,14 +43,6 @@ public class HealthController {
     // JDBC Insert + Select 테스트
     @GetMapping("/db/test")
     public List<Map<String, Object>> dbTest() {
-
-        jdbcTemplate.execute("""
-                    CREATE TABLE IF NOT EXISTS test_table (
-                        id SERIAL PRIMARY KEY,
-                        name VARCHAR(100)
-                    )
-                """);
-
         jdbcTemplate.update("INSERT INTO test_table(name) VALUES (?)", "sample");
 
         return jdbcTemplate.queryForList("SELECT * FROM test_table");
