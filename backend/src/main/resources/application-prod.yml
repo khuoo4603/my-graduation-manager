@@ -11,3 +11,9 @@ management:
   endpoint:
     health:
       show-details: never
+
+app:
+  dev-token:
+    enabled: false
+  storage:
+    root: /mnt/gradmanager-files

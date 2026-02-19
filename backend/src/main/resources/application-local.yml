@@ -6,3 +6,9 @@ spring:
     hikari:
       maximum-pool-size: 5
       minimum-idle: 1
+
+app:
+  dev-token:
+    enabled: true
+  storage:
+    root: /tmp/gradmanager_local_storage
