@@ -17,3 +17,6 @@ app:
     enabled: false
   storage:
     root: /mnt/gradmanager-files
+  jwt:
+    secret: "${JWT_SECRET}"
+    exp-seconds: 3600

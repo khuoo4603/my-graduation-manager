@@ -29,26 +29,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
 
-        // 1️⃣ Authorization 헤더 체크
+        // Authorization 헤더 체크
         if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 2️⃣ 토큰 추출
+        // 토큰 추출
         String token = header.substring(7);
 
         try {
-            // 3️⃣ 토큰 검증
+            // 토큰 검증
             if (jwtTokenProvider.validate(token)) {
 
                 Long userId = jwtTokenProvider.getUserId(token);
                 String email = jwtTokenProvider.getEmail(token);
 
-                // 4️⃣ Principal 생성
+                // Principal 생성
                 AuthPrincipal principal = new AuthPrincipal(userId, email);
 
-                // 5️⃣ Authentication 생성
+                // Authentication 생성
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 principal,
@@ -60,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
 
-                // 6️⃣ SecurityContext에 저장
+                // SecurityContext에 저장
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 

@@ -34,9 +34,14 @@ public class SecurityConfig {
 
                 // 접근 제어
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health/**").permitAll()
-                        .requestMatchers("/test/**").permitAll()
-                        //.requestMatchers("/api/v1/**").authenticated() 추후 개발 후 활성화
+                        .requestMatchers(
+                                "/health/**",
+                                "/test/**",
+                                "/api/v1/dev/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+                        .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().denyAll()
                 )
 
