@@ -1,6 +1,5 @@
 package com.khuoo.gradmanager.dev.controller;
 
-import com.khuoo.gradmanager.dev.dto.DevTokenResponse;
 import com.khuoo.gradmanager.security.jwt.JwtTokenProvider;
 import com.khuoo.gradmanager.user.domain.User;
 import com.khuoo.gradmanager.user.repository.UserRepository;
@@ -68,4 +67,10 @@ public class DevTokenController {
 
         return new DevTokenResponse(token, user.userId(), user.email());
     }
+
+    public record DevTokenResponse(
+            String token,
+            long userId,
+            String email
+    ) {}
 }
