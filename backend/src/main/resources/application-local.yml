@@ -16,3 +16,7 @@ app:
   jwt:
     secret: "kK0PP8dHYQ30llX7KnFS58DvIcmIN4kVSMxsJdD32gY="
     exp-seconds: 86400
+
+springdoc:
+  swagger-ui:
+    persistAuthorization: true
