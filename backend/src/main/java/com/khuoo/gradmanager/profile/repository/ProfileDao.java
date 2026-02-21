@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class ProfileRepositoryDao implements ProfileRepository {
+public class ProfileDao implements ProfileRepository {
 
     private final JdbcTemplate jdbcTemplate;
 

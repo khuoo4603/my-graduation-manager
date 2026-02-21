@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class TemplateRepositoryDao implements TemplateRepository {
+public class TemplateDao implements TemplateRepository {
 
     private final JdbcTemplate jdbcTemplate;
 

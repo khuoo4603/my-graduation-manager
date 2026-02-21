@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class UserRepositoryDao implements UserRepository {
+public class UserDao implements UserRepository {
 
     private final JdbcTemplate jdbcTemplate;
 

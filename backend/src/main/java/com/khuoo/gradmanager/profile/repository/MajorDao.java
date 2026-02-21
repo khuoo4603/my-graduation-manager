@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class MajorRepositoryDao implements MajorRepository {
+public class MajorDao implements MajorRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
