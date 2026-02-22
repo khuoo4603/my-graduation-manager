@@ -79,7 +79,7 @@ public class CourseMasterDao implements CourseMasterRepository {
             params.addValue("deptName", "%" + departmentName + "%");
         }
 
-        sql.append(" ORDER BY cm.course_master_id DESC ");
+        sql.append(" ORDER BY cm.course_code asc ");
 
         return namedJdbcTemplate.query(sql.toString(), params, new CourseMasterRowMapper());
     }
