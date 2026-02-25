@@ -112,7 +112,7 @@ CREATE INDEX IF NOT EXISTS idx__cm_dept_access__department_id
 -- recognition_type 허용값: 전공필수/전공탐색/전공선택/NULL(교양)
 --  1) 교양 입력: recognition_type/major_id/attributed_department_id 모두 NULL
 --  2) 전공필수/전공선택: major_id NOT NULL, attributed_department_id NULL
---  3) 전공탐색: major_id NOT NULL, attributed_department_id NOT NULL
+--  3) 전공탐색: major_id NULL, attributed_department_id NOT NULL
 ALTER TABLE course
     ADD CONSTRAINT chk__course__recognition_type
         CHECK (recognition_type IS NULL OR recognition_type IN ('전공필수', '전공탐색', '전공선택'));
@@ -132,7 +132,7 @@ ALTER TABLE course
                 OR
             (recognition_type IN ('전공필수', '전공선택') AND major_id IS NOT NULL AND attributed_department_id IS NULL)
                 OR
-            (recognition_type = '전공탐색' AND major_id IS NOT NULL AND attributed_department_id IS NOT NULL)
+            (recognition_type = '전공탐색' AND major_id IS NULL AND attributed_department_id IS NOT NULL)
             );
 
 CREATE INDEX IF NOT EXISTS idx__course__user_id
