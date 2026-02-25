@@ -7,15 +7,17 @@ import java.util.List;
 public interface CourseRepository {
 
     /**
-     * 수강 내역 등록(INSERT) 후 생성된 course_id를 반환
+     * 수강 내역 등록
      *
-     * @param userId         현재 로그인 사용자 PK
-     * @param courseMasterId 참조 과목 마스터 PK(course_master_id)
-     * @param earnedCredits  사용자가 취득한 학점(earned_credits)
-     * @param grade          성적(grade) ex. A+, A0, P, NP
-     * @param takenYear      수강 연도(taken_year) ex. 2026
-     * @param takenTerm      수강 학기(taken_term) ex. 1, 2, 여름 계절학기
-     * @param majorId        학점 귀속 전공 PK(major_id), 없으면 null
+     * @param userId                  현재 로그인 사용자 PK
+     * @param courseMasterId          강의목록 PK
+     * @param earnedCredits           취득 학점
+     * @param grade                   성적 ex. A+, A0, P, NP
+     * @param takenYear               수강 연도 ex. 2026
+     * @param takenTerm               수강 학기 ex. 1, 2, 여름 계절학기
+     * @param recognitionType         전공 인정 유형, 교양: null / 전공: 전공탐색, 전공선택, 전공필수
+     * @param majorId                 전공 PK, 교양: null / 전공: 전공ID
+     * @param attributedDepartmentId  학부 PK, 전공탐색 이외 null / 전공탐색: 학부ID
      * @return 생성된 course_id
      */
     long insert(
@@ -25,7 +27,9 @@ public interface CourseRepository {
             String grade,
             int takenYear,
             String takenTerm,
-            Long majorId
+            String recognitionType,
+            Long majorId,
+            Long attributedDepartmentId
     );
 
     /**

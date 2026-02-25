@@ -21,10 +21,13 @@ public class CourseRowMapper implements RowMapper<CourseItem> {
                 rs.getString("grade"),
                 rs.getInt("taken_year"),
                 rs.getString("taken_term"),
-                rs.getObject("major_id", Long.class),
                 rs.getString("course_category"),
                 rs.getString("course_subcategory"),
-                rs.getString("seed_area")
+                rs.getString("seed_area"),
+                rs.getObject("department_id", Long.class),
+                rs.getString("department_name"),
+                rs.getObject("major_id", Long.class),
+                rs.getString("major_name")
         );
     }
 }

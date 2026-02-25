@@ -7,6 +7,7 @@ public record CourseCreateRequest(
         String grade,
         Integer takenYear,
         String takenTerm,
-        Long majorId
+        Long majorId,
+        Long attributedDepartmentId
 ) {
 }
