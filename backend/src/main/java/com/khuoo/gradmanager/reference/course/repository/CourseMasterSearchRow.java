@@ -1,9 +1,7 @@
-package com.khuoo.gradmanager.reference.course.dto;
+package com.khuoo.gradmanager.reference.course.repository;
 
-import java.util.List;
-
-// course_master 검색 결과 단일 항목 DTO(학부 리스트 포함).
-public record CourseMasterSearchItem(
+// Ddo Select 결과 (1개 row 저장)
+public record CourseMasterSearchRow(
         long courseMasterId,
         String courseCode,
         String courseName,
@@ -13,6 +11,7 @@ public record CourseMasterSearchItem(
         String seedArea,
         int openedYear,
         String openedTerm,
-        List<CourseMasterOpenedDepartment> openedDepartments
+        long openedDepartmentId,
+        String openedDepartmentName
 ) {
 }

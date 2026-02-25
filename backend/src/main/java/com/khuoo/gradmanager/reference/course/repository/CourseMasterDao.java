@@ -1,6 +1,5 @@
 package com.khuoo.gradmanager.reference.course.repository;
 
-import com.khuoo.gradmanager.reference.course.dto.CourseMasterSearchItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -26,17 +25,19 @@ public class CourseMasterDao implements CourseMasterRepository {
                 cm.seed_area,
                 cm.opened_year,
                 cm.opened_term,
-                cm.opened_department_id,
-                d.department_name
+                d.department_id AS opened_department_id,
+                d.department_name AS opened_department_name
             FROM course_master cm
-            JOIN department d ON d.department_id = cm.opened_department_id
+            JOIN course_master_department_access cmda
+              ON cmda.course_master_id = cm.course_master_id
+            JOIN department d
+              ON d.department_id = cmda.department_id
             WHERE cm.opened_year = :year
               AND cm.opened_term = :term
             """;
 
-    // 강의목록 검색 수행
     @Override
-    public List<CourseMasterSearchItem> search(
+    public List<CourseMasterSearchRow> searchRows(
             int openedYear,
             String openedTerm,
             String courseCode,
@@ -51,7 +52,6 @@ public class CourseMasterDao implements CourseMasterRepository {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("year", openedYear)
                 .addValue("term", openedTerm);
-
 
         // 선택 키워드가 있다면 SQL에 추가
         if (courseCode != null) {
@@ -79,7 +79,7 @@ public class CourseMasterDao implements CourseMasterRepository {
             params.addValue("deptName", "%" + departmentName + "%");
         }
 
-        sql.append(" ORDER BY cm.course_code asc ");
+        sql.append(" ORDER BY cm.course_code ASC");
 
         return namedJdbcTemplate.query(sql.toString(), params, new CourseMasterRowMapper());
     }
