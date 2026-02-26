@@ -29,6 +29,11 @@ ALTER TABLE major_credit_rule
     ADD CONSTRAINT chk__major_credit_rule__major_type
         CHECK (major_type IN ('심화전공', '주전공', '부전공', '복수전공'));
 
+-- 전공총 필요학점 < 전공필수 최소 필요학점 허용하지 않음
+ALTER TABLE major_credit_rule
+    ADD CONSTRAINT chk__major_credit_rule__total_gte_core
+        CHECK (required_major_total_credits >= required_major_core_credits);
+
 CREATE INDEX IF NOT EXISTS idx__major_credit_rule__major_id
     ON major_credit_rule(major_id);
 
