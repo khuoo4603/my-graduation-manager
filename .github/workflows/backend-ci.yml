@@ -46,6 +46,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Normalize image owner
+        id: owner
+        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+
       - name: Extract short SHA
         id: vars
         run: echo "SHA_SHORT=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
@@ -57,7 +64,7 @@ jobs:
           file: backend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/my-graduation-manager-backend:sha-${{ steps.vars.outputs.SHA_SHORT }}
+            ghcr.io/${{ steps.owner.outputs.OWNER_LC }}/my-graduation-manager-backend:sha-${{ steps.vars.outputs.SHA_SHORT }}
           labels: |
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
