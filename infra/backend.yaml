@@ -15,6 +15,9 @@ spec:
     spec:
       containers:
         - name: backend
+          envFrom:
+            - secretRef:
+                name: backend-secret
           image: grad-backend:local
           imagePullPolicy: IfNotPresent
           ports:
