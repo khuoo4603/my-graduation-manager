@@ -1,0 +1,36 @@
+name: Backend CD (Deploy to k3s)
+
+on:
+  workflow_run:
+    workflows: ["Backend CI (Build & Push to GHCR)"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: [self-hosted, linux, x64]
+
+    steps:
+      - name: Compute short SHA
+        id: vars
+        run: echo "SHA_SHORT=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_SHA: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Rolling update image
+        run: |
+          kubectl -n backend set image deployment/backend \
+            backend=ghcr.io/khuoo4603/my-graduation-manager-backend:sha-${{ steps.vars.outputs.SHA_SHORT }}
+
+      - name: Wait rollout
+        run: |
+          kubectl -n backend rollout status deployment/backend --timeout=180s
+
+      - name: Health check
+        run: |
+          kubectl -n backend run curl --rm -i --restart=Never \
+            --image=curlimages/curl:8.6.0 \
+            -- http://backend:80/health
