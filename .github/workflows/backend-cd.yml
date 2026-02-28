@@ -21,15 +21,21 @@ jobs:
           GITHUB_SHA: ${{ github.event.workflow_run.head_sha }}
 
       - name: Rolling update image
+        env:
+          KUBECONFIG: /opt/ops/github-runner/.kube/config
         run: |
           kubectl -n backend set image deployment/backend \
             backend=ghcr.io/khuoo4603/my-graduation-manager-backend:sha-${{ steps.vars.outputs.SHA_SHORT }}
 
       - name: Wait rollout
+        env:
+          KUBECONFIG: /opt/ops/github-runner/.kube/config
         run: |
           kubectl -n backend rollout status deployment/backend --timeout=180s
 
       - name: Health check
+        env:
+          KUBECONFIG: /opt/ops/github-runner/.kube/config
         run: |
           kubectl -n backend run curl --rm -i --restart=Never \
             --image=curlimages/curl:8.6.0 \
