@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: backend
   namespace: backend
+  annotations:
+    gitops-test: "true"
 spec:
   replicas: 1
   selector:
