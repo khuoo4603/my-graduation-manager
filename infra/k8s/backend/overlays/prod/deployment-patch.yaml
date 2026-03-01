@@ -5,6 +5,9 @@ metadata:
   namespace: backend
 spec:
   template:
+    metadata:
+      annotations:
+        gitops-test: "prod-overlay"
     spec:
       imagePullSecrets:
         - name: ghcr-pull
