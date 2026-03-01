@@ -5,7 +5,7 @@ namespace: backend
 
 resources:
   - ../../base
-  - ../../secrets/backend-sealedsecret.yaml
+  - backend-sealedsecret.yaml
 
 patchesStrategicMerge:
   - deployment-patch.yaml
