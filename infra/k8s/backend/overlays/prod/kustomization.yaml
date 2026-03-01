@@ -9,3 +9,7 @@ resources:
 
 patchesStrategicMerge:
   - deployment-patch.yaml
+
+images:
+  - name: ghcr.io/khuoo4603/my-graduation-manager-backend
+    newTag: sha-44f42f3
