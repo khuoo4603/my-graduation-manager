@@ -1,8 +1,5 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:5432/gradmanager
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
@@ -19,6 +16,6 @@ app:
     root: /mnt/gradmanager-files
   jwt:
     secret: "${JWT_SECRET}"
-    exp-seconds: 604800  #7일
+    exp-seconds: 604800  # 7일
   auth:
     redirect-url: https://api.khuoo.synology.me/swagger-ui/index.html

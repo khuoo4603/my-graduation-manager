@@ -1,8 +1,5 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:5432/gradmanager
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
     hikari:
       maximum-pool-size: 5
       minimum-idle: 1
@@ -15,7 +12,7 @@ app:
     root: /tmp/gradmanager_local_storage
   jwt:
     secret: "kK0PP8dHYQ30llX7KnFS58DvIcmIN4kVSMxsJdD32gY="
-    exp-seconds: 604800  #7일
+    exp-seconds: 604800  # 7일
   auth:
     cookie-domain: localhost
     redirect-url: http://localhost:8080/swagger-ui/index.html
