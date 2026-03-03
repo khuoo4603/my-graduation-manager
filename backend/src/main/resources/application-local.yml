@@ -15,8 +15,11 @@ app:
     root: /tmp/gradmanager_local_storage
   jwt:
     secret: "kK0PP8dHYQ30llX7KnFS58DvIcmIN4kVSMxsJdD32gY="
-    exp-seconds: 86400
+    exp-seconds: 604800  #7일
+  auth:
+    cookie-domain: localhost
+    redirect-url: http://localhost:8080/swagger-ui/index.html
 
 springdoc:
   swagger-ui:
-    persistAuthorization: true
+    persistAuthorization: false

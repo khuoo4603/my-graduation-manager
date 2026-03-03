@@ -13,6 +13,8 @@ management:
       show-details: never
 
 app:
+  auth:
+    redirect-url: https://dev.api.khuoo.synology.me/swagger-ui/index.html
   dev-token:
     enabled: false
   storage:
@@ -20,5 +22,3 @@ app:
   jwt:
     secret: "${JWT_SECRET}"
     exp-seconds: 604800  #7일
-  auth:
-    redirect-url: https://api.khuoo.synology.me/swagger-ui/index.html
