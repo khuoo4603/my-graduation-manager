@@ -1,0 +1,52 @@
+name: "Backend DEV Auto Deploy"
+
+on:
+  workflow_run:
+    workflows: ["Backend CI (Build & Push Image)"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: backend-dev-deploy
+  cancel-in-progress: true
+
+jobs:
+  bump-dev-image-tag:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: "5.7.1"
+
+      - name: Update dev overlay image tag (auto sha-<7>)
+        working-directory: infra/k8s/backend/overlays/dev
+        run: |
+          SHORT_SHA=$(echo "${{ github.event.workflow_run.head_sha }}" | cut -c1-7)
+
+          kustomize edit set image \
+            ghcr.io/khuoo4603/my-graduation-manager-backend=ghcr.io/khuoo4603/my-graduation-manager-backend:sha-${SHORT_SHA}
+
+          echo "---- kustomization.yaml (after) ----"
+          cat kustomization.yaml
+
+      - name: Commit & push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add infra/k8s/backend/overlays/dev/kustomization.yaml
+          git diff --cached --quiet && echo "No changes" && exit 0
+
+          SHORT_SHA=$(echo "${{ github.event.workflow_run.head_sha }}" | cut -c1-7)
+          git commit -m "infra(backend): dev image sha-${SHORT_SHA} [skip ci]"
+          git push origin main
