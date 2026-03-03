@@ -4,12 +4,13 @@ kind: Kustomization
 namespace: backend
 
 resources:
-  - ../../base
-  - backend-sealedsecret.yaml
+- ../../base
+- backend-sealedsecret.yaml
 
 patchesStrategicMerge:
-  - deployment-patch.yaml
+- deployment-patch.yaml
 
 images:
-  - name: ghcr.io/khuoo4603/my-graduation-manager-backend
-    newTag: sha-51b5eab
+- name: ghcr.io/khuoo4603/my-graduation-manager-backend
+  newName: ghcr.io/khuoo4603/my-graduation-manager-backend
+  newTag: sha-9646252
