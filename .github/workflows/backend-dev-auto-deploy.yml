@@ -34,12 +34,20 @@ jobs:
         id: vars
         run: echo "SHA_SHORT=${{ github.event.workflow_run.head_sha }}" | cut -c1-7 | xargs -I{} echo "SHA_SHORT={}" >> $GITHUB_OUTPUT
 
+      - name: Set SHA_SHORT
+        id: vars
+        run: |
+          SHA_SHORT="${{ github.event.workflow_run.head_sha }}"
+          SHA_SHORT="${SHA_SHORT:0:7}"
+          echo "SHA_SHORT=$SHA_SHORT" >> $GITHUB_OUTPUT
+          test -n "$SHA_SHORT"
+
       - name: Update dev overlay image tag
         working-directory: infra/k8s/backend/overlays/dev
         run: |
+          echo "Using tag: sha-${{ steps.vars.outputs.SHA_SHORT }}"
           kustomize edit set image ghcr.io/khuoo4603/my-graduation-manager-backend=ghcr.io/khuoo4603/my-graduation-manager-backend:sha-${{ steps.vars.outputs.SHA_SHORT }}
-          echo "---- kustomization.yaml (after) ----"
-          cat kustomization.yaml
+          grep -n "newTag" kustomization.yaml
 
       - name: Commit & push
         run: |
