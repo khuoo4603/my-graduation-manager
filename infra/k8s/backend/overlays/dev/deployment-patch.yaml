@@ -6,7 +6,7 @@ spec:
   template:
     metadata:
       annotations:
-        gitops-test: "prod-overlay"
+        gitops-test: "dev-overlay"
     spec:
       imagePullSecrets:
         - name: ghcr-pull
