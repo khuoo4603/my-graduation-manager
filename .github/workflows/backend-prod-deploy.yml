@@ -1,4 +1,4 @@
-name: "Backend PROD Deploy"
+name: "Backend PROD Deploy (Manual + Approval)"
 
 on:
   workflow_dispatch:
@@ -21,11 +21,6 @@ jobs:
     environment: prod
 
     steps:
-      - name: Validate tag format
-        run: |
-          TAG="${{ inputs.image_tag }}"
-          echo "$TAG" | grep -Eq '^sha-[0-9a-f]{7}$' || (echo "Invalid tag: $TAG" && exit 1)
-
       - name: Checkout (with PAT)
         uses: actions/checkout@v4
         with:
@@ -37,12 +32,16 @@ jobs:
         with:
           kustomize-version: "5.7.1"
 
+      - name: Validate input tag
+        run: |
+          TAG="${{ inputs.image_tag }}"
+          echo "Input tag: $TAG"
+          echo "$TAG" | grep -E '^sha-[0-9a-f]{7}$' >/dev/null || (echo "Invalid tag format"; exit 1)
+
       - name: Update prod overlay image tag
         working-directory: infra/k8s/backend/overlays/prod
         run: |
-          kustomize edit set image \
-            ghcr.io/khuoo4603/my-graduation-manager-backend=ghcr.io/khuoo4603/my-graduation-manager-backend:${{ inputs.image_tag }}
-
+          kustomize edit set image ghcr.io/khuoo4603/my-graduation-manager-backend=ghcr.io/khuoo4603/my-graduation-manager-backend:${{ inputs.image_tag }}
           echo "---- kustomization.yaml (after) ----"
           cat kustomization.yaml
 
