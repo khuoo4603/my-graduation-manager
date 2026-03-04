@@ -5,7 +5,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: dev.api.khuoo.synology.me
+    - host: dev-api.khuoo.synology.me
       http:
         paths:
           - path: /

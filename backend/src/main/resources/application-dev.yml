@@ -11,7 +11,7 @@ management:
 
 app:
   auth:
-    redirect-url: https://dev.api.khuoo.synology.me/swagger-ui/index.html
+    redirect-url: https://dev-api.khuoo.synology.me/swagger-ui/index.html
   dev-token:
     enabled: false
   storage:
