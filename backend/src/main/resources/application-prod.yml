@@ -26,3 +26,5 @@ app:
   auth:
     cookie-domain: .khuoo.synology.me
     redirect-url: "https://api.khuoo.synology.me/swagger-ui/index.html"
+  swagger:
+    server-url: https://api.khuoo.synology.me

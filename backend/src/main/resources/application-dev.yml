@@ -26,3 +26,5 @@ app:
   jwt:
     secret: "${JWT_SECRET}"
     exp-seconds: 604800  # 7일
+  swagger:
+    server-url: https://dev-api.khuoo.synology.me
