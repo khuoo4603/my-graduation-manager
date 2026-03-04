@@ -21,6 +21,7 @@ public class ProfileService {
     private final UserProfileRepository userProfileRepository;
     private final TemplateRepository templateRepository;
     private final ProfileMapper profileMapper;
+    private final DepartmentRepository departmentRepository;
 
     // 내 프로필 조회
     public ProfileResponse getMyProfile() {
@@ -61,6 +62,30 @@ public class ProfileService {
 
         // user의 템플릿 update
         int updated = userProfileRepository.updateTemplateId(userId, templateId);
+        if (updated != 1) {
+            throw new ApiException(ErrorCode.USER_NOT_FOUND);
+        }
+    }
+
+    @Transactional
+    public void updateMyDepartment(Long departmentId) {
+
+        Long userId = currentUser.userId();
+
+        // 유저 존재 확인
+        Long currentDeptId = userProfileRepository.findDepartmentIdByUserId(userId);
+        if (currentDeptId == null) {
+            throw new ApiException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        // 학부 존재 확인
+        // (ErrorCode에 DEPARTMENT_NOT_FOUND가 없으므로 INVALID_REQUEST로 처리)
+        if (!departmentRepository.existsByDepartmentId(departmentId)) {
+            throw new ApiException(ErrorCode.INVALID_REQUEST);
+        }
+
+        // 학부 변경(+ template_id는 null로 초기화)
+        int updated = userProfileRepository.updateDepartmentId(userId, departmentId);
         if (updated != 1) {
             throw new ApiException(ErrorCode.USER_NOT_FOUND);
         }

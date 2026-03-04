@@ -1,6 +1,7 @@
 package com.khuoo.gradmanager.profile.controller;
 
 import com.khuoo.gradmanager.profile.dto.ProfileResponse;
+import com.khuoo.gradmanager.profile.dto.UpdateDepartmentRequest;
 import com.khuoo.gradmanager.profile.dto.UpdateTemplateRequest;
 import com.khuoo.gradmanager.profile.service.ProfileService;
 import jakarta.validation.Valid;
@@ -24,8 +25,15 @@ public class ProfileController {
     // 내 템플릿 변경
     @PutMapping("/template")
     public ResponseEntity<Void> updateTemplate(@RequestBody @Valid UpdateTemplateRequest request) {
-        profileService.updateMyTemplate(request.getTemplateId());
+        profileService.updateMyTemplate(request.templateId());
 
+        return ResponseEntity.noContent().build();
+    }
+
+    // 내 학부 변경
+    @PutMapping("/department")
+    public ResponseEntity<Void> updateDepartment(@RequestBody @Valid UpdateDepartmentRequest request) {
+        profileService.updateMyDepartment(request.departmentId());
         return ResponseEntity.noContent().build();
     }
 }
