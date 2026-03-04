@@ -3,6 +3,12 @@ spring:
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirect-uri: "https://dev-api.khuoo.synology.me/login/oauth2/code/google"
 
 management:
   endpoint:
@@ -11,7 +17,8 @@ management:
 
 app:
   auth:
-    redirect-url: https://dev-api.khuoo.synology.me/swagger-ui/index.html
+    cookie-domain: .khuoo.synology.me
+    redirect-url: "https://dev-api.khuoo.synology.me/swagger-ui/index.html"
   dev-token:
     enabled: false
   storage:

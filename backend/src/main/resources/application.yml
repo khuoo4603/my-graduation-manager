@@ -15,6 +15,7 @@ spring:
             client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID:${GOOGLE_CLIENT_ID}}
             client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET:${GOOGLE_CLIENT_SECRET}}
             scope: [ email, profile ]
+            redirect-uri: "https://api.khuoo.synology.me/login/oauth2/code/google"
 
 server:
   port: 8080

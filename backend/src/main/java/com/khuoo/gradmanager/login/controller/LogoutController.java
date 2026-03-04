@@ -19,6 +19,8 @@ public class LogoutController {
     @PostMapping("/api/v1/auth/logout")
     public void logout(HttpServletResponse response) {
 
+
+
         // 로그아웃은 쿠키를 만료시키는 시스템으로 구현
         ResponseCookie cookie = ResponseCookie.from(authCookieProperties.getCookieName(), "")
                 .httpOnly(true)

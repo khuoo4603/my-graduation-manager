@@ -74,14 +74,22 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String token = jwtTokenProvider.createToken(userId, email);
 
         // HttpOnly 방식 사용
-        ResponseCookie cookie = ResponseCookie.from(authCookieProperties.getCookieName(), token)
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie
+                .from(authCookieProperties.getCookieName(), token)
                 .httpOnly(true)
                 .secure(true)
                 .sameSite("Lax")
                 .path("/")
-                .maxAge(Duration.ofSeconds(authCookieProperties.getCookieMaxAgeSeconds()))
-                .domain(authCookieProperties.getCookieDomain())
-                .build();
+                .maxAge(Duration.ofSeconds(authCookieProperties.getCookieMaxAgeSeconds()));
+
+        String cookieDomain = authCookieProperties.getCookieDomain();
+
+        // local 등 cookie-domain이 비어있으면 host-only cookie로 처리 (domain없이 쿠기 생성)
+        if (cookieDomain != null && !cookieDomain.isBlank()) {
+            builder.domain(cookieDomain);
+        }
+
+        ResponseCookie cookie = builder.build();
 
         // Set-Cookie 헤더를 명시적으로 추가
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

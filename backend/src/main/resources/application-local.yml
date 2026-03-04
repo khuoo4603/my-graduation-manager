@@ -3,6 +3,12 @@ spring:
     hikari:
       maximum-pool-size: 5
       minimum-idle: 1
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
 
 app:
   dev-token:
@@ -14,7 +20,7 @@ app:
     secret: "kK0PP8dHYQ30llX7KnFS58DvIcmIN4kVSMxsJdD32gY="
     exp-seconds: 604800  # 7일
   auth:
-    cookie-domain: localhost
+    cookie-domain: ""
     redirect-url: http://localhost:8080/swagger-ui/index.html
 
 springdoc:

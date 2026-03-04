@@ -12,6 +12,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 // 전역 예외를 상태코드/포맷으로 변환
 @RestControllerAdvice
@@ -37,6 +38,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiErrorResponse> handleBodyMissingOrInvalid(HttpMessageNotReadableException ex, HttpServletRequest request) {
         return buildResponse(ErrorCode.INVALID_REQUEST, ErrorCode.INVALID_REQUEST.getDefaultMessage(), request, ex);
+    }
+
+    // 사용자 요청에 정적 리소스 없음
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleNoResourceFound(NoResourceFoundException ex, HttpServletRequest request) {
+        return buildResponse(ErrorCode.FILE_NOT_FOUND, ErrorCode.FILE_NOT_FOUND.getDefaultMessage(), request, ex);
     }
 
     // 그 외 예외는 500으로 통일
