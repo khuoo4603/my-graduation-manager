@@ -15,7 +15,7 @@ import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
-    @Value("${app.swagger.server-url:https://api.khuoo.synology.me}")
+    @Value("${app.swagger.server-url}")
     private String serverUrl;
 
     @Bean
