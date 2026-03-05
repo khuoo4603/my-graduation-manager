@@ -1,8 +1,5 @@
 package com.khuoo.gradmanager.security.config;
 
-import com.khuoo.gradmanager.security.oauth2.OAuth2FailureHandler;
-import com.khuoo.gradmanager.security.oauth2.OAuth2SuccessHandler;
-import com.khuoo.gradmanager.security.oauth2.OAuth2UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,9 +14,9 @@ import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWrite
 
 @Configuration
 @RequiredArgsConstructor
-public class PublicWebSecurityConfig {
+public class SwaggerWebSecurityConfig {
 
-    private static final String PUBLIC_CSP =
+    private static final String SWAGGER_CSP =
             "default-src 'none'; " +
             "base-uri 'self'; " +
             "frame-ancestors 'none'; " +
@@ -27,37 +24,32 @@ public class PublicWebSecurityConfig {
             "object-src 'none'; " +
             "img-src 'self' data:; " +
             "style-src 'self' 'unsafe-inline'; " +
-            "script-src 'self'; " +
+            "script-src 'self' 'unsafe-inline'; " +
             "connect-src 'self'";
 
-    private final OAuth2UserServiceImpl oAuth2UserService;
-    private final OAuth2SuccessHandler oAuth2SuccessHandler;
-    private final OAuth2FailureHandler oAuth2FailureHandler;
-
     @Bean
-    @Order(3)
-    public SecurityFilterChain publicWebSecurityFilterChain(HttpSecurity http) throws Exception {
+    @Order(2)
+    public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
-                // OAuth2/login/health 전용 경로만 매칭
+                // Swagger 경로만 매칭
                 .securityMatcher(
-                        "/oauth2/**",
-                        "/login/**",
-                        "/health/**"
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**"
                 )
 
-                // 공개 엔드포인트는 CSRF 토큰 사용 X
+                // CSRF 토큰 사용 X
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // OAuth2 state 저장을 위해 세션 허용
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                // 세션 사용 X
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // 폼 로그인 사용 X
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
 
-                // 엄격 CSP + 기본 보안 헤더 적용
+                // Swagger 전용 완화 CSP + 기본 보안 헤더 적용
                 .headers(headers -> {
-                    headers.contentSecurityPolicy(csp -> csp.policyDirectives(PUBLIC_CSP));
+                    headers.contentSecurityPolicy(csp -> csp.policyDirectives(SWAGGER_CSP));
                     headers.contentTypeOptions(Customizer.withDefaults());
                     headers.referrerPolicy(referrer -> referrer
                             .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER));
@@ -66,14 +58,7 @@ public class PublicWebSecurityConfig {
                     headers.frameOptions(Customizer.withDefaults());
                 })
 
-                // OAuth2 로그인 설정
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
-                        .successHandler(oAuth2SuccessHandler)
-                        .failureHandler(oAuth2FailureHandler)
-                )
-
-                // 해당 경로는 공개 경로로 노출
+                // Swagger는 공개 경로로 노출
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
 
                 .build();

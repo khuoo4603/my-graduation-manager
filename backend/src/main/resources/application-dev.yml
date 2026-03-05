@@ -17,7 +17,8 @@ management:
 
 app:
   auth:
-    cookie-domain: .khuoo.synology.me
+    cookie-name: dev_access_token
+    cookie-domain: ""
     redirect-url: "https://dev-api.khuoo.synology.me/swagger-ui/index.html"
   dev-token:
     enabled: false
