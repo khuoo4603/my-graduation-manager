@@ -19,7 +19,7 @@ app:
   dev-token:
     enabled: false
   storage:
-    root: /mnt/gradmanager-files
+    root: /mnt/nas/mgm-files
   jwt:
     secret: "${JWT_SECRET}"
     exp-seconds: 604800  # 7일
