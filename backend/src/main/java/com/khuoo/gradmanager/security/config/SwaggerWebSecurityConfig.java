@@ -10,7 +10,11 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -18,14 +22,34 @@ public class SwaggerWebSecurityConfig {
 
     private static final String SWAGGER_CSP =
             "default-src 'none'; " +
-            "base-uri 'self'; " +
-            "frame-ancestors 'none'; " +
-            "form-action 'self'; " +
-            "object-src 'none'; " +
-            "img-src 'self' data:; " +
-            "style-src 'self' 'unsafe-inline'; " +
-            "script-src 'self' 'unsafe-inline'; " +
-            "connect-src 'self'";
+                    "base-uri 'self'; " +
+                    "frame-ancestors 'none'; " +
+                    "form-action 'self'; " +
+                    "object-src 'none'; " +
+                    "img-src 'self' data:; " +
+                    "style-src 'self' 'unsafe-inline'; " +
+                    "script-src 'self' 'unsafe-inline'; " +
+                    "connect-src 'self'";
+
+
+    private static final String FRONT_ORIGIN = "https://grad.khuoo.synology.me";
+    private static final String API_ORIGIN = "https://api.khuoo.synology.me";
+    private static final String DEVAPI_ORIGIN = "https://dev-api.khuoo.synology.me";
+
+     // Swagger 요청이 CORS에 막히지 않도록 허용 Origin을 확장
+    @Bean
+    public CorsConfigurationSource swaggerCorsConfigurationSource() {
+        CorsConfiguration cfg = new CorsConfiguration();
+        cfg.setAllowCredentials(true);
+        cfg.setAllowedOrigins(List.of(FRONT_ORIGIN, API_ORIGIN, DEVAPI_ORIGIN));
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        cfg.setAllowedHeaders(List.of("Content-Type", "X-Requested-With"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/swagger-ui/**", cfg);
+        source.registerCorsConfiguration("/v3/api-docs/**", cfg);
+        return source;
+    }
 
     @Bean
     @Order(2)
@@ -36,6 +60,9 @@ public class SwaggerWebSecurityConfig {
                         "/swagger-ui/**",
                         "/v3/api-docs/**"
                 )
+
+                // Swagger 전용 CORS 활성화
+                .cors(Customizer.withDefaults())
 
                 // CSRF 토큰 사용 X
                 .csrf(AbstractHttpConfigurer::disable)
