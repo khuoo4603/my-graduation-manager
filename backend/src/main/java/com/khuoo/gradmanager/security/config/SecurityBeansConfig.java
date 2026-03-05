@@ -20,7 +20,10 @@ public class SecurityBeansConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration apiCors = new CorsConfiguration();
         apiCors.setAllowCredentials(true);
-        apiCors.setAllowedOrigins(List.of("https://grad.khuoo.synology.me"));
+        apiCors.setAllowedOrigins(List.of(
+                "https://grad.khuoo.synology.me",
+                "https://dev-api.khuoo.synology.me"
+        ));
         apiCors.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         apiCors.setAllowedHeaders(List.of("Content-Type", "X-Requested-With"));
         apiCors.setMaxAge(3600L);

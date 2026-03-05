@@ -20,6 +20,8 @@ public enum ErrorCode {
     COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "Course not found"), // 404, 수강 내역이 존재하지 않는 경우 (삭제 row=0, 내 수강이 아님 포함)
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "File not found"), // 404, 파일 메타 또는 실제 파일이 존재하지 않는 경우
 
+    METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "Method not allowed"), // 405, 지원하지 않는 HTTP Method 호출
+
     DUPLICATE_RESOURCE(HttpStatus.CONFLICT, "Duplicate resource"), // 409, UNIQUE 제약 위반 등 중복 생성 요청인 경우 (email 중복 등)
     PAYLOAD_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "Uploaded file size exceeds the allowed limit"), // 413, multipart 업로드 파일 또는 요청 본문 크기 제한을 초과한 경우
 
