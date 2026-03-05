@@ -8,10 +8,18 @@ spec:
       annotations:
         gitops-test: "prod-overlay"
     spec:
+      volumes:
+        - name: mgm-files
+          hostPath:
+            path: /mnt/nas/mgm-files
+            type: Directory
       imagePullSecrets:
         - name: ghcr-pull
       containers:
         - name: backend
+          volumeMounts:
+            - name: mgm-files
+              mountPath: /mnt/nas/mgm-files
           resources:
             requests:
               cpu: "300m"
