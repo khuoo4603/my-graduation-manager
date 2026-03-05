@@ -6,6 +6,7 @@ namespace: backend
 resources:
 - ../../base
 - backend-sealedsecret.yaml
+- ghcr-pull-sealedsecret.yaml
 
 patchesStrategicMerge:
 - deployment-patch.yaml
