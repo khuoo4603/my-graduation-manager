@@ -15,4 +15,4 @@ patchesStrategicMerge:
 images:
 - name: ghcr.io/khuoo4603/my-graduation-manager-backend
   newName: ghcr.io/khuoo4603/my-graduation-manager-backend
-  newTag: sha-2c4a72f
+  newTag: sha-790de5d
