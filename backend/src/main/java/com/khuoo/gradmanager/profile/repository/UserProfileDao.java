@@ -26,11 +26,10 @@ public class UserProfileDao implements UserProfileRepository {
         return jdbcTemplate.update(sql, templateId, userId);
     }
 
-    // user의 학부 update (+ 학부 변경 시 template_id는 null로 초기화)
+    // user의 학부 update
     @Override
     public int updateDepartmentId(Long userId, Long departmentId) {
-        // 기존 학부와 템플릿이 꼬일 수 있어 초기화
-        String sql = "update users set department_id = ?, template_id = null, updated_at = now() where user_id = ?";
+        String sql = "update users set department_id = ?, updated_at = now() where user_id = ?";
 
         return jdbcTemplate.update(sql, departmentId, userId);
     }

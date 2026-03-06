@@ -16,6 +16,9 @@ public enum ErrorCode {
     FORBIDDEN(HttpStatus.FORBIDDEN, "Forbidden"), // 403, 인증은 됐지만 권한이 없거나 리소스 소유자가 아닌 경우
 
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not found"), // 404, 사용자가 존재하지 않는 경우
+    DEPARTMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "Department not found"), // 404, 요청한 학부가 존재하지 않는 경우
+    MAJOR_NOT_FOUND(HttpStatus.NOT_FOUND, "Major not found"), // 404, 요청한 전공이 존재하지 않는 경우
+    USER_MAJOR_NOT_FOUND(HttpStatus.NOT_FOUND, "User major not found"), // 404, 요청한 사용자 전공 매핑이 존재하지 않는 경우
     TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "Template not found"), // 404, 요청한 졸업 템플릿이 존재하지 않는 경우
     COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "Course not found"), // 404, 수강 내역이 존재하지 않는 경우 (삭제 row=0, 내 수강이 아님 포함)
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "File not found"), // 404, 파일 메타 또는 실제 파일이 존재하지 않는 경우

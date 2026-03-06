@@ -36,6 +36,7 @@ public record ProfileResponse(
 
     // 전공 DTO
     public record MajorDto(
+            Long userMajorId,
             Long id,
             String name,
             String majorType

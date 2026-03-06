@@ -8,6 +8,6 @@ public interface UserProfileRepository {
     // user의 템플릿 update
     int updateTemplateId(Long userId, Long templateId);
 
-    // user의 학부 update (+ 학부 변경 시 template_id는 null로 초기화)
+    // user의 학부 update
     int updateDepartmentId(Long userId, Long departmentId);
 }

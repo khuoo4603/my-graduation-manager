@@ -50,13 +50,14 @@ public class ProfileMapper {
         // 사용자 전공 목록
         List<ProfileResponse.MajorDto> majors = new ArrayList<>();
 
-        for (MajorRepository.UserMajorRow r : majorRows) {
+        for (MajorRepository.UserMajorRow row : majorRows) {
 
             ProfileResponse.MajorDto dto =
                     new ProfileResponse.MajorDto(
-                            r.majorId(),
-                            r.majorName(),
-                            r.majorType()
+                            row.userMajorId(),
+                            row.majorId(),
+                            row.majorName(),
+                            row.majorType()
                     );
             majors.add(dto);
         }

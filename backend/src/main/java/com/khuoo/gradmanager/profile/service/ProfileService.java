@@ -55,10 +55,10 @@ public class ProfileService {
             throw new ApiException(ErrorCode.TEMPLATE_NOT_FOUND);
         }
 
-        // update하려는 템플릿의 학부가 유저와 일치하는지 확인
-        if (!userDeptId.equals(templateDeptId)) {
-            throw new ApiException(ErrorCode.TEMPLATE_DEPT_MISMATCH);
-        }
+//        // update하려는 템플릿의 학부가 유저와 일치하는지 확인
+//        if (!userDeptId.equals(templateDeptId)) {
+//            throw new ApiException(ErrorCode.TEMPLATE_DEPT_MISMATCH);
+//        }
 
         // user의 템플릿 update
         int updated = userProfileRepository.updateTemplateId(userId, templateId);
@@ -84,7 +84,7 @@ public class ProfileService {
             throw new ApiException(ErrorCode.INVALID_REQUEST);
         }
 
-        // 학부 변경(+ template_id는 null로 초기화)
+        // 학부 변경
         int updated = userProfileRepository.updateDepartmentId(userId, departmentId);
         if (updated != 1) {
             throw new ApiException(ErrorCode.USER_NOT_FOUND);

@@ -15,17 +15,19 @@ public class MajorDao implements MajorRepository {
 
     private static final RowMapper<UserMajorRow> USER_MAJOR_ROW_MAPPER =
             (rs, rowNum) -> new UserMajorRow(
-                    rs.getLong("major_id"),     // 전공 PK
-                    rs.getString("major_name"), // 전공 이름
-                    rs.getString("major_type")  // 심화전공/주전공/부전공/복수전공
+                    rs.getLong("user_major_id"), // user_major PK
+                    rs.getLong("major_id"),      // 전공 PK
+                    rs.getString("major_name"),  // 전공 이름
+                    rs.getString("major_type")   // 심화전공/주전공/부전공/복수전공
             );
 
-    //특정 사용자 전공 목록 조회
+    // 특정 사용자 전공 목록 조회
     @Override
     public List<UserMajorRow> findMajorsByUserId(Long userId) {
 
         String sql = """
                 select
+                    um.user_major_id,
                     m.major_id,
                     m.major_name,
                     um.major_type
@@ -36,7 +38,6 @@ public class MajorDao implements MajorRepository {
                 order by um.user_major_id asc
                 """;
 
-        // 심화전공이 아닐 경우 전공이 2개 이므로 list그대로 반환
         return jdbcTemplate.query(sql, USER_MAJOR_ROW_MAPPER, userId);
     }
 }

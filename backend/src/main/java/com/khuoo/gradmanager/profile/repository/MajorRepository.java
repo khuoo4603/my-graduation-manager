@@ -8,6 +8,7 @@ public interface MajorRepository {
     List<UserMajorRow> findMajorsByUserId(Long userId);
 
     record UserMajorRow(
+            Long userMajorId,
             Long majorId,
             String majorName,
             String majorType

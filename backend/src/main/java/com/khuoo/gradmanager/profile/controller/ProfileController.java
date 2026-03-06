@@ -1,11 +1,12 @@
 package com.khuoo.gradmanager.profile.controller;
 
-import com.khuoo.gradmanager.profile.dto.ProfileResponse;
-import com.khuoo.gradmanager.profile.dto.UpdateDepartmentRequest;
-import com.khuoo.gradmanager.profile.dto.UpdateTemplateRequest;
+import com.khuoo.gradmanager.profile.dto.*;
+import com.khuoo.gradmanager.profile.service.ProfileMajorService;
 import com.khuoo.gradmanager.profile.service.ProfileService;
+import com.khuoo.gradmanager.security.principal.CurrentUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 public class ProfileController {
 
     private final ProfileService profileService;
+    private final CurrentUser currentUser;
+    private final ProfileMajorService profileMajorService;
 
     // 내 프로필 조회
     @GetMapping
@@ -35,5 +38,19 @@ public class ProfileController {
     public ResponseEntity<Void> updateDepartment(@RequestBody @Valid UpdateDepartmentRequest request) {
         profileService.updateMyDepartment(request.departmentId());
         return ResponseEntity.noContent().build();
+    }
+
+    // 내 전공 추가
+    @PostMapping("/major")
+    @ResponseStatus(HttpStatus.CREATED)
+    public AddUserMajorResponse addUserMajor(@Valid @RequestBody AddUserMajorRequest request) {
+        return profileMajorService.addUserMajor(currentUser.userId(), request);
+    }
+
+    // 내 전공을 삭제
+    @DeleteMapping("/major/{userMajorId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUserMajor(@PathVariable long userMajorId) {
+        profileMajorService.deleteUserMajor(currentUser.userId(), userMajorId);
     }
 }
