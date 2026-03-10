@@ -1,0 +1,10 @@
+﻿/* Error 페이지 제목 색상 */
+body[data-page="error"] .page-title {
+  color: var(--color-page-title);
+}
+
+/* Error 페이지 경고 아이콘 크기 */
+body[data-page="error"] .page-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+}

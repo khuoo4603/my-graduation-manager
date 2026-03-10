@@ -1,0 +1,61 @@
+﻿/* 페이지 전체를 세로 레이아웃으로 구성 */
+.page-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 콘텐츠 최대 폭과 좌우 여백을 제어 */
+.container {
+  width: min(100% - 2rem, var(--container-width));
+  margin: 0 auto;
+}
+
+/* 메인 영역의 기본 패딩과 확장 영역 정의 */
+.page-main {
+  flex: 1;
+  padding: 2rem 0 3rem;
+}
+
+/* 페이지 섹션 내부 기본 간격 */
+.page-section {
+  display: grid;
+  gap: var(--space-xl);
+}
+
+/* 제목/부제목 블록 레이아웃 */
+.page-header {
+  display: grid;
+  gap: 0.375rem;
+}
+
+/* 페이지 제목 타이포그래피 */
+.page-title {
+  margin: 0;
+  font-size: clamp(1.55rem, 2.8vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* 페이지 부제목 색상/여백 */
+.page-subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+/* 세로 스택형 배치 유틸리티 */
+.stack {
+  display: grid;
+  gap: 0.9rem;
+}
+
+/* 모바일 구간에서 여백을 축소 */
+@media (max-width: 760px) {
+  .page-main {
+    padding: 1.35rem 0 2rem;
+  }
+
+  .container {
+    width: min(100% - 1.25rem, var(--container-width));
+  }
+}

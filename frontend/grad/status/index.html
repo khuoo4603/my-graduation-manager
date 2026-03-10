@@ -3,14 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Graduation Status</title>
-    <link rel="stylesheet" href="/src/styles/common.css" />
+    <title>My Graduation Manager | Status</title>
   </head>
-  <body>
-    <main class="page" data-page="grad-status">
-      <h1>Graduation Status Page</h1>
-      <p>졸업 판정 상세 페이지</p>
-    </main>
+  <body data-page="grad-status">
+    <div class="page-shell" data-app-shell>
+      <div data-header-root></div>
+      <main class="page-main">
+        <div class="container page-section" data-page-root></div>
+      </main>
+    </div>
     <script type="module" src="/src/scripts/pages/grad/status/index.js"></script>
   </body>
 </html>

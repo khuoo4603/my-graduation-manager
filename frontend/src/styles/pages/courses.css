@@ -1,0 +1,4 @@
+﻿/* Courses 페이지 제목 강조 색상 */
+body[data-page="grad-courses"] .page-title {
+  color: var(--color-page-title);
+}

@@ -1,0 +1,168 @@
+﻿/* 홈(로그인) 페이지 전용 배경 */
+body[data-page="home"] {
+  background: linear-gradient(
+    135deg,
+    var(--color-info-bg-soft) 0%,
+    var(--color-surface-soft) 45%,
+    var(--color-home-gradient-end) 100%
+  );
+}
+
+/* 홈 페이지 메인 영역 여백 재설정 */
+body[data-page="home"] .page-main {
+  padding: 0;
+}
+
+/* 로그인 섹션을 화면 높이에 맞춰 중앙 배치 */
+body[data-page="home"] .page-section {
+  min-height: 100vh;
+  align-content: center;
+  padding-block: 2rem;
+}
+
+/* 소개 영역과 로그인 카드를 배치하는 2열 레이아웃 */
+.login-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 0.9fr;
+  align-items: center;
+  gap: clamp(1.25rem, 4vw, 4.25rem);
+}
+
+/* 좌측 소개 콘텐츠 묶음 */
+.login-intro {
+  display: grid;
+  gap: 1.25rem;
+}
+
+/* 서비스 아이콘 배지 */
+.login-intro__brand {
+  display: inline-flex;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1rem;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: var(--color-surface);
+  font-size: 1.4rem;
+}
+
+.login-intro__brand img {
+  width: 1.6rem;
+  height: 1.6rem;
+  filter: brightness(0) invert(1);
+}
+
+/* 홈 페이지 메인 타이틀 */
+.login-intro__title {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+/* 홈 페이지 설명 문구 */
+.login-intro__subtitle {
+  margin: 0;
+  color: var(--color-text-subtle);
+  font-size: 1.03rem;
+  max-width: 35ch;
+}
+
+/* 기능 소개 목록 */
+.login-intro__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1rem;
+}
+
+.login-intro__item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.login-intro__item h3 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.login-intro__item p {
+  margin: 0.25rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+/* 우측 로그인 카드 */
+.login-card {
+  max-width: 480px;
+  width: 100%;
+  justify-self: end;
+  padding: clamp(1.4rem, 2.8vw, 2.6rem);
+}
+
+.login-card__header {
+  text-align: center;
+  margin-bottom: 1.4rem;
+}
+
+.login-card__title {
+  margin: 0;
+  font-size: 1.65rem;
+  letter-spacing: -0.02em;
+}
+
+.login-card__subtitle {
+  margin: 0.4rem 0 0;
+  color: var(--color-text-muted);
+}
+
+/* 구글 로그인 버튼 */
+.btn--google {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-subtle);
+  min-height: 3rem;
+  font-size: 0.95rem;
+}
+
+.btn--google img {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.login-intro .icon-box img {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.btn--google:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-soft);
+}
+
+/* 로그인 하단 약관 안내 문구 */
+.login-card__footer {
+  margin: 1rem 0 0;
+  font-size: 0.76rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* 태블릿 이하에서 1열 레이아웃으로 전환 */
+@media (max-width: 980px) {
+  .login-layout {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .login-card {
+    justify-self: stretch;
+    max-width: none;
+    order: -1;
+  }
+}
