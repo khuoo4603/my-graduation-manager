@@ -2,11 +2,10 @@
 export const SERVICE_NAME = "My Graduation Manager";
 
 // Vite 환경변수 기반 API 베이스 URL 조회
-const ENV_API_BASE_URL =
-  typeof import.meta !== "undefined" ? import.meta.env?.VITE_API_BASE_URL : "";
+const ENV_API_BASE_URL = typeof import.meta !== "undefined" ? import.meta.env?.VITE_API_BASE_URL : "";
 
 // API 베이스 URL 끝의 슬래시를 제거해 경로 결합 시 중복을 방지
-export const API_BASE_URL = (ENV_API_BASE_URL || "https://api.khuoo.synology.me").replace(/\/+$/, "");
+export const API_BASE_URL = (ENV_API_BASE_URL || "").replace(/\/+$/, "");
 
 // MPA 라우팅 사용 경로 상수 모음
 export const PAGE_PATHS = {
@@ -19,11 +18,25 @@ export const PAGE_PATHS = {
   ERROR: "/error/",
 };
 
+// 인증 관련 경로 상수
+export const AUTH_PATHS = {
+  GOOGLE_OAUTH_START: "/oauth2/authorization/google",
+};
+
+// API origin 기준 OAuth 시작 URL
+export function getGoogleLoginUrl() {
+  if (!API_BASE_URL) {
+    throw new Error("VITE_API_BASE_URL is required");
+  }
+
+  return `${API_BASE_URL}${AUTH_PATHS.GOOGLE_OAUTH_START}`;
+}
+
 // UI 공통 안내 문구 모음
 export const UI_MESSAGES = {
   READY_TITLE: "페이지 구조 준비 완료",
-  READY_DESCRIPTION: "이 페이지는 다음 단계 기능 연동을 위해 준비되어 있습니다.",
-  NOT_AUTHENTICATED: "인증이 필요합니다.",
+  READY_DESCRIPTION: "아직 준비중인 페이지입니다.",
+  NOT_AUTHENTICATED: "로그인이 필요합니다",
+  NETWORK_ERROR: "네트워크 연결을 확인해주세요",
+  COMMON_ERROR: "요청 처리 중 오류가 발생했습니다",
 };
-
-

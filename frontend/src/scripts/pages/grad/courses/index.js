@@ -6,11 +6,19 @@ import "/src/styles/pages/courses.css";
 import { renderHeader } from "/src/scripts/components/header.js";
 import { clearChildren, createElement, qs } from "/src/scripts/utils/dom.js";
 import { PAGE_PATHS } from "/src/scripts/utils/constants.js";
+import { ensureProtectedPageAccess } from "/src/scripts/utils/auth.js";
 
 // Courses 페이지 초기화: 상단 헤더와 기본 안내 문구를 렌더링
-export function initCoursesPage() {
+export async function initCoursesPage() {
+  // 로그인 필요 페이지 세션 확인
+  const authResult = await ensureProtectedPageAccess();
+  if (!authResult) return;
+
   // 현재 경로를 기준으로 Courses 메뉴를 활성화
-  renderHeader("[data-header-root]", { currentPath: PAGE_PATHS.GRAD_COURSES });
+  renderHeader("[data-header-root]", {
+    currentPath: PAGE_PATHS.GRAD_COURSES,
+    userName: authResult.profile?.name || "unknown",
+  });
 
   // 페이지 루트 미존재 시 렌더링 중단
   const pageRoot = qs("[data-page-root]");

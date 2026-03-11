@@ -1,22 +1,25 @@
-﻿import { createElement, resolveElement } from "../utils/dom.js";
+import { logout } from "../api/auth.js";
 import { PAGE_PATHS, SERVICE_NAME } from "../utils/constants.js";
+import { createElement, resolveElement } from "../utils/dom.js";
+import { redirectToErrorPageByError } from "../utils/error.js";
 import { getFluentIconPath } from "./icon-map.js";
 
-// 경로 비교 전 끝의 슬래시를 정리해 동일 경로 판별을 안정화
+// 경로 비교 전 끝의 슬래시 정리
 function normalizePath(pathname = "") {
   if (!pathname) return "/";
   const trimmed = pathname.replace(/\/+$/, "");
   return trimmed || "/";
 }
 
-// 현재 경로가 대상 경로와 같은지 확인
+// 현재 경로와 대상 경로 일치 여부
 function isActivePath(pathname, targetPath) {
   return normalizePath(pathname) === normalizePath(targetPath);
 }
 
-// 공통 헤더 DOM을 생성
+// 공통 헤더 DOM 생성
 export function createHeader(options = {}) {
   const currentPath = options.currentPath || window.location.pathname;
+  const userName = options.userName || "unknown";
 
   // 상단 네비게이션 노출 페이지 목록
   const navItems = [
@@ -78,7 +81,7 @@ export function createHeader(options = {}) {
 
   nav.append(navList);
 
-  // 라이트/다크 모드 토글 버튼의 아이콘을 구성
+  // 라이트/다크 모드 토글 버튼 아이콘 구성
   const themeIcon = createElement("img", {
     className: "app-user__icon",
     attrs: {
@@ -99,7 +102,7 @@ export function createHeader(options = {}) {
     children: [themeIcon],
   });
 
-  // 토글 상태를 aria-pressed에 저장하고 아이콘만 전환
+  // 토글 상태를 aria-pressed에 저장하고 아이콘 전환
   themeToggle.addEventListener("click", () => {
     const isLightMode = themeToggle.getAttribute("aria-pressed") === "true";
     if (isLightMode) {
@@ -129,10 +132,10 @@ export function createHeader(options = {}) {
           }),
         ],
       }),
-      createElement("span", { className: "app-user__name", text: "unknown" }),
-      createElement("a", {
+      createElement("span", { className: "app-user__name", text: userName }),
+      createElement("button", {
         className: "app-user__logout",
-        attrs: { href: PAGE_PATHS.HOME, "aria-label": "Logout" },
+        attrs: { type: "button", "aria-label": "Logout" },
         children: [
           createElement("img", {
             className: "app-user__icon",
@@ -147,13 +150,27 @@ export function createHeader(options = {}) {
     ],
   });
 
+  // 로그아웃 요청 후 홈 이동
+  const logoutButton = user.querySelector(".app-user__logout");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+      try {
+        await logout();
+        window.location.href = PAGE_PATHS.HOME;
+      } catch (error) {
+        // 401 포함 로그아웃 실패 공통 에러 페이지 전달
+        redirectToErrorPageByError(error, "로그아웃 처리 중 오류가 발생했습니다");
+      }
+    });
+  }
+
   container.append(brand, nav, user);
   header.append(container);
 
   return header;
 }
 
-// 대상 컨테이너에 헤더를 렌더링
+// 대상 컨테이너에 헤더 렌더링
 export function renderHeader(target, options = {}) {
   const host = resolveElement(target);
   if (!host) return null;

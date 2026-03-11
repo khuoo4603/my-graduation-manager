@@ -159,6 +159,7 @@
   padding: 0.25rem 0.45rem;
   color: var(--color-text-muted);
   border: 1px solid transparent;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 

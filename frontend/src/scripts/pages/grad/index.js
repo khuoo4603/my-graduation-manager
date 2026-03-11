@@ -6,11 +6,19 @@ import "/src/styles/pages/grad.css";
 import { renderHeader } from "/src/scripts/components/header.js";
 import { clearChildren, createElement, qs } from "/src/scripts/utils/dom.js";
 import { PAGE_PATHS } from "/src/scripts/utils/constants.js";
+import { ensureProtectedPageAccess } from "/src/scripts/utils/auth.js";
 
 // Dashboard 페이지 초기화: 헤더 렌더링 후 기본 안내 블록을 표시
-export function initGradPage() {
+export async function initGradPage() {
+  // 로그인 필요 페이지 세션 확인
+  const authResult = await ensureProtectedPageAccess();
+  if (!authResult) return;
+
   // 현재 경로에 맞는 네비게이션 활성 상태를 반영
-  renderHeader("[data-header-root]", { currentPath: PAGE_PATHS.GRAD });
+  renderHeader("[data-header-root]", {
+    currentPath: PAGE_PATHS.GRAD,
+    userName: authResult.profile?.name || "unknown",
+  });
 
   // 렌더링 대상 루트가 존재하는지 확인
   const pageRoot = qs("[data-page-root]");

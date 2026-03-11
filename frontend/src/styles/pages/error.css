@@ -1,10 +1,113 @@
-﻿/* Error 페이지 제목 색상 */
-body[data-page="error"] .page-title {
-  color: var(--color-page-title);
+/* Error 페이지 메인 중앙 정렬 */
+body[data-page="error"] .page-main {
+  display: grid;
+  align-items: center;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Error 레이아웃 컨테이너 */
+body[data-page="error"] .error-layout {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+}
+
+/* Error 안내 패널 */
+body[data-page="error"] .error-panel {
+  width: min(100%, 440px);
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 0.85rem;
+}
+
+/* Error 아이콘 배경 원 */
+body[data-page="error"] .error-panel__icon-wrap {
+  width: 4.25rem;
+  height: 4.25rem;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  background: #ffe4e6;
 }
 
 /* Error 페이지 경고 아이콘 크기 */
 body[data-page="error"] .page-icon {
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.7rem;
+  height: 1.7rem;
+}
+
+/* Error 코드 문구 */
+body[data-page="error"] .error-panel__code {
+  margin: 0;
+  font-size: clamp(2rem, 3.2vw, 2.7rem);
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Error 제목 문구 */
+body[data-page="error"] .error-panel__title {
+  margin: -0.1rem 0 0;
+  font-size: 2rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* Error 메시지 문구 */
+body[data-page="error"] .error-panel__message {
+  margin: 0.1rem 0 0;
+  max-width: 420px;
+  color: var(--color-text-muted);
+  font-size: 1.15rem;
+  line-height: 1.55;
+}
+
+/* Error 액션 버튼 그룹 */
+body[data-page="error"] .error-panel__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 0.55rem;
+}
+
+/* Error 버튼 크기 보정 */
+body[data-page="error"] .error-panel .btn {
+  min-height: 2.55rem;
+  min-width: 170px;
+  font-size: 1rem;
+  padding: 0.45rem 1rem;
+}
+
+/* Error 버튼 아이콘 */
+body[data-page="error"] .btn__icon-image {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.95;
+}
+
+@media (max-width: 760px) {
+  body[data-page="error"] .error-panel {
+    gap: 0.75rem;
+  }
+
+  body[data-page="error"] .error-panel__title {
+    font-size: 1.75rem;
+  }
+
+  body[data-page="error"] .error-panel__message {
+    font-size: 1rem;
+  }
+
+  body[data-page="error"] .error-panel .btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body[data-page="error"] .error-panel__actions {
+    width: 100%;
+  }
 }

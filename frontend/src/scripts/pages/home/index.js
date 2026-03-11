@@ -4,7 +4,7 @@ import "/src/styles/components.css";
 import "/src/styles/pages/home.css";
 
 import { qs } from "/src/scripts/utils/dom.js";
-import { PAGE_PATHS } from "/src/scripts/utils/constants.js";
+import { getGoogleLoginUrl } from "/src/scripts/utils/constants.js";
 import { getFluentIconPath } from "/src/scripts/components/icon-map.js";
 
 // Home(로그인) 페이지를 초기화하고 소개/로그인 UI를 렌더링
@@ -71,11 +71,12 @@ export function initHomePage() {
     </section>
   `;
 
-  // 로그인 버튼 클릭 시 대시보드로 이동
+  // 홈 로그인 버튼 클릭 처리
   const loginButton = qs("[data-login-action]", pageRoot);
   if (loginButton) {
     loginButton.addEventListener("click", () => {
-      window.location.href = PAGE_PATHS.GRAD;
+      // 백엔드 OAuth endpoint로 이동
+      window.location.href = getGoogleLoginUrl();
     });
   }
 }
