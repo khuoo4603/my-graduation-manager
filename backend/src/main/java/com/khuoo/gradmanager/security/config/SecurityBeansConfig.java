@@ -22,6 +22,7 @@ public class SecurityBeansConfig {
         apiCors.setAllowCredentials(true);
         apiCors.setAllowedOrigins(List.of(
                 "https://grad.khuoo.synology.me",
+                "https://dev-grad.khuoo.synology.me",
                 "https://dev-api.khuoo.synology.me"
         ));
         apiCors.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
