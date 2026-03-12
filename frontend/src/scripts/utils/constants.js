@@ -6,7 +6,9 @@ const ENV_APP_ENV = typeof import.meta !== "undefined" ? import.meta.env?.VITE_A
 const ENV_MODE = typeof import.meta !== "undefined" ? import.meta.env?.MODE : "";
 
 function resolveAppEnv() {
-  const normalized = String(ENV_APP_ENV || "").trim().toLowerCase();
+  const normalized = String(ENV_APP_ENV || "")
+    .trim()
+    .toLowerCase();
   if (normalized === "local" || normalized === "dev" || normalized === "prod") return normalized;
 
   if (ENV_MODE === "localdev") return "local";
