@@ -8,7 +8,9 @@ COPY . .
 
 # dev 배포용 API origin 주입
 ARG VITE_API_BASE_URL
+ARG VITE_APP_ENV=prod
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+ENV VITE_APP_ENV=${VITE_APP_ENV}
 
 RUN npm run build
 

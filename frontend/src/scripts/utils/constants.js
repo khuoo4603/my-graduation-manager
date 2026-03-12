@@ -1,5 +1,24 @@
-﻿// 서비스 전역 사용 프로젝트명
+// 서비스 전역 사용 프로젝트명
 export const SERVICE_NAME = "My Graduation Manager";
+
+// Vite 환경변수 기반 앱 실행 환경 조회
+const ENV_APP_ENV = typeof import.meta !== "undefined" ? import.meta.env?.VITE_APP_ENV : "";
+const ENV_MODE = typeof import.meta !== "undefined" ? import.meta.env?.MODE : "";
+
+function resolveAppEnv() {
+  const normalized = String(ENV_APP_ENV || "").trim().toLowerCase();
+  if (normalized === "local" || normalized === "dev" || normalized === "prod") return normalized;
+
+  if (ENV_MODE === "localdev") return "local";
+  if (ENV_MODE === "development") return "dev";
+  return "prod";
+}
+
+// local/dev/prod 환경 상수
+export const APP_ENV = resolveAppEnv();
+export const isLocalEnv = APP_ENV === "local";
+export const isDevEnv = APP_ENV === "dev";
+export const isProdEnv = APP_ENV === "prod";
 
 // Vite 환경변수 기반 API 베이스 URL 조회
 const ENV_API_BASE_URL = typeof import.meta !== "undefined" ? import.meta.env?.VITE_API_BASE_URL : "";

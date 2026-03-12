@@ -36,7 +36,7 @@ jobs:
 
       - name: Build (Vite)
         working-directory: frontend
-        run: VITE_API_BASE_URL=https://dev-api.khuoo.synology.me npm run build
+        run: VITE_APP_ENV=dev VITE_API_BASE_URL=https://dev-api.khuoo.synology.me npm run build
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -64,6 +64,7 @@ jobs:
           push: true
           build-args: |
             VITE_API_BASE_URL=https://dev-api.khuoo.synology.me
+            VITE_APP_ENV=dev
           tags: |
             ghcr.io/${{ steps.owner.outputs.OWNER_LC }}/my-graduation-manager-frontend:sha-${{ steps.vars.outputs.SHA_SHORT }}
           labels: |
