@@ -4,13 +4,13 @@ kind: Kustomization
 namespace: backend-dev
 
 resources:
-  - ../../base
+- ../../base
 
 patchesStrategicMerge:
-  - deployment-patch.yaml
-  - ingress-patch.yaml
+- deployment-patch.yaml
+- ingress-patch.yaml
 
 images:
-  - name: ghcr.io/khuoo4603/my-graduation-manager-frontend
-    newName: ghcr.io/khuoo4603/my-graduation-manager-frontend
-    newTag: sha-0000000
+- name: ghcr.io/khuoo4603/my-graduation-manager-frontend
+  newName: ghcr.io/khuoo4603/my-graduation-manager-frontend
+  newTag: sha-4a1adba
