@@ -22,9 +22,9 @@ app:
     root: /mnt/nas/mgm-files
   jwt:
     secret: "${JWT_SECRET}"
-    exp-seconds: 604800  # 7일
+    exp-seconds: 604800 # 7일
   auth:
     cookie-domain: .khuoo.synology.me
-    redirect-url: "https://api.khuoo.synology.me/swagger-ui/index.html"
+    redirect-url: "https://grad.khuoo.synology.me/grad/"
   swagger:
     server-url: https://api.khuoo.synology.me
