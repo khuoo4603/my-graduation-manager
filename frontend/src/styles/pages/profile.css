@@ -1,4 +1,237 @@
-﻿/* Profile 페이지 제목 강조 색상 */
-body[data-page="profile"] .page-title {
-  color: var(--color-page-title);
+/* Profile 페이지 메인 레이아웃 */
+body[data-page="profile"] .page-section {
+  justify-items: start;
+}
+
+.profile-page {
+  width: min(100%, 760px);
+  display: grid;
+  gap: var(--space-lg);
+}
+
+/* 상단 타이틀 영역 */
+.profile-page__header {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.profile-page__title {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 2.35rem);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+}
+
+.profile-page__subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+}
+
+/* 카드 공통 간격 */
+.profile-card {
+  display: grid;
+  gap: var(--space-lg);
+  padding: 1.15rem 1.2rem;
+}
+
+.profile-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.profile-card__title {
+  margin: 0;
+  font-size: 1.72rem;
+  letter-spacing: -0.01em;
+}
+
+/* 사용자 정보/설정 필드 스택 */
+.profile-field-stack {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.profile-value {
+  min-height: 2.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.7rem;
+  background: var(--color-surface-soft);
+  color: var(--color-text-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.96rem;
+}
+
+/* 안내/성공/에러 메시지 영역 */
+.profile-message-stack {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.profile-message {
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: 0.7rem;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.82rem;
+}
+
+.profile-message--info {
+  color: var(--color-text-subtle);
+  border-color: var(--color-border);
+  background: var(--color-surface-soft);
+}
+
+.profile-message--success {
+  color: var(--color-success);
+  border-color: var(--color-success-border-soft);
+  background: var(--color-success-soft);
+}
+
+.profile-message--error {
+  color: var(--color-danger);
+  border-color: var(--color-danger-border-soft);
+  background: var(--color-danger-bg-soft);
+}
+
+.profile-card__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 전공 추가 폼 */
+.profile-major-builder {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.profile-major-builder__action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn__icon-image {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* 전공 목록 */
+.profile-empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+}
+
+.profile-major-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.profile-major-item {
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background: var(--color-surface-soft);
+  padding: 0.6rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 220px) auto;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.profile-major-item__icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: var(--color-primary-soft);
+  display: inline-grid;
+  place-items: center;
+}
+
+.profile-major-item__icon img {
+  width: 1rem;
+  height: 1rem;
+  filter: invert(34%) sepia(91%) saturate(1903%) hue-rotate(211deg) brightness(99%) contrast(98%);
+}
+
+.profile-major-chip {
+  min-height: 2rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.62rem;
+  background: var(--color-surface);
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.profile-major-chip--type {
+  color: var(--color-text-subtle);
+}
+
+.profile-major-chip--name {
+  color: var(--color-text);
+}
+
+.profile-major-item__remove {
+  color: var(--color-text-muted);
+}
+
+.profile-major-item__remove img {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.7;
+}
+
+/* 페이지 하단 버튼 영역 */
+.profile-page__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+/* 반응형 보정 */
+@media (max-width: 900px) {
+  .profile-page {
+    width: 100%;
+  }
+
+  .profile-major-builder {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-major-builder__action {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .profile-card {
+    padding: 0.95rem;
+  }
+
+  .profile-page__title {
+    font-size: 1.7rem;
+  }
+
+  .profile-major-item {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .profile-major-chip--type {
+    grid-column: 2 / 3;
+  }
+
+  .profile-major-chip--name {
+    grid-column: 2 / 3;
+  }
 }
