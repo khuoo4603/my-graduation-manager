@@ -67,38 +67,6 @@ body[data-page="profile"] .page-section {
   font-size: 0.96rem;
 }
 
-/* 안내/성공/에러 메시지 영역 */
-.profile-message-stack {
-  display: grid;
-  gap: 0.45rem;
-}
-
-.profile-message {
-  margin: 0;
-  border: 1px solid transparent;
-  border-radius: 0.7rem;
-  padding: 0.55rem 0.7rem;
-  font-size: 0.82rem;
-}
-
-.profile-message--info {
-  color: var(--color-text-subtle);
-  border-color: var(--color-border);
-  background: var(--color-surface-soft);
-}
-
-.profile-message--success {
-  color: var(--color-success);
-  border-color: var(--color-success-border-soft);
-  background: var(--color-success-soft);
-}
-
-.profile-message--error {
-  color: var(--color-danger);
-  border-color: var(--color-danger-border-soft);
-  background: var(--color-danger-bg-soft);
-}
-
 .profile-card__actions {
   display: flex;
   justify-content: flex-end;

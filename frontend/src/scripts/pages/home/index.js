@@ -1,25 +1,14 @@
-﻿import "/src/styles/base.css";
+import "/src/styles/base.css";
 import "/src/styles/layout.css";
 import "/src/styles/components.css";
 import "/src/styles/pages/home.css";
 
-import { qs } from "/src/scripts/utils/dom.js";
-import { getGoogleLoginUrl } from "/src/scripts/utils/constants.js";
 import { getFluentIconPath } from "/src/scripts/components/icon-map.js";
+import { getGoogleLoginUrl } from "/src/scripts/utils/constants.js";
+import { qs } from "/src/scripts/utils/dom.js";
 
-// Home(로그인) 페이지를 초기화하고 소개/로그인 UI를 렌더링
-export function initHomePage() {
-  // 홈 페이지 상단 헤더 비노출, 기존 헤더 초기화
-  const headerRoot = qs("[data-header-root]");
-  if (headerRoot) {
-    headerRoot.replaceChildren();
-  }
-
-  // 페이지 루트가 없으면 렌더링을 중단
-  const pageRoot = qs("[data-page-root]");
-  if (!pageRoot) return;
-
-  // 로그인 소개 화면과 로그인 카드의 기본 마크업을 한 번에 구성
+// 홈 로그인 페이지 레이아웃 렌더링
+function renderHomePage(pageRoot) {
   pageRoot.innerHTML = `
     <section class="login-layout">
       <article class="login-intro">
@@ -70,17 +59,34 @@ export function initHomePage() {
       </article>
     </section>
   `;
-
-  // 홈 로그인 버튼 클릭 처리
-  const loginButton = qs("[data-login-action]", pageRoot);
-  if (loginButton) {
-    loginButton.addEventListener("click", () => {
-      // 백엔드 OAuth endpoint로 이동
-      window.location.href = getGoogleLoginUrl();
-    });
-  }
 }
 
-// 엔트리 진입 시 홈 페이지 초기화를 즉시 수행
-initHomePage();
+// 홈 페이지 DOM 요소 수집
+function collectHomeElements(pageRoot) {
+  return {
+    loginButton: qs("[data-login-action]", pageRoot),
+  };
+}
 
+// 홈 페이지 이벤트 등록
+function bindHomePageEvents(elements) {
+  elements.loginButton?.addEventListener("click", () => {
+    window.location.href = getGoogleLoginUrl();
+  });
+}
+
+// 홈 페이지 초기 진입 처리
+export function initHomePage() {
+  const headerRoot = qs("[data-header-root]");
+  headerRoot?.replaceChildren();
+
+  const pageRoot = qs("[data-page-root]");
+  if (!pageRoot) return;
+
+  renderHomePage(pageRoot);
+
+  const elements = collectHomeElements(pageRoot);
+  bindHomePageEvents(elements);
+}
+
+initHomePage();
