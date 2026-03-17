@@ -61,7 +61,11 @@ function renderErrorPage(pageRoot, errorPageData) {
             <img class="btn__icon-image" src="${errorPageData.primaryIconPath}" alt="" aria-hidden="true" />
             <span>${errorPageData.primaryLabel}</span>
           </button>
-          <button class="btn btn--secondary" type="button" data-error-secondary>Go Back</button>
+          ${
+            errorPageData.isUnauthorized
+              ? ""
+              : '<button class="btn btn--secondary" type="button" data-error-secondary>Go Back</button>'
+          }
         </div>
       </article>
     </section>
