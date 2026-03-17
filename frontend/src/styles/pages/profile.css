@@ -70,6 +70,7 @@ body[data-page="profile"] .page-section {
 .profile-card__actions {
   display: flex;
   justify-content: flex-end;
+  gap: 0.55rem;
 }
 
 /* 전공 추가 폼 */
@@ -88,6 +89,10 @@ body[data-page="profile"] .page-section {
 .btn__icon-image {
   width: 1rem;
   height: 1rem;
+}
+
+.profile-major-builder__action .btn__icon-image {
+  filter: brightness(0) invert(1);
 }
 
 /* 전공 목록 */
@@ -161,12 +166,6 @@ body[data-page="profile"] .page-section {
 }
 
 /* 페이지 하단 버튼 영역 */
-.profile-page__footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.55rem;
-}
-
 /* 반응형 보정 */
 @media (max-width: 900px) {
   .profile-page {
