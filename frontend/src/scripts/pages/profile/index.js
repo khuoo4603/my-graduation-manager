@@ -4,13 +4,7 @@ import "/src/styles/components.css";
 import "/src/styles/pages/profile.css";
 
 import { getFluentIconPath } from "/src/scripts/components/icon-map.js";
-import {
-  addMajor,
-  deleteMajor,
-  getProfile,
-  updateDepartment,
-  updateTemplate,
-} from "/src/scripts/api/profile.js";
+import { addMajor, deleteMajor, getProfile, updateDepartment, updateTemplate } from "/src/scripts/api/profile.js";
 import { getDepartments, getMajors, getTemplates } from "/src/scripts/api/reference.js";
 import { renderHeader } from "/src/scripts/components/header.js";
 import { ensureProtectedPageAccess } from "/src/scripts/utils/auth.js";
@@ -47,16 +41,22 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-// 공통 select option HTML 문자열을 조립
+// placeholder와 일반 option을 공통 방식으로 렌더링
+function buildOptionHtml(value, label, { isSelected = false, isDisabled = false } = {}) {
+  return `<option value="${escapeHtml(value)}"${isDisabled ? " disabled" : ""}${isSelected ? " selected" : ""}>${escapeHtml(label)}</option>`;
+}
+
+// option 객체 배열을 공통 option HTML로 변환
 function buildSelectOptionsHtml(options, selectedValue, config = {}) {
   const { valueKey = "value", labelKey = "label", labelBuilder = null } = config;
 
   return options
     .map((option) => {
       const optionValue = option?.[valueKey] ?? "";
-      const optionLabel = typeof labelBuilder === "function" ? labelBuilder(option) : option?.[labelKey] ?? "";
-      const isSelected = String(optionValue) === String(selectedValue ?? "") ? " selected" : "";
-      return `<option value="${escapeHtml(optionValue)}"${isSelected}>${escapeHtml(optionLabel)}</option>`;
+      const optionLabel = typeof labelBuilder === "function" ? labelBuilder(option) : (option?.[labelKey] ?? "");
+      return buildOptionHtml(optionValue, optionLabel, {
+        isSelected: String(optionValue) === String(selectedValue ?? ""),
+      });
     })
     .join("");
 }
@@ -89,6 +89,7 @@ function normalizeCatalogMajor(item) {
   return {
     id: String(item.id),
     name: item.name || "",
+    departmentId: item.departmentId === undefined || item.departmentId === null ? "" : String(item.departmentId),
   };
 }
 
@@ -100,8 +101,7 @@ function normalizeProfileMajor(item) {
   if (majorId === undefined || majorId === null) return null;
 
   return {
-    userMajorId:
-      item.userMajorId === undefined || item.userMajorId === null ? "" : String(item.userMajorId),
+    userMajorId: item.userMajorId === undefined || item.userMajorId === null ? "" : String(item.userMajorId),
     id: String(majorId),
     name: item.name || item.majorName || "",
     majorType: item.majorType || "",
@@ -158,8 +158,17 @@ function syncBaseSettingsDraft(state) {
 // Majors 카드 draft와 form을 profile 기준으로 복원
 function syncMajorsDraft(state) {
   state.draft.majors = createMajorDraftItems(state.profile.majors);
+  state.draft.majorForm.departmentId = "";
   state.draft.majorForm.majorId = "";
   state.draft.majorForm.majorType = DEFAULT_MAJOR_TYPE;
+}
+
+// Major 카드 학부 필터 기준으로 전공 후보만 추린다
+function getFilteredCatalogMajors(state) {
+  const selectedDepartmentId = state.draft.majorForm.departmentId;
+  if (!selectedDepartmentId) return [];
+
+  return state.catalogs.majors.filter((major) => major.departmentId === selectedDepartmentId);
 }
 
 // 프로필 페이지 전역 상태의 초기값을 생성
@@ -178,6 +187,7 @@ function createInitialProfileState() {
       },
       majors: [],
       majorForm: {
+        departmentId: "",
         majorId: "",
         majorType: DEFAULT_MAJOR_TYPE,
       },
@@ -197,7 +207,7 @@ function renderProfilePage(pageRoot, state) {
     <section class="profile-page" data-profile-page>
       <header class="profile-page__header">
         <h1 class="profile-page__title">Profile</h1>
-        <p class="profile-page__subtitle">졸업 예정에 필요한 기본 설정과 전공 정보를 조회하고 카드별 draft로 편집합니다.</p>
+        <p class="profile-page__subtitle">사용자 정보 확인과 학부/졸업 템플릿/전공 변경이 가능합니다.</p>
       </header>
 
       <section class="card profile-card" data-profile-summary>
@@ -218,19 +228,19 @@ function renderProfilePage(pageRoot, state) {
 
       <section class="card profile-card" data-base-settings>
         <div class="profile-card__header">
-          <h2 class="profile-card__title">Department &amp; Template Draft</h2>
+          <h2 class="profile-card__title">Department &amp; Template</h2>
         </div>
         <div class="profile-field-stack">
           <label class="field">
             <span class="field__label">Department</span>
             <select class="select" data-department-select>
-              <option value="">학부를 선택해 주세요.</option>
+              ${buildOptionHtml("", "학부를 선택하세요", { isSelected: true, isDisabled: true })}
             </select>
           </label>
           <label class="field">
             <span class="field__label">Graduation Template</span>
             <select class="select" data-template-select>
-              <option value="">템플릿을 선택해 주세요.</option>
+              ${buildOptionHtml("", "졸업 템플릿을 선택하세요", { isSelected: true, isDisabled: true })}
             </select>
           </label>
         </div>
@@ -242,13 +252,19 @@ function renderProfilePage(pageRoot, state) {
 
       <section class="card profile-card" data-major-management>
         <div class="profile-card__header">
-          <h2 class="profile-card__title">Majors Draft</h2>
+          <h2 class="profile-card__title">Majors</h2>
         </div>
         <div class="profile-major-builder">
           <label class="field">
-            <span class="field__label">Major Candidate</span>
+            <span class="field__label">학부 필터</span>
+            <select class="select" data-major-department-select>
+              ${buildOptionHtml("", "학부를 선택하세요", { isSelected: true, isDisabled: true })}
+            </select>
+          </label>
+          <label class="field">
+            <span class="field__label">전공</span>
             <select class="select" data-major-select>
-              <option value="">전공을 선택해 주세요.</option>
+              ${buildOptionHtml("", "전공을 선택하세요", { isSelected: true, isDisabled: true })}
             </select>
           </label>
           <label class="field">
@@ -288,8 +304,12 @@ function renderBaseSettingsCard(state) {
   const { departmentSelect, templateSelect } = state.elements;
 
   if (departmentSelect) {
+    // 실제 선택 후에도 placeholder는 비활성 상태로만 유지
     departmentSelect.innerHTML = `
-      <option value="">학부를 선택해 주세요.</option>
+      ${buildOptionHtml("", "학부를 선택하세요", {
+        isSelected: !state.draft.baseSettings.departmentId,
+        isDisabled: true,
+      })}
       ${buildSelectOptionsHtml(state.catalogs.departments, state.draft.baseSettings.departmentId, {
         valueKey: "id",
         labelKey: "name",
@@ -300,8 +320,12 @@ function renderBaseSettingsCard(state) {
   }
 
   if (templateSelect) {
+    // 템플릿도 같은 방식으로 placeholder를 비활성 유지
     templateSelect.innerHTML = `
-      <option value="">템플릿을 선택해 주세요.</option>
+      ${buildOptionHtml("", "졸업 템플릿을 선택하세요", {
+        isSelected: !state.draft.baseSettings.templateId,
+        isDisabled: true,
+      })}
       ${buildSelectOptionsHtml(state.catalogs.templates, state.draft.baseSettings.templateId, {
         valueKey: "id",
         labelBuilder: (item) => {
@@ -341,15 +365,45 @@ function buildMajorDraftItemHtml(item, isMajorsSaving) {
 
 // Majors 카드를 현재 draft 목록과 form 기준으로 렌더링
 function renderMajorsCard(state) {
-  const { majorSelect, majorTypeSelect, majorList, majorEmpty } = state.elements;
+  const { majorDepartmentSelect, majorSelect, majorTypeSelect, majorList, majorEmpty } = state.elements;
+  const filteredMajors = getFilteredCatalogMajors(state);
+  const hasDepartmentFilter = Boolean(state.draft.majorForm.departmentId);
 
-  if (majorSelect) {
-    majorSelect.innerHTML = `
-      <option value="">전공을 선택해 주세요.</option>
-      ${buildSelectOptionsHtml(state.catalogs.majors, state.draft.majorForm.majorId, {
+  if (majorDepartmentSelect) {
+    // Major 카드 학부 필터는 별도 draft 상태로 관리
+    majorDepartmentSelect.innerHTML = `
+      ${buildOptionHtml("", "학부를 선택하세요", {
+        isSelected: !state.draft.majorForm.departmentId,
+        isDisabled: true,
+      })}
+      ${buildSelectOptionsHtml(state.catalogs.departments, state.draft.majorForm.departmentId, {
         valueKey: "id",
         labelKey: "name",
       })}
+    `;
+
+    majorDepartmentSelect.value = state.draft.majorForm.departmentId;
+  }
+
+  if (majorSelect) {
+    if (!filteredMajors.some((major) => major.id === state.draft.majorForm.majorId)) {
+      state.draft.majorForm.majorId = "";
+    }
+
+    // 현재 학부 필터 기준으로 전공 목록을 다시 구성
+    majorSelect.innerHTML = `
+      ${buildOptionHtml("", "전공을 선택하세요", {
+        isSelected: !state.draft.majorForm.majorId,
+        isDisabled: true,
+      })}
+      ${
+        hasDepartmentFilter
+          ? buildSelectOptionsHtml(filteredMajors, state.draft.majorForm.majorId, {
+              valueKey: "id",
+              labelKey: "name",
+            })
+          : ""
+      }
     `;
 
     majorSelect.value = state.draft.majorForm.majorId;
@@ -388,8 +442,12 @@ function renderPendingState(state) {
     elements.baseSettingsSaveButton.disabled = pending.isBaseSaving;
   }
 
+  if (elements.majorDepartmentSelect) {
+    elements.majorDepartmentSelect.disabled = pending.isMajorsSaving;
+  }
+
   if (elements.majorSelect) {
-    elements.majorSelect.disabled = pending.isMajorsSaving;
+    elements.majorSelect.disabled = pending.isMajorsSaving || !state.draft.majorForm.departmentId;
   }
 
   if (elements.majorTypeSelect) {
@@ -558,6 +616,7 @@ async function handleBaseSettingsSave(state) {
 // Major draft form 입력값을 추가 직전에 검증
 function validateMajorDraftForm(state) {
   const nextMajorId = state.draft.majorForm.majorId;
+  const filteredMajors = getFilteredCatalogMajors(state);
 
   if (!nextMajorId) {
     window.alert(MAJOR_REQUIRED_ALERT_MESSAGE);
@@ -565,7 +624,7 @@ function validateMajorDraftForm(state) {
     return null;
   }
 
-  const majorCatalogItem = state.catalogs.majors.find((major) => major.id === nextMajorId) || null;
+  const majorCatalogItem = filteredMajors.find((major) => major.id === nextMajorId) || null;
   if (!majorCatalogItem) {
     window.alert(MAJOR_INVALID_ALERT_MESSAGE);
     state.elements.majorSelect?.focus();
@@ -714,6 +773,13 @@ function bindProfilePageEvents(state) {
   });
 
   // 전공 후보 셀렉트 변경값을 Major draft form에 반영
+  elements.majorDepartmentSelect?.addEventListener("change", (event) => {
+    state.draft.majorForm.departmentId = event.currentTarget?.value ?? "";
+    state.draft.majorForm.majorId = "";
+    renderMajorsCard(state);
+    renderPendingState(state);
+  });
+
   elements.majorSelect?.addEventListener("change", (event) => {
     state.draft.majorForm.majorId = event.currentTarget?.value ?? "";
   });
@@ -774,6 +840,7 @@ export async function initProfilePage() {
     templateSelect: qs("[data-template-select]", pageRoot),
     baseSettingsCancelButton: qs("[data-base-settings-cancel]", pageRoot),
     baseSettingsSaveButton: qs("[data-base-settings-save]", pageRoot),
+    majorDepartmentSelect: qs("[data-major-department-select]", pageRoot),
     majorSelect: qs("[data-major-select]", pageRoot),
     majorTypeSelect: qs("[data-major-type-select]", pageRoot),
     majorAddButton: qs("[data-major-add]", pageRoot),

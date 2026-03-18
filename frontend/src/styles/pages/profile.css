@@ -1,10 +1,10 @@
 /* Profile 페이지 메인 레이아웃 */
 body[data-page="profile"] .page-section {
-  justify-items: start;
+  justify-items: stretch;
 }
 
 .profile-page {
-  width: min(100%, 760px);
+  width: 100%;
   display: grid;
   gap: var(--space-lg);
 }
@@ -76,7 +76,7 @@ body[data-page="profile"] .page-section {
 /* 전공 추가 폼 */
 .profile-major-builder {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
   gap: 0.75rem;
   align-items: end;
 }
@@ -168,10 +168,6 @@ body[data-page="profile"] .page-section {
 /* 페이지 하단 버튼 영역 */
 /* 반응형 보정 */
 @media (max-width: 900px) {
-  .profile-page {
-    width: 100%;
-  }
-
   .profile-major-builder {
     grid-template-columns: 1fr;
   }
