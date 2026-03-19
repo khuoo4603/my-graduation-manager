@@ -1,5 +1,6 @@
 package com.khuoo.gradmanager.reference.course.service;
 
+import com.khuoo.gradmanager.course.support.AcademicTermPolicy;
 import com.khuoo.gradmanager.error.exception.ApiException;
 import com.khuoo.gradmanager.error.exception.ErrorCode;
 import com.khuoo.gradmanager.reference.course.dto.CourseMasterOpenedDepartment;
@@ -32,13 +33,10 @@ public class CourseMasterService {
             String deptName
     ) {
         // 개설 학기의 공백/누락 방지, 개설 년도 0이하 방지
-        if (openedTerm == null || openedYear <= 0) {
+        if (openedYear <= 0) {
             throw new ApiException(ErrorCode.INVALID_REQUEST);
         }
-        String term = openedTerm.trim();
-        if (term.isBlank()) {
-            throw new ApiException(ErrorCode.INVALID_REQUEST);
-        }
+        String term = AcademicTermPolicy.normalize(openedTerm); // 기존 계절학기 문자열을 포함해 표준값으로 정규화
 
 
         // 파라미터가 blank면 null로 변환

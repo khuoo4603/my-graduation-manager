@@ -14,7 +14,7 @@ public interface CourseRepository {
      * @param earnedCredits           취득 학점
      * @param grade                   성적 ex. A+, A0, P, NP
      * @param takenYear               수강 연도 ex. 2026
-     * @param takenTerm               수강 학기 ex. 1, 2, 여름 계절학기
+     * @param takenTerm               수강 학기 ex. 1, SUMMER, 2, WINTER
      * @param recognitionType         전공 인정 유형, 교양: null / 전공: 전공탐색, 전공선택, 전공필수
      * @param majorId                 전공 PK, 교양: null / 전공: 전공ID
      * @param attributedDepartmentId  학부 PK, 전공탐색 이외 null / 전공탐색: 학부ID

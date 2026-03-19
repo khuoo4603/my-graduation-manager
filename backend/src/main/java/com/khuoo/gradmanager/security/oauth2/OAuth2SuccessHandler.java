@@ -63,11 +63,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             userId = existing.get().userId();
         } else {
             // 없으면 신규 생성 후 생성된 userId 사용
-            userId = userRepository.insert(
-                    email,
-                    userName,
-                    authCookieProperties.getDefaultDepartmentId()
-            );
+            userId = userRepository.insert(email, userName);
         }
 
         // JWT 7일 만료

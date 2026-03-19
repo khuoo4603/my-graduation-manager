@@ -32,7 +32,6 @@ app:
     cookie-domain: .khuoo.synology.me
     cookie-max-age-seconds: 604800 # 7일
     redirect-url: https://api.khuoo.synology.me/swagger-ui/index.html
-    default-department-id: 1
 
 logging:
   level:

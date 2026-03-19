@@ -6,6 +6,7 @@ import com.khuoo.gradmanager.course.dto.CourseItem;
 import com.khuoo.gradmanager.course.dto.CourseListResponse;
 import com.khuoo.gradmanager.course.repository.CourseMasterLookupDao;
 import com.khuoo.gradmanager.course.repository.CourseRepository;
+import com.khuoo.gradmanager.course.support.AcademicTermPolicy;
 import com.khuoo.gradmanager.error.exception.ApiException;
 import com.khuoo.gradmanager.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,7 @@ public class CourseService {
         int earnedCredits = requirePositive(req.earnedCredits()); // 학점, 0 이하 값은 요청 오류 처리
         String grade = normalizeRequired(req.grade()); // 성적, 공백/NULL은 허용하지 않음
         int takenYear = requirePositive(req.takenYear()); // 수강 연도, 0 이하 값은 요청 오류 처리
-        String takenTerm = normalizeRequired(req.takenTerm()); // 공백/NULL은 허용하지 않음
+        String takenTerm = AcademicTermPolicy.normalize(req.takenTerm()); // 수강 학기, 기존 계절학기 문자열을 포함해 표준값으로 정규화
 
         // 교양/전공 판정 및 DB CHECK 제약을 만족하는 값으로 강제 결정 (cm:{카테고리 전공/교양, 세부카테고리}, 전공ID, 학부ID)
         CourseInsertDecision decision = decideInsertValues(cm, req.majorId(), req.attributedDepartmentId());
@@ -129,7 +130,7 @@ public class CourseService {
         // year/term이 모두 있을 경우 해당 년도/학기 조회
         if (hasYear && hasTerm) {
             int normalizedYear = requirePositive(year); // 0이하의 값 요청 오류 처리
-            String normalizedTerm = normalizeRequired(term); // null/공백 요청 오류 처리
+            String normalizedTerm = AcademicTermPolicy.normalize(term); // 기존 계절학기 문자열을 포함해 표준값으로 정규화
             items = courseRepository.findByUserAndTerm(userId, normalizedYear, normalizedTerm);
             return new CourseListResponse(items);
         }
@@ -188,6 +189,4 @@ public class CourseService {
 
         return trimmed;
     }
-
-
 }

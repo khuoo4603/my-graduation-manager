@@ -13,7 +13,6 @@ spring:
 app:
   dev-token:
     enabled: true
-    default-department-id: 1
   storage:
     root: /tmp/gradmanager_local_storage
   jwt:

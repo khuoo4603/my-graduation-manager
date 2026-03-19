@@ -31,13 +31,17 @@ public class ProfileMapper {
         );
 
         // 사용자 학부 정보
-        ProfileResponse.DepartmentDto departmentDto = new ProfileResponse.DepartmentDto(
-                base.departmentId(),
-                base.departmentName()
-        );
+        // 학부가 있는 사용자만 프로필에 학부정보 반환
+        ProfileResponse.DepartmentDto departmentDto = null;
+        if (base.departmentId() != null) {
+            departmentDto = new ProfileResponse.DepartmentDto(
+                    base.departmentId(),
+                    base.departmentName()
+            );
+        }
 
         // 사용자 템플릿(학번) 정보
-        // template_id가 null이 아닐 때만 TemplateDto 생성
+        // 템플릿이 있는 사용자만 프로필에 템플릿정보 반환
         ProfileResponse.TemplateDto template = null;
         if (base.templateId() != null) {
             template = new ProfileResponse.TemplateDto(

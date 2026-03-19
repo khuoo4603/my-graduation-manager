@@ -7,5 +7,5 @@ import java.util.Optional;
 public interface UserRepository {
     Optional<User> findByEmail(String email);
     Optional<User> findById(long userId);
-    long insert(String email, String userName, long departmentId);
+    long insert(String email, String userName);
 }

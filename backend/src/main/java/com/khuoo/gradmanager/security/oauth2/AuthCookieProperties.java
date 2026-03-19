@@ -12,5 +12,4 @@ public class AuthCookieProperties {
     private String cookieDomain;        // 운영 도메인: .khuoo.synology.me
     private long cookieMaxAgeSeconds;   // 만료 7일 고정
     private String redirectUrl;         // OAuth2 성공 후 이동 위치
-    private long defaultDepartmentId;   // OAuth2 최초 가입 시 사용자를 어느 학부로 넣을지(기본값)
 }

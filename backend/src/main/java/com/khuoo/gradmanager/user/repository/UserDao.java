@@ -36,10 +36,10 @@ public class UserDao implements UserRepository {
     }
 
     @Override
-    public long insert(String email, String userName, long departmentId) {
+    public long insert(String email, String userName) {
         String sql = """
-        INSERT INTO users (email, user_name, department_id, role)
-        VALUES (?, ?, ?, 'USER')
+        INSERT INTO users (email, user_name, department_id, template_id, role)
+        VALUES (?, ?, NULL, NULL, 'USER')
         RETURNING user_id
         """;
 
@@ -47,8 +47,7 @@ public class UserDao implements UserRepository {
                 sql,
                 Long.class,
                 email,
-                userName,
-                departmentId
+                userName
         );
 
         return id;

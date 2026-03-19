@@ -17,7 +17,7 @@ public class ProfileDao implements ProfileRepository {
                     rs.getLong("user_id"),
                     rs.getString("email"),
                     rs.getString("user_name"),
-                    rs.getLong("department_id"),
+                    rs.getObject("department_id", Long.class),
                     rs.getString("department_name"),
                     rs.getObject("template_id", Long.class),        // Null 허용
                     rs.getString("template_name"),
@@ -34,13 +34,13 @@ public class ProfileDao implements ProfileRepository {
                     u.user_id,
                     u.email,
                     u.user_name,
-                    d.department_id,
+                    u.department_id,
                     d.department_name,
                     gt.template_id,
                     gt.template_name,
                     gt.applicable_year
                 from users u
-                inner join department d
+                left join department d
                     on d.department_id = u.department_id
                 left join graduation_template gt
                     on gt.template_id = u.template_id

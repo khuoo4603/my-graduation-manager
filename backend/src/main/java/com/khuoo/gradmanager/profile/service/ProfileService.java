@@ -43,12 +43,6 @@ public class ProfileService {
 
         Long userId = currentUser.userId();
 
-        // 유저가 어떤 학부 소속인지 확인
-        Long userDeptId = userProfileRepository.findDepartmentIdByUserId(userId);
-        if (userDeptId == null) { // 유저가 존재하지 않음
-            throw new ApiException(ErrorCode.USER_NOT_FOUND);
-        }
-
         // 템플릿이 적용받고 있는 학부 조회
         Long templateDeptId = templateRepository.findDepartmentIdByTemplateId(templateId);
         if (templateDeptId == null) { // 템플릿을 찾을 수 없음
@@ -71,12 +65,6 @@ public class ProfileService {
     public void updateMyDepartment(Long departmentId) {
 
         Long userId = currentUser.userId();
-
-        // 유저 존재 확인
-        Long currentDeptId = userProfileRepository.findDepartmentIdByUserId(userId);
-        if (currentDeptId == null) {
-            throw new ApiException(ErrorCode.USER_NOT_FOUND);
-        }
 
         // 학부 존재 확인
         // (ErrorCode에 DEPARTMENT_NOT_FOUND가 없으므로 INVALID_REQUEST로 처리)
