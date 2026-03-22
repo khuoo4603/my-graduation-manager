@@ -1,5 +1,7 @@
 package com.khuoo.gradmanager.course.dto;
 
+import java.time.Instant;
+
 // 수강 내역 조회 (항목단일 1개 row)
 public record CourseItem(
         long courseId,
@@ -16,6 +18,7 @@ public record CourseItem(
         Long departmentId,
         String departmentName,
         Long majorId,
-        String majorName
-) {
-}
+        String majorName,
+        Long retakeCourseId,
+        Instant updatedAt
+) {}

@@ -3,6 +3,7 @@ package com.khuoo.gradmanager.course.controller;
 import com.khuoo.gradmanager.course.dto.CourseCreateRequest;
 import com.khuoo.gradmanager.course.dto.CourseCreateResponse;
 import com.khuoo.gradmanager.course.dto.CourseListResponse;
+import com.khuoo.gradmanager.course.dto.CoursePatchRequest;
 import com.khuoo.gradmanager.course.service.CourseService;
 import com.khuoo.gradmanager.security.principal.CurrentUser;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,20 @@ public class CourseController {
         long userId = currentUser.userId();
 
         return courseService.list(userId, year, term);
+    }
+
+    // 수강 내역 수정
+    @PatchMapping("/courses/{id}")
+    public ResponseEntity<Void> patchCourse(
+            @PathVariable("id") long courseId,
+            @RequestBody CoursePatchRequest request
+    ) {
+        long userId = currentUser.userId();
+
+        courseService.patch(userId, courseId, request);
+
+        // 수정 성공 시 204 No Content 반환
+        return ResponseEntity.noContent().build();
     }
 
     // 수강 내역 삭제

@@ -2,9 +2,11 @@ package com.khuoo.gradmanager.grad.dto;
 
 import java.util.List;
 
-
 // 졸업판정 최종 응답 DTO
 public record GraduationStatusResponse(
+        boolean isEvaluable,           // 판정 가능 여부
+        List<String> reasons,          // 판정 불가 상세 사유 코드 목록
+        String message,                // 판정 불가 안내 메시지
         Template template,             // 적용 템플릿 정보(id/name/year)
         Overall overall,               // 전체 졸업 충족 여부 + 총학점 요약(required/earned/shortage)
         Culture culture,               // 교양 요약 (SEED는 총학점 등 요약정보만)
@@ -13,6 +15,32 @@ public record GraduationStatusResponse(
         MajorExploration majorExploration, // 전공탐색 요약(본인학부 3학점)
         List<MissingItem> missing      // 부족 항목
 ) {
+
+    // 판정에 필요한 기준 정보가 부족한 경우 기본 구조를 유지한 응답 생성
+    public static GraduationStatusResponse nonEvaluable(
+            Template template,
+            boolean hasMajors,
+            List<String> reasons,
+            String message
+    ) {
+        return new GraduationStatusResponse(
+                false,
+                reasons,
+                message,
+                template == null ? emptyTemplate() : template,
+                new Overall(false, 0, 0, 0),
+                new Culture(0, 0, 0, false, List.of()),
+                new Seed(0, 0, 0, List.of(), 0, List.of(), false, false, false),
+                new Major(hasMajors, false, List.of()),
+                new MajorExploration(0, 0, 0, 0, 0, 0, false),
+                List.of()
+        );
+    }
+
+    // 템플릿이 없는 경우에도 응답 구조를 유지하기 위한 기본 템플릿
+    public static Template emptyTemplate() {
+        return new Template(0L, null, 0);
+    }
 
     // 적용 템플릿 정보
     public record Template(
@@ -26,7 +54,7 @@ public record GraduationStatusResponse(
             boolean isSatisfied, // 전체 졸업 충족 여부 (TOTAL/CULTURE/SEED/MAJOR/MAJOR_EXPLORATION 모두 만족)
             int required,        // 총필요학점
             int earned,          // 총취득학점 (F/NP 제외 합산)
-            int shortage         // 부족학점 
+            int shortage         // 부족학점
     ) {}
 
     // 교양 요약
@@ -71,7 +99,7 @@ public record GraduationStatusResponse(
             List<MajorItem> majors      // 전공별 요약
     ) {
         public record MajorItem(
-                long id,              // 전공ID
+                long id,              // 전공 ID
                 String name,          // 전공명
                 String type,          // 전공타입 (심화전공/주전공/복수전공/부전공)
                 int requiredTotal,    // 전공 총 필요학점

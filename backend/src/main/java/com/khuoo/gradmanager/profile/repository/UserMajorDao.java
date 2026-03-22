@@ -24,9 +24,22 @@ public class UserMajorDao implements UserMajorRepository {
                 """;
 
         // count 결과를 조회한다.
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId, majorId, majorType);
+        int count = jdbcTemplate.queryForObject(sql, Integer.class, userId, majorId, majorType);
+        return count > 0;
+    }
 
-        return count != null && count > 0;
+    // 사용자에게 해당 전공이 하나라도 등록되어 있는지 확인
+    @Override
+    public boolean existsByUserIdAndMajorId(long userId, long majorId) {
+        String sql = """
+                SELECT COUNT(*)
+                FROM user_major
+                WHERE user_id = ?
+                  AND major_id = ?
+                """;
+
+        int count = jdbcTemplate.queryForObject(sql, Integer.class, userId, majorId);
+        return count > 0;
     }
 
     // 사용자 전공 생성 후 id 반환
@@ -39,20 +52,13 @@ public class UserMajorDao implements UserMajorRepository {
             RETURNING user_major_id
             """;
 
-        Long id = jdbcTemplate.queryForObject(
+        return jdbcTemplate.queryForObject(
                 sql,
                 Long.class,
                 userId,
                 majorId,
                 majorType
         );
-
-        // null이면 예외 처리
-        if (id == null) {
-            throw new IllegalStateException("Failed to create user_major");
-        }
-
-        return id;
     }
 
     // 특정 사용자 전공 1건 조회
@@ -77,7 +83,7 @@ public class UserMajorDao implements UserMajorRepository {
         ).stream().findFirst();
     }
 
-    // 서용자 전공 삭제
+    // 사용자 전공 삭제
     @Override
     public int deleteByIdAndUserId(long userMajorId, long userId) {
         String sql = """

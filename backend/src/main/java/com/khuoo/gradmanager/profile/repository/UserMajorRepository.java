@@ -8,6 +8,9 @@ public interface UserMajorRepository {
     // 사용자 동일 전공/전공타입이 이미 존재하는지 확인
     boolean existsByUserIdAndMajorIdAndMajorType(long userId, long majorId, String majorType);
 
+    // 사용자에게 해당 전공이 하나라도 연결되어 있는지 확인
+    boolean existsByUserIdAndMajorId(long userId, long majorId);
+
     // 사용자 전공 생성 후 id 반환
     long insert(long userId, long majorId, String majorType);
 

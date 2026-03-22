@@ -1,13 +1,12 @@
 package com.khuoo.gradmanager.course.repository;
 
 import com.khuoo.gradmanager.course.dto.CourseItem;
-import com.khuoo.gradmanager.error.exception.ApiException;
-import com.khuoo.gradmanager.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,7 +25,8 @@ public class CourseDao implements CourseRepository {
             String takenTerm,
             String recognitionType,
             Long majorId,
-            Long attributedDepartmentId
+            Long attributedDepartmentId,
+            Long retakeCourseId
     ) {
         String sql = """
             INSERT INTO course(
@@ -38,14 +38,15 @@ public class CourseDao implements CourseRepository {
                 earned_credits,
                 grade,
                 taken_year,
-                taken_term
+                taken_term,
+                retake_course_id
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             RETURNING course_id
             """;
 
         // 단일 행 INSERT 후 생성된 PK(course_id) 반환
-        Long courseId = jdbcTemplate.queryForObject(
+        return jdbcTemplate.queryForObject(
                 sql,
                 Long.class,
                 userId,
@@ -56,15 +57,53 @@ public class CourseDao implements CourseRepository {
                 earnedCredits,
                 grade,
                 takenYear,
-                takenTerm
+                takenTerm,
+                retakeCourseId
         );
+    }
 
-        // 생성된 PK가 없으면 서버 내부 오류 처리
-        if (courseId == null) {
-            throw new ApiException(ErrorCode.INTERNAL_ERROR);
-        }
+    // 수강 내역 수정
+    @Override
+    public int update(
+            long courseId,
+            long userId,
+            String recognitionType,
+            Long majorId,
+            Long attributedDepartmentId,
+            int earnedCredits,
+            String grade,
+            int takenYear,
+            String takenTerm,
+            Long retakeCourseId
+    ) {
+        String sql = """
+                UPDATE course
+                SET recognition_type = ?,
+                    major_id = ?,
+                    attributed_department_id = ?,
+                    earned_credits = ?,
+                    grade = ?,
+                    taken_year = ?,
+                    taken_term = ?,
+                    retake_course_id = ?,
+                    updated_at = NOW()
+                WHERE course_id = ?
+                  AND user_id = ?
+                """;
 
-        return courseId;
+        return jdbcTemplate.update(
+                sql,
+                recognitionType,
+                majorId,
+                attributedDepartmentId,
+                earnedCredits,
+                grade,
+                takenYear,
+                takenTerm,
+                retakeCourseId,
+                courseId,
+                userId
+        );
     }
 
     // course + course_master + major + department 조인 쿼리
@@ -80,6 +119,8 @@ public class CourseDao implements CourseRepository {
             c.grade,
             c.taken_year,
             c.taken_term,
+            c.retake_course_id,
+            c.updated_at,
             cm.course_code,
             cm.course_name,
             cm.course_category,
@@ -106,6 +147,100 @@ public class CourseDao implements CourseRepository {
                 + " AND c.taken_year = ? AND c.taken_term = ? "
                 + " ORDER BY c.course_id DESC ";
         return jdbcTemplate.query(sql, new CourseRowMapper(), userId, year, term);
+    }
+
+    // 등록/수정 검증용 수강 내역 단건 조회
+    @Override
+    public Optional<CourseWriteRow> findWriteRowById(long courseId) {
+        String sql = """
+                SELECT
+                    c.course_id,
+                    c.user_id,
+                    c.course_master_id,
+                    c.earned_credits,
+                    c.grade,
+                    c.taken_year,
+                    c.taken_term,
+                    c.major_id,
+                    c.attributed_department_id,
+                    c.retake_course_id,
+                    cm.course_code,
+                    cm.course_category,
+                    cm.course_subcategory
+                FROM course c
+                JOIN course_master cm ON cm.course_master_id = c.course_master_id
+                WHERE c.course_id = ?
+                """;
+
+        return jdbcTemplate.query(
+                        sql,
+                        (rs, rowNum) -> new CourseWriteRow(
+                                rs.getLong("course_id"),
+                                rs.getLong("user_id"),
+                                rs.getLong("course_master_id"),
+                                rs.getObject("earned_credits", Integer.class),
+                                rs.getString("grade"),
+                                rs.getObject("taken_year", Integer.class),
+                                rs.getString("taken_term"),
+                                rs.getObject("major_id", Long.class),
+                                rs.getObject("attributed_department_id", Long.class),
+                                rs.getObject("retake_course_id", Long.class),
+                                rs.getString("course_code"),
+                                rs.getString("course_category"),
+                                rs.getString("course_subcategory")
+                        ),
+                        courseId
+                )
+                .stream()
+                .findFirst();
+    }
+
+    // 동일 사용자/과목/연도/학기 중복 여부 확인
+    @Override
+    public boolean existsDuplicate(long userId, long courseMasterId, int takenYear, String takenTerm, Long excludeCourseId) {
+        if (excludeCourseId == null) {
+            String sql = """
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM course
+                        WHERE user_id = ?
+                          AND course_master_id = ?
+                          AND taken_year = ?
+                          AND taken_term = ?
+                    )
+                    """;
+
+            return jdbcTemplate.queryForObject(
+                    sql,
+                    Boolean.class,
+                    userId,
+                    courseMasterId,
+                    takenYear,
+                    takenTerm
+            );
+        }
+
+        String sql = """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM course
+                    WHERE user_id = ?
+                      AND course_master_id = ?
+                      AND taken_year = ?
+                      AND taken_term = ?
+                      AND course_id <> ?
+                )
+                """;
+
+        return jdbcTemplate.queryForObject(
+                sql,
+                Boolean.class,
+                userId,
+                courseMasterId,
+                takenYear,
+                takenTerm,
+                excludeCourseId
+        );
     }
 
     // 수강 내역 삭제

@@ -23,21 +23,24 @@ public class CourseMasterDao implements CourseMasterRepository {
                 cm.course_category,
                 cm.course_subcategory,
                 cm.seed_area,
+                cm.is_default,
+                cm.valid_from_year,
+                cm.valid_to_year,
                 cm.opened_year,
                 cm.opened_term,
                 d.department_id AS opened_department_id,
                 d.department_name AS opened_department_name
             FROM course_master cm
-            JOIN course_master_department_access cmda
+            LEFT JOIN course_master_department_access cmda
               ON cmda.course_master_id = cm.course_master_id
-            JOIN department d
+            LEFT JOIN department d
               ON d.department_id = cmda.department_id
-            WHERE cm.opened_year = :year
-              AND cm.opened_term = :term
+            WHERE 1 = 1
             """;
 
+    // 사용자가 검색한 년도/학기에 오픈한 과목 검색
     @Override
-    public List<CourseMasterSearchRow> searchRows(
+    public List<CourseMasterSearchRow> searchOpenedRows(
             int openedYear,
             String openedTerm,
             String courseCode,
@@ -46,22 +49,68 @@ public class CourseMasterDao implements CourseMasterRepository {
             String courseSubcategory,
             String departmentName
     ) {
-        StringBuilder sql = new StringBuilder(BASE_SELECT);
+        // 실제 개설 과목만 검색
+        StringBuilder sql = new StringBuilder(BASE_SELECT)
+                .append(" AND cm.is_default = FALSE ")
+                .append(" AND cm.opened_year = :year ")
+                .append(" AND cm.opened_term = :term ");
 
-        // 기본 개설년도, 개설학기는 넣고 시작
+        // 기본 개설년도, 개설학기를 넣고 시작
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("year", openedYear)
                 .addValue("term", openedTerm);
 
+        appendFilters(sql, params, courseCode, courseName, courseCategory, courseSubcategory, departmentName);
+        sql.append(" ORDER BY cm.course_code ASC, cm.course_master_id ASC");
+
+        return namedJdbcTemplate.query(sql.toString(), params, new CourseMasterRowMapper());
+    }
+
+    // 디폴트 과목 검색
+    @Override
+    public List<CourseMasterSearchRow> searchDefaultRows(
+            int openedYear,
+            String openedTerm,
+            String courseCode,
+            String courseName,
+            String courseCategory,
+            String courseSubcategory,
+            String departmentName
+    ) {
+
+        // 요청 연도에 fallback 가능한 default 과목만 검색
+        StringBuilder sql = new StringBuilder(BASE_SELECT)
+                .append(" AND cm.is_default = TRUE ")
+                .append(" AND (cm.valid_from_year IS NULL OR cm.valid_from_year <= :year) ")
+                .append(" AND (cm.valid_to_year IS NULL OR cm.valid_to_year >= :year) ");
+        // valid year 범위 비교를 위해 요청 연도를 넣고 시작
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("year", openedYear);
+
+        appendFilters(sql, params, courseCode, courseName, courseCategory, courseSubcategory, departmentName);
+        sql.append(" ORDER BY cm.course_code ASC, cm.course_master_id ASC");
+
+        return namedJdbcTemplate.query(sql.toString(), params, new CourseMasterRowMapper());
+    }
+
+    private void appendFilters(
+            StringBuilder sql,
+            MapSqlParameterSource params,
+            String courseCode,
+            String courseName,
+            String courseCategory,
+            String courseSubcategory,
+            String departmentName
+    ) {
         // 선택 키워드가 있다면 SQL에 추가
         if (courseCode != null) {
             sql.append(" AND cm.course_code ILIKE :code ");
-            params.addValue("code", "%" + courseCode + "%");
+            params.addValue("code", "%" + courseCode + "%"); // 부분 일치 검색
         }
 
         if (courseName != null) {
             sql.append(" AND cm.course_name ILIKE :name ");
-            params.addValue("name", "%" + courseName + "%");
+            params.addValue("name", "%" + courseName + "%"); // 부분 일치 검색
         }
 
         if (courseCategory != null) {
@@ -76,11 +125,7 @@ public class CourseMasterDao implements CourseMasterRepository {
 
         if (departmentName != null) {
             sql.append(" AND d.department_name ILIKE :deptName ");
-            params.addValue("deptName", "%" + departmentName + "%");
+            params.addValue("deptName", "%" + departmentName + "%"); // 부분 일치 검색
         }
-
-        sql.append(" ORDER BY cm.course_code ASC");
-
-        return namedJdbcTemplate.query(sql.toString(), params, new CourseMasterRowMapper());
     }
 }

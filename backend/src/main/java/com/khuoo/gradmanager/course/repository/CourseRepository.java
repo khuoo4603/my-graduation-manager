@@ -3,6 +3,7 @@ package com.khuoo.gradmanager.course.repository;
 import com.khuoo.gradmanager.course.dto.CourseItem;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CourseRepository {
 
@@ -18,6 +19,7 @@ public interface CourseRepository {
      * @param recognitionType         전공 인정 유형, 교양: null / 전공: 전공탐색, 전공선택, 전공필수
      * @param majorId                 전공 PK, 교양: null / 전공: 전공ID
      * @param attributedDepartmentId  학부 PK, 전공탐색 이외 null / 전공탐색: 학부ID
+     * @param retakeCourseId          재수강 대상 수강내역 PK
      * @return 생성된 course_id
      */
     long insert(
@@ -29,7 +31,36 @@ public interface CourseRepository {
             String takenTerm,
             String recognitionType,
             Long majorId,
-            Long attributedDepartmentId
+            Long attributedDepartmentId,
+            Long retakeCourseId
+    );
+
+    /**
+     * 수강 내역 수정
+     *
+     * @param courseId                수정할 수강내역 PK
+     * @param userId                  현재 로그인 사용자 PK
+     * @param recognitionType         전공 인정 유형
+     * @param majorId                 전공 PK
+     * @param attributedDepartmentId  귀속 학부 PK
+     * @param earnedCredits           취득 학점
+     * @param grade                   성적
+     * @param takenYear               수강 연도
+     * @param takenTerm               수강 학기
+     * @param retakeCourseId          재수강 대상 수강내역 PK
+     * @return 수정된 row 수
+     */
+    int update(
+            long courseId,
+            long userId,
+            String recognitionType,
+            Long majorId,
+            Long attributedDepartmentId,
+            int earnedCredits,
+            String grade,
+            int takenYear,
+            String takenTerm,
+            Long retakeCourseId
     );
 
     /**
@@ -51,6 +82,26 @@ public interface CourseRepository {
     List<CourseItem> findByUserAndTerm(long userId, int year, String term);
 
     /**
+     * 등록/수정 검증용 수강 내역 단건 조회
+     *
+     * @param courseId 수강 내역 PK
+     * @return 수강 내역 검증용 row
+     */
+    Optional<CourseWriteRow> findWriteRowById(long courseId);
+
+    /**
+     * 동일 사용자/과목/연도/학기 중복 여부 확인
+     *
+     * @param userId          현재 로그인 사용자 PK
+     * @param courseMasterId  강의목록 PK
+     * @param takenYear       수강 연도
+     * @param takenTerm       수강 학기
+     * @param excludeCourseId 수정 시 제외할 course_id, 등록이면 null
+     * @return 중복 여부
+     */
+    boolean existsDuplicate(long userId, long courseMasterId, int takenYear, String takenTerm, Long excludeCourseId);
+
+    /**
      * 수강 내역 삭제
      *
      * @param courseId 삭제할 수강 기록 PK(course_id)
@@ -58,4 +109,21 @@ public interface CourseRepository {
      * @return 삭제된 row 수(0 또는 1)
      */
     int deleteByIdAndUser(long courseId, long userId);
+
+    // 등록/수정 검증에 사용하는 최소 수강 내역 정보
+    record CourseWriteRow(
+            long courseId,
+            long userId,
+            long courseMasterId,
+            Integer earnedCredits,
+            String grade,
+            Integer takenYear,
+            String takenTerm,
+            Long majorId,
+            Long attributedDepartmentId,
+            Long retakeCourseId,
+            String courseCode,
+            String courseCategory,
+            String courseSubcategory
+    ) {}
 }

@@ -6,15 +6,18 @@ import com.khuoo.gradmanager.error.exception.ErrorCode;
 import com.khuoo.gradmanager.reference.course.dto.CourseMasterOpenedDepartment;
 import com.khuoo.gradmanager.reference.course.dto.CourseMasterSearchItem;
 import com.khuoo.gradmanager.reference.course.dto.CourseMasterSearchResponse;
-import com.khuoo.gradmanager.reference.course.repository.CourseMasterSearchRow;
 import com.khuoo.gradmanager.reference.course.repository.CourseMasterRepository;
+import com.khuoo.gradmanager.reference.course.repository.CourseMasterSearchRow;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -33,26 +36,52 @@ public class CourseMasterService {
             String deptName
     ) {
         // 개설 학기의 공백/누락 방지, 개설 년도 0이하 방지
-        if (openedYear <= 0) {
-            throw new ApiException(ErrorCode.INVALID_REQUEST);
-        }
+        if (openedYear <= 0) { throw new ApiException(ErrorCode.INVALID_REQUEST); }
         String term = AcademicTermPolicy.normalize(openedTerm); // 기존 계절학기 문자열을 포함해 표준값으로 정규화
 
+        String normalizedCode = (code == null || code.trim().isBlank()) ? null : code.trim(); // 과목코드 검색어, 공백이면 미입력 처리
+        String normalizedName = (name == null || name.trim().isBlank()) ? null : name.trim(); // 과목명 검색어, 공백이면 미입력 처리
+        String normalizedCategory = (category == null || category.trim().isBlank()) ? null : category.trim(); // 카테고리 필터, 공백이면 미입력 처리
+        String normalizedSubcategory = (subcategory == null || subcategory.trim().isBlank()) ? null : subcategory.trim(); // 세부구분 필터, 공백이면 미입력 처리
+        String normalizedDeptName = (deptName == null || deptName.trim().isBlank()) ? null : deptName.trim(); // 개설 학부명 검색어, 공백이면 미입력 처리
 
-        // 파라미터가 blank면 null로 변환
-        List<CourseMasterSearchRow> rows = courseMasterRepository.searchRows(
+
+        // 파라미터가 blank면 null로 변환 후 실제 개설/기본 fallback 과목을 각각 조회
+        List<CourseMasterSearchRow> openedRows = courseMasterRepository.searchOpenedRows(
                 openedYear,
                 term,
-                normalizeOptional(code),
-                normalizeOptional(name),
-                normalizeOptional(category),
-                normalizeOptional(subcategory),
-                normalizeOptional(deptName)
+                normalizedCode,
+                normalizedName,
+                normalizedCategory,
+                normalizedSubcategory,
+                normalizedDeptName
         );
+        List<CourseMasterSearchRow> defaultRows = courseMasterRepository.searchDefaultRows(
+                openedYear,
+                term,
+                normalizedCode,
+                normalizedName,
+                normalizedCategory,
+                normalizedSubcategory,
+                normalizedDeptName
+        );
+
+        // 실제 개설된 course_code는 fallback 결과에서 숨기기 위해 별도 수집
+        Set<String> openedCourseCodes = new HashSet<>();
+        for (CourseMasterSearchRow row : openedRows) {
+            openedCourseCodes.add(row.courseCode()); // 실제 개설 과목이 있는 course_code 기록
+        }
+
+        // 실제 개설 과목 우선, 없는 course_code만 default 과목으로 보완
+        List<CourseMasterSearchRow> rows = new ArrayList<>(openedRows);
+        for (CourseMasterSearchRow row : defaultRows) {
+            if (!openedCourseCodes.contains(row.courseCode())) {
+                rows.add(row);
+            }
+        }
 
         // course_master_id 기준으로 items를 누적 (과목 1개 = items 1개)
         Map<Long, CourseMasterSearchItemBuilder> map = new LinkedHashMap<>();
-
         for (CourseMasterSearchRow row : rows) {
             CourseMasterSearchItemBuilder item = map.get(row.courseMasterId());
             if (item == null) {
@@ -66,38 +95,38 @@ public class CourseMasterService {
                         row.courseSubcategory(),
                         row.seedArea(),
                         row.openedYear(),
-                        row.openedTerm()
+                        row.openedTerm(),
+                        row.isDefault(),
+                        row.validFromYear(),
+                        row.validToYear()
                 );
                 map.put(row.courseMasterId(), item);
             }
 
-            // Department데이터를 item내부 departments리스트에 추가
-            item.departments.add(new CourseMasterOpenedDepartment(
-                    row.openedDepartmentId(),
-                    row.openedDepartmentName()
-            ));
+            // Department데이터가 있으면 item내부 departments리스트에 추가
+            if (row.openedDepartmentId() != null) {
+                item.departments.add(new CourseMasterOpenedDepartment(
+                        row.openedDepartmentId(),
+                        row.openedDepartmentName()
+                ));
+            }
         }
 
         // map 누적 결과를 최종 items로 변환
         List<CourseMasterSearchItem> items = new ArrayList<>(map.size());
-        for (CourseMasterSearchItemBuilder b : map.values()) {
-            items.add(b.build());
+        for (CourseMasterSearchItemBuilder builder : map.values()) {
+            items.add(builder.build());
         }
+        // 응답 순서를 기존처럼 과목 코드 기준으로 정렬
+        items.sort(Comparator
+                .comparing(CourseMasterSearchItem::courseCode, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+                .thenComparingLong(CourseMasterSearchItem::courseMasterId));
 
         return new CourseMasterSearchResponse(items);
     }
-
-    // trim 후 blank면 null 처리
-    private String normalizeOptional(String v) {
-        if (v == null) return null;
-        String t = v.trim();
-        return t.isBlank() ? null : t;
-    }
-
     // 반환할 item 저장용 클래스 (1개 과목 = 객체 1개)
     @RequiredArgsConstructor
     private static class CourseMasterSearchItemBuilder {
-
         private final long courseMasterId;
         private final String courseCode;
         private final String courseName;
@@ -105,11 +134,14 @@ public class CourseMasterService {
         private final String courseCategory;
         private final String courseSubcategory;
         private final String seedArea;
-        private final int openedYear;
+        private final Integer openedYear;
         private final String openedTerm;
-
+        private final boolean isDefault;
+        private final Integer validFromYear;
+        private final Integer validToYear;
         private final List<CourseMasterOpenedDepartment> departments = new ArrayList<>();
 
+        // 누적된 department 목록을 포함해 최종 item 생성
         private CourseMasterSearchItem build() {
             return new CourseMasterSearchItem(
                     courseMasterId,
@@ -121,6 +153,9 @@ public class CourseMasterService {
                     seedArea,
                     openedYear,
                     openedTerm,
+                    isDefault,
+                    validFromYear,
+                    validToYear,
                     departments
             );
         }

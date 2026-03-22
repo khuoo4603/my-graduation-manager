@@ -27,7 +27,9 @@ public class CourseRowMapper implements RowMapper<CourseItem> {
                 rs.getObject("department_id", Long.class),
                 rs.getString("department_name"),
                 rs.getObject("major_id", Long.class),
-                rs.getString("major_name")
+                rs.getString("major_name"),
+                rs.getObject("retake_course_id", Long.class),
+                rs.getTimestamp("updated_at").toInstant()
         );
     }
 }
