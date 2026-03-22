@@ -151,4 +151,11 @@ public class FileMetadataDao implements FileMetadataRepository {
         String sql = "DELETE FROM file_metadata WHERE file_id = ?";
         return jdbcTemplate.update(sql, fileId);
     }
+
+    // 사용자 파일 메타데이터 전체 삭제
+    @Override
+    public void deleteByUserId(long userId) {
+        String sql = "DELETE FROM file_metadata WHERE user_id = ?";
+        jdbcTemplate.update(sql, userId);
+    }
 }

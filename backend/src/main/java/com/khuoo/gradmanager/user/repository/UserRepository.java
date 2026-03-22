@@ -8,4 +8,5 @@ public interface UserRepository {
     Optional<User> findByEmail(String email);
     Optional<User> findById(long userId);
     long insert(String email, String userName);
+    int deleteById(long userId);
 }

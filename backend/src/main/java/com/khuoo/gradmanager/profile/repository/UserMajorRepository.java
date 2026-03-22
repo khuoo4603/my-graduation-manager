@@ -17,8 +17,11 @@ public interface UserMajorRepository {
     // 특정 사용자 전공 1건 조회
     Optional<UserMajorRow> findById(long userMajorId);
 
-    // 서용자 전공 삭제
+    // 사용자 전공 삭제
     int deleteByIdAndUserId(long userMajorId, long userId);
+
+    // 사용자 전공 전체 삭제
+    void deleteByUserId(long userId);
 
     // user_major 조회 결과를 담는 row DTO
     record UserMajorRow(

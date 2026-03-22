@@ -16,7 +16,10 @@ public interface UserStorageUsageRepository {
     Optional<UserStorageUsageRow> findByUserId(long userId);
 
     // 유저 사용량 갱신
-    int updateUsedBytes(long userId, long usedBytes);
+    void updateUsedBytes(long userId, long usedBytes);
+
+    // 사용자 storage 사용량 row 삭제
+    void deleteByUserId(long userId);
 
     // user_storage_usage 조회 Row.
     record UserStorageUsageRow(

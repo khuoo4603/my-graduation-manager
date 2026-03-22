@@ -253,4 +253,14 @@ public class CourseDao implements CourseRepository {
                 """;
         return jdbcTemplate.update(sql, courseId, userId);
     }
+
+    // 사용자 수강 내역 전체 삭제
+    @Override
+    public void deleteByUserId(long userId) {
+        String sql = """
+                DELETE FROM course
+                WHERE user_id = ?
+                """;
+        jdbcTemplate.update(sql, userId);
+    }
 }

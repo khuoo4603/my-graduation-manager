@@ -65,12 +65,22 @@ public class UserStorageUsageDao implements UserStorageUsageRepository {
 
     // 유저 사용량 갱신
     @Override
-    public int updateUsedBytes(long userId, long usedBytes) {
+    public void updateUsedBytes(long userId, long usedBytes) {
         String sql = """
                 UPDATE user_storage_usage
                 SET used_bytes = ?, updated_at = ?
                 WHERE user_id = ?
                 """;
-        return jdbcTemplate.update(sql, usedBytes, java.sql.Timestamp.from(Instant.now()), userId);
+        jdbcTemplate.update(sql, usedBytes, java.sql.Timestamp.from(Instant.now()), userId);
+    }
+
+    // 사용자 storage 사용량 row 삭제
+    @Override
+    public void deleteByUserId(long userId) {
+        String sql = """
+                DELETE FROM user_storage_usage
+                WHERE user_id = ?
+                """;
+        jdbcTemplate.update(sql, userId);
     }
 }

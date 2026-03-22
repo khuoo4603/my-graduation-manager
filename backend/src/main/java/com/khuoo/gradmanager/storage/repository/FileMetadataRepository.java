@@ -42,6 +42,6 @@ public interface FileMetadataRepository {
     // 메타데이터 삭제
     int deleteById(long fileId);
 
-
-
+    // 사용자 파일 메타데이터 전체 삭제
+    void deleteByUserId(long userId);
 }

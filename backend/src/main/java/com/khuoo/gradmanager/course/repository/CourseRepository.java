@@ -110,6 +110,13 @@ public interface CourseRepository {
      */
     int deleteByIdAndUser(long courseId, long userId);
 
+    /**
+     * 사용자 수강 내역 전체 삭제
+     *
+     * @param userId 현재 로그인 사용자 PK
+     */
+    void deleteByUserId(long userId);
+
     // 등록/수정 검증에 사용하는 최소 수강 내역 정보
     record CourseWriteRow(
             long courseId,

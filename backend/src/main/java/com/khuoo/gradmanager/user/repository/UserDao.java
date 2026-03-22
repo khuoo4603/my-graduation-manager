@@ -52,4 +52,10 @@ public class UserDao implements UserRepository {
 
         return id;
     }
+
+    @Override
+    public int deleteById(long userId) {
+        String sql = "DELETE FROM users WHERE user_id = ?";
+        return jdbcTemplate.update(sql, userId);
+    }
 }

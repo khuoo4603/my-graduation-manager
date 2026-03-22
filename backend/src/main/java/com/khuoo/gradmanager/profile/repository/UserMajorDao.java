@@ -95,4 +95,15 @@ public class UserMajorDao implements UserMajorRepository {
         // 삭제된 row 수 반환
         return jdbcTemplate.update(sql, userMajorId, userId);
     }
+
+    // 사용자 전공 전체 삭제
+    @Override
+    public void deleteByUserId(long userId) {
+        String sql = """
+                DELETE FROM user_major
+                WHERE user_id = ?
+                """;
+
+        jdbcTemplate.update(sql, userId);
+    }
 }
