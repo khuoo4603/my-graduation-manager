@@ -7,3 +7,4 @@ My Graduation Manager 백엔드 서버
 - Google OAuth2 + JWT 인증
 - PostgreSQL 연동
 - 파일 메타데이터 관리
+
