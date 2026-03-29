@@ -19,13 +19,19 @@ const COURSE_MAJOR_EDIT_SUBCATEGORY_OPTIONS = [
 // Search Courses 결과 렌더링
 export function renderSearchResults(page) {
   const { searchStatePanel, searchTableWrap, searchCourseRows } = page.elements;
+  const hasSearchResults = page.searchStatus === "results" && page.searchResults.length > 0;
 
   clearChildren(searchCourseRows);
 
+  // 결과 테이블이 보일 때는 loading/idle 패널이 남지 않도록 먼저 숨김 처리
+  searchStatePanel.hidden = hasSearchResults;
+  searchStatePanel.setAttribute("aria-hidden", String(hasSearchResults));
+  searchTableWrap.hidden = !hasSearchResults;
+  searchTableWrap.setAttribute("aria-hidden", String(!hasSearchResults));
+
   // 검색 성공 시에만 테이블 영역 노출
-  if (page.searchStatus === "results") {
-    searchStatePanel.hidden = true;
-    searchTableWrap.hidden = false;
+  if (hasSearchResults) {
+    searchStatePanel.innerHTML = "";
 
     page.searchResults.forEach((course) => {
       const row = createElement("tr");
@@ -84,7 +90,9 @@ export function renderSearchResults(page) {
   }
 
   searchTableWrap.hidden = true;
+  searchTableWrap.setAttribute("aria-hidden", "true");
   searchStatePanel.hidden = false;
+  searchStatePanel.setAttribute("aria-hidden", "false");
 
   // 검색 전/로딩/빈 결과/에러는 상태 패널로 분기
   if (page.searchStatus === "loading") {
@@ -130,14 +138,23 @@ export function renderSearchResults(page) {
 export function renderTakenCourses(page) {
   const { totalCreditsText, takenEmptyPanel, takenTableWrap, takenCourseRows } = page.elements;
   const totalCredits = page.takenCourses.reduce((creditSum, course) => creditSum + Number(course.earnedCredits || 0), 0);
+  const hasTakenResults = page.takenStatus === "results" && page.takenCourses.length > 0;
 
   // 현재 화면에 보이는 수강 이력 기준 총 취득학점 계산
   setText(totalCreditsText, String(totalCredits));
   clearChildren(takenCourseRows);
 
+  // 목록 테이블이 보일 때는 loading/empty/error 패널이 남지 않도록 먼저 숨김 처리
+  takenEmptyPanel.hidden = hasTakenResults;
+  takenEmptyPanel.setAttribute("aria-hidden", String(hasTakenResults));
+  takenTableWrap.hidden = !hasTakenResults;
+  takenTableWrap.setAttribute("aria-hidden", String(!hasTakenResults));
+
   if (page.takenStatus === "loading") {
     takenEmptyPanel.hidden = false;
+    takenEmptyPanel.setAttribute("aria-hidden", "false");
     takenTableWrap.hidden = true;
+    takenTableWrap.setAttribute("aria-hidden", "true");
     takenEmptyPanel.innerHTML = `
       <div class="courses-state-panel__content">
         <div class="loading-state courses-state-panel__loading">
@@ -151,7 +168,9 @@ export function renderTakenCourses(page) {
 
   if (page.takenStatus === "error") {
     takenEmptyPanel.hidden = false;
+    takenEmptyPanel.setAttribute("aria-hidden", "false");
     takenTableWrap.hidden = true;
+    takenTableWrap.setAttribute("aria-hidden", "true");
     takenEmptyPanel.innerHTML = `
       <div class="courses-state-panel__content">
         <p class="courses-state-panel__title">수강 과목 목록을 불러오지 못했습니다.</p>
@@ -163,7 +182,9 @@ export function renderTakenCourses(page) {
 
   if (page.takenStatus === "empty") {
     takenEmptyPanel.hidden = false;
+    takenEmptyPanel.setAttribute("aria-hidden", "false");
     takenTableWrap.hidden = true;
+    takenTableWrap.setAttribute("aria-hidden", "true");
     takenEmptyPanel.innerHTML = `
       <div class="courses-state-panel__content">
         <p class="courses-state-panel__title">등록된 수강 과목이 없습니다.</p>
@@ -173,7 +194,10 @@ export function renderTakenCourses(page) {
   }
 
   takenEmptyPanel.hidden = true;
+  takenEmptyPanel.setAttribute("aria-hidden", "true");
+  takenEmptyPanel.innerHTML = "";
   takenTableWrap.hidden = false;
+  takenTableWrap.setAttribute("aria-hidden", "false");
 
   page.takenCourses.forEach((course) => {
     const row = createElement("tr", {
@@ -368,10 +392,9 @@ export function renderEditModal(page) {
 
   clearChildren(editCourseRetakeSelect);
 
-  // 백엔드 정책에 맞춰 같은 과목 코드 + 이전 이력 + 미재수강 후보만 노출
+  // 재수강 후보는 현재 과목보다 이전에 들은 본인 수강 이력만 보여주고, 서버가 막는 후보는 제외
   const retakeCandidates = page.takenCourses.filter((course) => {
     if (course.courseId === selectedCourse.courseId) return false;
-    if (course.code !== selectedCourse.code) return false;
     if (course.retakeCourseId) return false;
 
     const courseYear = Number(course.takenYear || 0);
@@ -386,7 +409,7 @@ export function renderEditModal(page) {
   editCourseRetakeSelect.append(
     createElement("option", {
       attrs: { value: "" },
-      text: retakeCandidates.length > 0 ? "없음" : "이전 동일 과목 이력 없음",
+      text: retakeCandidates.length > 0 ? "없음" : "이전 수강 이력 없음",
     }),
   );
 
