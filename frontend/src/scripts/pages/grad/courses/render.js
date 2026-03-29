@@ -1,9 +1,7 @@
-// Courses 페이지 화면 갱신 모듈.
+// Courses 페이지 화면 렌더링 모듈.
 
 import { getFluentIconPath } from "/src/scripts/components/icon-map.js";
 import { clearChildren, createElement, setText } from "/src/scripts/utils/dom.js";
-
-import { COURSE_DEPARTMENT_OPTIONS } from "./mock-data.js";
 
 const termLabelMap = {
   1: "1학기",
@@ -12,12 +10,11 @@ const termLabelMap = {
   WINTER: "겨울 계절학기",
 };
 
-const categoryLabelMap = {
-  Major: "전공",
-  "General Education": "교양",
-  Chapel: "채플",
-  "Lifelong Education": "평생교육",
-};
+const COURSE_MAJOR_EDIT_SUBCATEGORY_OPTIONS = [
+  { value: "전공필수", label: "전공필수" },
+  { value: "전공선택", label: "전공선택" },
+  { value: "전공탐색", label: "전공탐색" },
+];
 
 // Search Courses 결과 렌더링
 export function renderSearchResults(page) {
@@ -25,6 +22,7 @@ export function renderSearchResults(page) {
 
   clearChildren(searchCourseRows);
 
+  // 검색 성공 시에만 테이블 영역 노출
   if (page.searchStatus === "results") {
     searchStatePanel.hidden = true;
     searchTableWrap.hidden = false;
@@ -32,28 +30,28 @@ export function renderSearchResults(page) {
     page.searchResults.forEach((course) => {
       const row = createElement("tr");
 
-      const codeCell = createElement("td", {
-        className: "courses-table__code",
-        text: course.code || "",
-      });
-      const nameCell = createElement("td", {
-        className: "courses-table__name",
-        text: course.name || "",
-      });
-      const creditCell = createElement("td", {
-        className: "courses-table__number",
-        text: String(course.credits ?? ""),
-      });
-      const categoryCell = createElement("td", {
-        text: categoryLabelMap[course.category] || String(course.category || ""),
-      });
-      const subcategoryCell = createElement("td", {
-        text: course.subcategory || "",
-      });
+      row.append(
+        createElement("td", {
+          className: "courses-table__code",
+          text: course.code || "",
+        }),
+        createElement("td", {
+          className: "courses-table__name",
+          text: course.name || "",
+        }),
+        createElement("td", {
+          className: "courses-table__number",
+          text: String(course.credits ?? ""),
+        }),
+        createElement("td", {
+          text: course.category || "",
+        }),
+        createElement("td", {
+          text: course.subcategory || "",
+        }),
+      );
 
-      const actionCell = createElement("td", {
-        className: "courses-table__action",
-      });
+      const actionCell = createElement("td", { className: "courses-table__action" });
       const addButton = createElement("button", {
         className: "btn btn--secondary courses-action-button courses-action-button--add",
         attrs: {
@@ -61,7 +59,7 @@ export function renderSearchResults(page) {
           title: "과목 추가",
         },
         dataset: {
-          searchAddCourse: course.code || "",
+          searchAddCourse: String(course.courseMasterId || ""),
         },
       });
 
@@ -78,7 +76,7 @@ export function renderSearchResults(page) {
       );
 
       actionCell.append(addButton);
-      row.append(codeCell, nameCell, creditCell, categoryCell, subcategoryCell, actionCell);
+      row.append(actionCell);
       searchCourseRows.append(row);
     });
 
@@ -88,6 +86,7 @@ export function renderSearchResults(page) {
   searchTableWrap.hidden = true;
   searchStatePanel.hidden = false;
 
+  // 검색 전/로딩/빈 결과/에러는 상태 패널로 분기
   if (page.searchStatus === "loading") {
     searchStatePanel.innerHTML = `
       <div class="courses-state-panel__content">
@@ -95,7 +94,6 @@ export function renderSearchResults(page) {
           <span class="loading-state__spinner" aria-hidden="true"></span>
           <span>과목 목록을 검색하고 있습니다.</span>
         </div>
-        <p class="courses-state-panel__description">API 연결 없이도 화면 검토가 가능하도록 mock 데이터를 사용합니다.</p>
       </div>
     `;
     return;
@@ -111,6 +109,16 @@ export function renderSearchResults(page) {
     return;
   }
 
+  if (page.searchStatus === "error") {
+    searchStatePanel.innerHTML = `
+      <div class="courses-state-panel__content">
+        <p class="courses-state-panel__title">과목 목록을 불러오지 못했습니다.</p>
+        <p class="courses-state-panel__description">잠시 후 다시 시도해주세요.</p>
+      </div>
+    `;
+    return;
+  }
+
   searchStatePanel.innerHTML = `
     <div class="courses-state-panel__content">
       <p class="courses-state-panel__description">검색 조건을 입력한 뒤 검색 버튼을 눌러주세요.</p>
@@ -121,21 +129,44 @@ export function renderSearchResults(page) {
 // Taken Courses 목록 렌더링
 export function renderTakenCourses(page) {
   const { totalCreditsText, takenEmptyPanel, takenTableWrap, takenCourseRows } = page.elements;
-  const totalCredits = page.takenCourses.reduce(
-    (creditSum, course) => creditSum + Number(course.earnedCredits || 0),
-    0,
-  );
+  const totalCredits = page.takenCourses.reduce((creditSum, course) => creditSum + Number(course.earnedCredits || 0), 0);
 
+  // 현재 화면에 보이는 수강 이력 기준 총 취득학점 계산
   setText(totalCreditsText, String(totalCredits));
   clearChildren(takenCourseRows);
 
-  if (page.takenCourses.length === 0) {
+  if (page.takenStatus === "loading") {
+    takenEmptyPanel.hidden = false;
+    takenTableWrap.hidden = true;
+    takenEmptyPanel.innerHTML = `
+      <div class="courses-state-panel__content">
+        <div class="loading-state courses-state-panel__loading">
+          <span class="loading-state__spinner" aria-hidden="true"></span>
+          <span>수강 과목 목록을 불러오고 있습니다.</span>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  if (page.takenStatus === "error") {
+    takenEmptyPanel.hidden = false;
+    takenTableWrap.hidden = true;
+    takenEmptyPanel.innerHTML = `
+      <div class="courses-state-panel__content">
+        <p class="courses-state-panel__title">수강 과목 목록을 불러오지 못했습니다.</p>
+        <p class="courses-state-panel__description">잠시 후 다시 시도해주세요.</p>
+      </div>
+    `;
+    return;
+  }
+
+  if (page.takenStatus === "empty") {
     takenEmptyPanel.hidden = false;
     takenTableWrap.hidden = true;
     takenEmptyPanel.innerHTML = `
       <div class="courses-state-panel__content">
         <p class="courses-state-panel__title">등록된 수강 과목이 없습니다.</p>
-        <p class="courses-state-panel__description">mock 모드에서는 더미 수강 이력이 이 영역에 표시됩니다.</p>
       </div>
     `;
     return;
@@ -147,12 +178,8 @@ export function renderTakenCourses(page) {
   page.takenCourses.forEach((course) => {
     const row = createElement("tr", {
       className: "courses-table__row courses-table__row--clickable",
-      attrs: {
-        title: "행 클릭으로 과목 수정",
-      },
-      dataset: {
-        takenCourseId: course.courseId || "",
-      },
+      attrs: { title: "행 클릭으로 과목 수정" },
+      dataset: { takenCourseId: String(course.courseId || "") },
     });
 
     row.append(
@@ -173,16 +200,12 @@ export function renderTakenCourses(page) {
     });
     retakeCheckbox.checked = Boolean(course.isRetake);
 
-    const retakeWrap = createElement("span", {
-      className: "courses-retake-indicator",
-    });
+    const retakeWrap = createElement("span", { className: "courses-retake-indicator" });
     retakeWrap.append(retakeCheckbox);
     retakeCell.append(retakeWrap);
     row.append(retakeCell);
 
-    const actionCell = createElement("td", {
-      className: "courses-table__action",
-    });
+    const actionCell = createElement("td", { className: "courses-table__action" });
     const deleteButton = createElement("button", {
       className: "btn btn--ghost btn--icon courses-action-icon courses-action-icon--danger",
       attrs: {
@@ -190,9 +213,7 @@ export function renderTakenCourses(page) {
         title: "과목 삭제",
         "aria-label": `${course.name || "과목"} 삭제`,
       },
-      dataset: {
-        deleteTakenCourse: course.courseId || "",
-      },
+      dataset: { deleteTakenCourse: String(course.courseId || "") },
     });
 
     deleteButton.append(
@@ -237,9 +258,15 @@ export function renderEditModal(page) {
     return;
   }
 
-  const selectedCourse = page.takenCourses.find((course) => course.courseId === page.openEditCourseId);
+  // 열린 모달의 원본 course를 다시 찾아 정책 기준으로 select 상태 계산
+  const selectedCourse = page.takenCourses.find(
+    (course) => String(course.courseId) === String(page.openEditCourseId),
+  );
   if (!selectedCourse) {
-    document.body.classList.remove("is-modal-open");
+    editCourseModal.hidden = true;
+    editCourseModal.setAttribute("aria-hidden", "true");
+    editCourseModal.classList.remove("is-open");
+    document.body.classList.toggle("is-modal-open", Boolean(page.pendingMajorCourse));
     return;
   }
 
@@ -249,95 +276,132 @@ export function renderEditModal(page) {
   editCourseGradeSelect.value = page.editCourseDraft.grade || "";
   editCourseYearInput.value = page.editCourseDraft.year || "";
   editCourseTermSelect.value = page.editCourseDraft.term || "";
+
+  clearChildren(editCourseSubcategorySelect);
+
+  // 교양은 현재 값만 보여주고, 전공 과목만 세부 구분 변경 허용
+  const isMajorCategory = selectedCourse.courseCategory === "전공";
+  if (isMajorCategory) {
+    editCourseSubcategorySelect.append(
+      createElement("option", {
+        attrs: { value: "" },
+        text: "세부 구분 선택",
+      }),
+    );
+
+    COURSE_MAJOR_EDIT_SUBCATEGORY_OPTIONS.forEach((option) => {
+      editCourseSubcategorySelect.append(
+        createElement("option", {
+          attrs: { value: option.value },
+          text: option.label,
+        }),
+      );
+    });
+
+    editCourseSubcategorySelect.disabled = false;
+  } else {
+    editCourseSubcategorySelect.append(
+      createElement("option", {
+        attrs: { value: selectedCourse.courseSubcategory || "" },
+        text: selectedCourse.courseSubcategory || "",
+      }),
+    );
+
+    editCourseSubcategorySelect.disabled = true;
+  }
+
   editCourseSubcategorySelect.value = page.editCourseDraft.subcategory || "";
 
-  const isMajorCourse =
-    page.editCourseDraft.subcategory === "전공필수" || page.editCourseDraft.subcategory === "전공선택";
-  const isDepartmentCourse = page.editCourseDraft.subcategory === "전공탐색";
-
-  if (!isMajorCourse) {
-    page.editCourseDraft.attributedMajorId = "";
-  }
-
-  if (!isDepartmentCourse) {
-    page.editCourseDraft.attributedDepartmentId = "";
-  }
+  // 세부 구분에 따라 전공 귀속/학부 귀속 활성화 정책 분기
+  const isMajorChoice = page.editCourseDraft.subcategory === "전공필수" || page.editCourseDraft.subcategory === "전공선택";
+  const isDepartmentChoice = page.editCourseDraft.subcategory === "전공탐색";
 
   clearChildren(editCourseMajorSelect);
   editCourseMajorSelect.append(
     createElement("option", {
       attrs: { value: "" },
-      text: isMajorCourse ? "전공 선택" : "미지정",
+      text: isMajorChoice ? "전공 선택" : "미지정",
     }),
   );
 
-  page.mockUserMajors.forEach((major) => {
+  page.userMajors.forEach((major) => {
     editCourseMajorSelect.append(
       createElement("option", {
-        attrs: { value: major.value || "" },
+        attrs: { value: String(major.majorId) },
         text: major.label || "",
       }),
     );
   });
 
-  editCourseMajorSelect.disabled = !isMajorCourse;
+  editCourseMajorSelect.disabled = !isMajorChoice;
   editCourseMajorSelect.value = page.editCourseDraft.attributedMajorId || "";
 
   clearChildren(editCourseDepartmentSelect);
+  const canChooseDepartment = isDepartmentChoice && page.departmentsStatus === "ready" && page.departments.length > 0;
   editCourseDepartmentSelect.append(
     createElement("option", {
       attrs: { value: "" },
-      text: isDepartmentCourse ? "학부 선택" : "미지정",
+      text: canChooseDepartment ? "학부 선택" : isDepartmentChoice ? "학부 목록 없음" : "미지정",
     }),
   );
 
-  COURSE_DEPARTMENT_OPTIONS.forEach((department) => {
+  page.departments.forEach((department) => {
     editCourseDepartmentSelect.append(
       createElement("option", {
-        attrs: { value: department.value || "" },
+        attrs: { value: String(department.departmentId) },
         text: department.label || "",
       }),
     );
   });
 
-  editCourseDepartmentSelect.disabled = !isDepartmentCourse;
+  if (isDepartmentChoice && !canChooseDepartment && selectedCourse.attributedDepartmentId) {
+    editCourseDepartmentSelect.append(
+      createElement("option", {
+        attrs: { value: String(selectedCourse.attributedDepartmentId) },
+        text: selectedCourse.attributedDepartmentLabel || "현재 귀속 학부",
+      }),
+    );
+  }
+
+  editCourseDepartmentSelect.disabled = !canChooseDepartment;
   editCourseDepartmentSelect.value = page.editCourseDraft.attributedDepartmentId || "";
 
   clearChildren(editCourseRetakeSelect);
 
+  // 백엔드 정책에 맞춰 같은 과목 코드 + 이전 이력 + 미재수강 후보만 노출
   const retakeCandidates = page.takenCourses.filter((course) => {
-    if (course.courseId === page.openEditCourseId) return false;
+    if (course.courseId === selectedCourse.courseId) return false;
+    if (course.code !== selectedCourse.code) return false;
+    if (course.retakeCourseId) return false;
 
     const courseYear = Number(course.takenYear || 0);
     const draftYear = Number(page.editCourseDraft.year || 0);
-    if (courseYear !== draftYear) {
-      return courseYear < draftYear;
-    }
+    if (courseYear !== draftYear) return courseYear < draftYear;
 
     const courseTermOrder = page.termSortOrder[course.takenTerm] || 0;
     const draftTermOrder = page.termSortOrder[page.editCourseDraft.term] || 0;
     return courseTermOrder < draftTermOrder;
   });
 
-  if (!retakeCandidates.some((course) => course.courseId === page.editCourseDraft.retakeCourseId)) {
-    page.editCourseDraft.retakeCourseId = "";
-  }
-
   editCourseRetakeSelect.append(
     createElement("option", {
       attrs: { value: "" },
-      text: retakeCandidates.length > 0 ? "없음" : "이전 수강 이력 없음",
+      text: retakeCandidates.length > 0 ? "없음" : "이전 동일 과목 이력 없음",
     }),
   );
 
   retakeCandidates.forEach((course) => {
     editCourseRetakeSelect.append(
       createElement("option", {
-        attrs: { value: course.courseId || "" },
+        attrs: { value: String(course.courseId) },
         text: `${course.takenYear} ${termLabelMap[course.takenTerm] || course.takenTerm || ""} - ${course.name || ""}`,
       }),
     );
   });
+
+  if (!retakeCandidates.some((course) => String(course.courseId) === String(page.editCourseDraft.retakeCourseId || ""))) {
+    page.editCourseDraft.retakeCourseId = "";
+  }
 
   editCourseRetakeSelect.value = page.editCourseDraft.retakeCourseId || "";
   document.body.classList.add("is-modal-open");
@@ -348,6 +412,7 @@ export function renderMajorModal(page) {
   const { majorSelectModal, majorCourseSummary, majorSelectInput } = page.elements;
   const isOpen = Boolean(page.pendingMajorCourse);
 
+  // 전공 선택 대상 과목이 있을 때만 모달 오픈
   majorSelectModal.hidden = !isOpen;
   majorSelectModal.setAttribute("aria-hidden", String(!isOpen));
   majorSelectModal.classList.toggle("is-open", isOpen);
@@ -370,7 +435,7 @@ export function renderMajorModal(page) {
   page.pendingMajorOptions.forEach((major) => {
     majorSelectInput.append(
       createElement("option", {
-        attrs: { value: major.value || "" },
+        attrs: { value: String(major.majorId) },
         text: major.label || "",
       }),
     );

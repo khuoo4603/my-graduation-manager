@@ -154,6 +154,11 @@ export function put(path, body, options = {}) {
   return request(path, { ...options, method: "PUT", body });
 }
 
+// PATCH 요청 헬퍼
+export function patch(path, body, options = {}) {
+  return request(path, { ...options, method: "PATCH", body });
+}
+
 // DELETE 요청 헬퍼
 export function del(path, options = {}) {
   return request(path, { ...options, method: "DELETE" });

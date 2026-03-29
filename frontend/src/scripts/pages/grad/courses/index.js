@@ -1,14 +1,13 @@
+import { getCourseMasters, getCourses } from "/src/scripts/api/course.js";
+import { getProfile } from "/src/scripts/api/profile.js";
+import { getDepartments } from "/src/scripts/api/reference.js";
 import { renderHeader } from "/src/scripts/components/header.js";
 import { ensureProtectedPageAccess } from "/src/scripts/utils/auth.js";
-import { PAGE_PATHS } from "/src/scripts/utils/constants.js";
+import { PAGE_PATHS, UI_MESSAGES } from "/src/scripts/utils/constants.js";
 import { qs } from "/src/scripts/utils/dom.js";
+import { resolveErrorInfo } from "/src/scripts/utils/error.js";
 
 import { bindCoursesPageEvents } from "./events.js";
-import {
-  COURSE_MAJOR_OPTIONS,
-  SEARCH_COURSE_DUMMY_DATA,
-  TAKEN_COURSE_DUMMY_DATA,
-} from "./mock-data.js";
 import { renderEditModal, renderMajorModal, renderSearchResults, renderTakenCourses } from "./render.js";
 
 // Courses 페이지 DOM 참조 수집
@@ -49,6 +48,166 @@ function collectCoursesPageElements(pageRoot) {
   };
 }
 
+// Courses 페이지 기본 객체 생성
+function createCoursesPageState(elements, authResult) {
+  return {
+    elements,
+    profile: authResult.profile || null,
+    userMajors: [],
+    departments: [],
+    departmentsStatus: "loading",
+    searchResults: [],
+    takenCourses: [],
+    searchStatus: "idle",
+    takenStatus: "loading",
+    searchTimerId: 0,
+    openEditCourseId: "",
+    editCourseDraft: null,
+    pendingMajorCourse: null,
+    pendingMajorOptions: [],
+    selectedMajorId: "",
+    termSortOrder: {
+      1: 1,
+      SUMMER: 2,
+      2: 3,
+      WINTER: 4,
+    },
+    searchCourseMasters: null,
+    refreshTakenCourses: null,
+  };
+}
+
+// 전공 응답 정규화
+function normalizeUserMajor(item) {
+  // profile 전공 목록에 id가 없는 잘못된 항목 제외
+  if (!item || item.id === undefined || item.id === null) return null;
+
+  return {
+    majorId: Number(item.id),
+    label: item.name || "",
+  };
+}
+
+// 학부 응답 정규화
+function normalizeDepartment(item) {
+  // reference 학부 목록에서 식별자가 없는 항목 제외
+  if (!item || item.id === undefined || item.id === null) return null;
+
+  return {
+    departmentId: Number(item.id),
+    label: item.name || "",
+  };
+}
+
+// Course Master 응답 정규화
+function normalizeCourseMaster(item) {
+  // 검색 결과는 courseMasterId 기준으로만 Add 흐름 연결 가능
+  if (!item || item.courseMasterId === undefined || item.courseMasterId === null) return null;
+
+  return {
+    courseMasterId: Number(item.courseMasterId),
+    code: item.courseCode || "",
+    name: item.courseName || "",
+    credits: Number(item.defaultCredits || 0),
+    category: item.courseCategory || "",
+    subcategory: item.courseSubcategory || "",
+  };
+}
+
+// 수강 이력 응답 정규화
+function normalizeTakenCourse(item) {
+  // 수강 이력은 courseId가 실제 수정/삭제 식별자
+  if (!item || item.courseId === undefined || item.courseId === null) return null;
+
+  return {
+    courseId: Number(item.courseId),
+    courseMasterId: Number(item.courseMasterId || 0),
+    code: item.courseCode || "",
+    name: item.courseName || "",
+    earnedCredits: Number(item.earnedCredits || 0),
+    takenYear: String(item.takenYear || ""),
+    takenTerm: item.takenTerm || "",
+    courseCategory: item.courseCategory || "",
+    courseSubcategory: item.courseSubcategory || "",
+    grade: item.grade || "",
+    majorId: item.majorId == null ? "" : String(item.majorId),
+    majorLabel: item.majorName || "",
+    attributedDepartmentId: item.departmentId == null ? "" : String(item.departmentId),
+    attributedDepartmentLabel: item.departmentName || "",
+    retakeCourseId: item.retakeCourseId == null ? "" : String(item.retakeCourseId),
+    isRetake: Boolean(item.retakeCourseId),
+  };
+}
+
+// 수강 이력 최신순 정렬
+function sortTakenCourses(courses, termSortOrder) {
+  return [...courses].sort((leftCourse, rightCourse) => {
+    // 최신 연도 우선 정렬
+    const yearDiff = Number(rightCourse.takenYear || 0) - Number(leftCourse.takenYear || 0);
+    if (yearDiff !== 0) return yearDiff;
+
+    // 같은 연도 안에서는 겨울 > 2학기 > 여름 > 1학기 순으로 최신 처리
+    const leftTermOrder = termSortOrder[leftCourse.takenTerm] || 0;
+    const rightTermOrder = termSortOrder[rightCourse.takenTerm] || 0;
+    if (leftTermOrder !== rightTermOrder) {
+      return rightTermOrder - leftTermOrder;
+    }
+
+    return Number(rightCourse.courseId || 0) - Number(leftCourse.courseId || 0);
+  });
+}
+
+// 프로필과 전공 목록 반영
+function applyProfileToPage(page, profile) {
+  page.profile = profile || null;
+  // Courses에서는 userMajorId가 아니라 실제 majorId만 사용
+  page.userMajors = Array.isArray(profile?.majors) ? profile.majors.map(normalizeUserMajor).filter(Boolean) : [];
+}
+
+// 초기 데이터 로드
+async function loadInitialCoursesPageData(page, authResult) {
+  page.takenStatus = "loading";
+  page.departmentsStatus = "loading";
+  renderTakenCourses(page);
+
+  // 인증 확인 결과에 profile이 없으면 실제 profile API 한 번 더 조회
+  const profile = authResult.profile || (await getProfile());
+  applyProfileToPage(page, profile);
+
+  const [departmentsResult, coursesResult] = await Promise.allSettled([getDepartments(), getCourses()]);
+  let coursesLoadError = null;
+
+  if (departmentsResult.status === "fulfilled") {
+    page.departments = Array.isArray(departmentsResult.value?.departments)
+      ? departmentsResult.value.departments.map(normalizeDepartment).filter(Boolean)
+      : [];
+    page.departmentsStatus = "ready";
+  } else {
+    console.error("[Courses][DepartmentsLoadFailed]", departmentsResult.reason);
+    page.departments = [];
+    page.departmentsStatus = "error";
+  }
+
+  // 메인 목록인 taken courses 성공 여부로 페이지 메인 상태 결정
+  if (coursesResult.status === "fulfilled") {
+    const items = Array.isArray(coursesResult.value?.items) ? coursesResult.value.items : [];
+    page.takenCourses = sortTakenCourses(items.map(normalizeTakenCourse).filter(Boolean), page.termSortOrder);
+    page.takenStatus = page.takenCourses.length > 0 ? "results" : "empty";
+  } else {
+    console.error("[Courses][TakenCoursesLoadFailed]", coursesResult.reason);
+    page.takenCourses = [];
+    page.takenStatus = "error";
+    coursesLoadError = coursesResult.reason;
+  }
+
+  renderTakenCourses(page);
+
+  // departments 실패는 보조 데이터 제한으로만 처리하고, courses 실패만 상위 에러로 전달
+  if (coursesLoadError) {
+    throw coursesLoadError;
+  }
+}
+
 // Courses 페이지 초기화
 export async function initCoursesPage() {
   const authResult = await ensureProtectedPageAccess();
@@ -62,43 +221,32 @@ export async function initCoursesPage() {
   const pageRoot = qs("[data-page-root]");
   if (!pageRoot) return;
 
-  const elements = collectCoursesPageElements(pageRoot);
-  const currentYear = String(new Date().getFullYear());
-  const termSortOrder = {
-    1: 1,
-    SUMMER: 2,
-    2: 3,
-    WINTER: 4,
+  const page = createCoursesPageState(collectCoursesPageElements(pageRoot), authResult);
+  page.elements.searchYearInput.value = String(new Date().getFullYear());
+
+  page.searchCourseMasters = async (params) => {
+    const response = await getCourseMasters(params);
+    const items = Array.isArray(response?.items) ? response.items : [];
+    return items.map(normalizeCourseMaster).filter(Boolean);
   };
 
-  elements.searchYearInput.value = currentYear;
+  page.refreshTakenCourses = async () => {
+    page.takenStatus = "loading";
+    renderTakenCourses(page);
 
-  const searchCatalog = SEARCH_COURSE_DUMMY_DATA.map((course) => ({ ...course }));
-  const takenCourses = TAKEN_COURSE_DUMMY_DATA.map((course) => ({ ...course })).sort((leftCourse, rightCourse) => {
-    const yearDiff = Number(rightCourse.takenYear || 0) - Number(leftCourse.takenYear || 0);
-    if (yearDiff !== 0) return yearDiff;
+    try {
+      const response = await getCourses();
+      const items = Array.isArray(response?.items) ? response.items : [];
+      page.takenCourses = sortTakenCourses(items.map(normalizeTakenCourse).filter(Boolean), page.termSortOrder);
+      page.takenStatus = page.takenCourses.length > 0 ? "results" : "empty";
+    } catch (error) {
+      console.error("[Courses][TakenCoursesReloadFailed]", error);
+      // 재조회 실패 시 기존 성공 상태를 남기지 않고 에러 패널 노출
+      page.takenCourses = [];
+      page.takenStatus = "error";
+    }
 
-    const leftTermOrder = termSortOrder[leftCourse.takenTerm] || 0;
-    const rightTermOrder = termSortOrder[rightCourse.takenTerm] || 0;
-    return rightTermOrder - leftTermOrder;
-  });
-
-  const searchResults = searchCatalog.filter((course) => course.year === currentYear);
-
-  const page = {
-    elements,
-    searchCatalog,
-    searchResults,
-    takenCourses,
-    mockUserMajors: COURSE_MAJOR_OPTIONS.slice(0, 2).map((major) => ({ ...major })),
-    searchStatus: searchResults.length > 0 ? "results" : "empty",
-    searchTimerId: 0,
-    openEditCourseId: "",
-    editCourseDraft: null,
-    pendingMajorCourse: null,
-    pendingMajorOptions: [],
-    selectedMajorId: "",
-    termSortOrder,
+    renderTakenCourses(page);
   };
 
   renderSearchResults(page);
@@ -106,6 +254,16 @@ export async function initCoursesPage() {
   renderEditModal(page);
   renderMajorModal(page);
   bindCoursesPageEvents(page);
+
+  try {
+    await loadInitialCoursesPageData(page, authResult);
+  } catch (error) {
+    console.error("[Courses][InitialLoadFailed]", error);
+    const errorInfo = resolveErrorInfo(error, UI_MESSAGES.COMMON_ERROR);
+    page.takenStatus = "error";
+    renderTakenCourses(page);
+    window.alert(errorInfo.message);
+  }
 }
 
 initCoursesPage();
