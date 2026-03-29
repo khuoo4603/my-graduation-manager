@@ -3,9 +3,6 @@ kind: Deployment
 metadata:
   name: frontend
 spec:
-  strategy:
-    type: Recreate
-    rollingUpdate: null
   template:
     metadata:
       annotations:
