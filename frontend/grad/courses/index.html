@@ -4,12 +4,303 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Graduation Manager | Courses</title>
+    <link rel="stylesheet" href="/src/styles/base.css" />
+    <link rel="stylesheet" href="/src/styles/layout.css" />
+    <link rel="stylesheet" href="/src/styles/components.css" />
+    <link rel="stylesheet" href="/src/styles/pages/courses.css" />
   </head>
   <body data-page="grad-courses">
     <div class="page-shell" data-app-shell>
       <div data-header-root></div>
       <main class="page-main">
-        <div class="container page-section" data-page-root></div>
+        <div class="container page-section">
+          <section class="courses-page" data-page-root>
+            <header class="courses-hero">
+              <div class="courses-hero__content">
+                <h1 class="page-title courses-hero__title">Course Management</h1>
+                <p class="page-subtitle courses-hero__subtitle">수강 과목을 검색하고 관리합니다.</p>
+              </div>
+            </header>
+
+            <section class="card courses-card">
+              <div class="courses-card__header">
+                <h2 class="courses-card__title">Search Courses</h2>
+              </div>
+
+              <form class="courses-search-form" data-search-form autocomplete="off">
+                <label class="field">
+                  <span class="field__label">연도</span>
+                  <input
+                    class="input"
+                    type="number"
+                    min="1900"
+                    step="1"
+                    name="year"
+                    placeholder="연도 입력"
+                    data-search-year-input
+                  />
+                </label>
+
+                <label class="field">
+                  <span class="field__label">학기</span>
+                  <select class="select" name="term" data-search-term-select>
+                    <option value="">학기 선택</option>
+                    <option value="1">1학기</option>
+                    <option value="SUMMER">여름 계절학기</option>
+                    <option value="2">2학기</option>
+                    <option value="WINTER">겨울 계절학기</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">세부 구분</span>
+                  <select class="select" name="subcategory" data-search-subcategory-select>
+                    <option value="">전체 세부 구분</option>
+                    <option value="교양필수">교양필수</option>
+                    <option value="채플">채플</option>
+                    <option value="SEED">SEED</option>
+                    <option value="교양선택">교양선택</option>
+                    <option value="평생교육">평생교육</option>
+                    <option value="전공필수">전공필수</option>
+                    <option value="전공탐색">전공탐색</option>
+                    <option value="전공선택">전공선택</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">과목명</span>
+                  <input class="input" type="search" name="name" placeholder="과목명 검색" data-search-name-input />
+                </label>
+
+                <div class="courses-search-form__action">
+                  <button class="btn btn--primary courses-search-form__submit" type="submit" data-search-submit-button>
+                    <img
+                      class="btn__icon-image courses-search-form__icon"
+                      src="/src/assets/icons/fluent/search_24_regular.svg"
+                      alt=""
+                      aria-hidden="true"
+                    />
+                    <span>검색</span>
+                  </button>
+                </div>
+              </form>
+
+              <div class="courses-state-panel" data-search-state-panel hidden></div>
+
+              <div class="table-wrap courses-table-wrap" data-search-table-wrap>
+                <div class="table-scroll courses-table-scroll courses-table-scroll--limited">
+                  <table class="table courses-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">과목코드</th>
+                        <th scope="col">과목명</th>
+                        <th scope="col">학점</th>
+                        <th scope="col">카테고리</th>
+                        <th scope="col">세부 구분</th>
+                        <th scope="col">추가</th>
+                      </tr>
+                    </thead>
+                    <tbody data-search-course-rows></tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <section class="card courses-card">
+              <div class="courses-card__header courses-card__header--split">
+                <h2 class="courses-card__title">Taken Courses</h2>
+
+                <div class="courses-total-credits" aria-live="polite">
+                  <span>총 취득학점</span>
+                  <strong data-total-credits>0</strong>
+                </div>
+              </div>
+
+              <div class="courses-state-panel" data-taken-empty-panel hidden></div>
+
+              <div class="table-wrap courses-table-wrap" data-taken-table-wrap>
+                <div class="table-scroll courses-table-scroll courses-table-scroll--limited">
+                  <table class="table courses-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">과목코드</th>
+                        <th scope="col">과목명</th>
+                        <th scope="col">학점</th>
+                        <th scope="col">연도</th>
+                        <th scope="col">학기</th>
+                        <th scope="col">세부 구분</th>
+                        <th scope="col">재수강</th>
+                        <th scope="col">삭제</th>
+                      </tr>
+                    </thead>
+                    <tbody data-taken-course-rows></tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <section class="courses-modal-overlay" data-edit-course-modal hidden aria-hidden="true">
+              <div class="courses-modal" role="dialog" aria-modal="true" aria-labelledby="edit-course-modal-title">
+                <div class="courses-modal__header">
+                  <div class="courses-modal__heading">
+                    <h2 class="courses-modal__title" id="edit-course-modal-title">과목 수정</h2>
+                    <p class="courses-modal__subtitle">선택한 수강 과목의 수정 가능 항목을 변경합니다.</p>
+                  </div>
+
+                  <button class="courses-modal__close" type="button" aria-label="닫기" data-close-edit-course>
+                    &times;
+                  </button>
+                </div>
+
+                <form class="courses-modal__body courses-edit-form" data-edit-course-form autocomplete="off">
+                  <div class="form-grid form-grid--2 courses-modal__grid">
+                    <label class="field">
+                      <span class="field__label">과목코드</span>
+                      <input
+                        class="input courses-input--readonly"
+                        type="text"
+                        name="code"
+                        readonly
+                        data-edit-course-code-input
+                      />
+                    </label>
+
+                    <label class="field">
+                      <span class="field__label">과목명</span>
+                      <input class="input" type="text" name="name" data-edit-course-name-input />
+                    </label>
+
+                    <label class="field">
+                      <span class="field__label">학점</span>
+                      <input
+                        class="input"
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        name="credits"
+                        data-edit-course-credits-input
+                      />
+                    </label>
+
+                    <label class="field">
+                      <span class="field__label">성적</span>
+                      <select class="select" name="grade" data-edit-course-grade-select>
+                        <option value="">성적 선택</option>
+                        <option value="A+">A+</option>
+                        <option value="A0">A0</option>
+                        <option value="B+">B+</option>
+                        <option value="B0">B0</option>
+                        <option value="C+">C+</option>
+                        <option value="C0">C0</option>
+                        <option value="D+">D+</option>
+                        <option value="D0">D0</option>
+                        <option value="F">F</option>
+                        <option value="P">P</option>
+                        <option value="NP">NP</option>
+                      </select>
+                    </label>
+
+                    <label class="field">
+                      <span class="field__label">연도</span>
+                      <input
+                        class="input"
+                        type="number"
+                        min="1900"
+                        step="1"
+                        name="year"
+                        placeholder="연도 입력"
+                        data-edit-course-year-input
+                      />
+                    </label>
+
+                    <label class="field">
+                      <span class="field__label">학기</span>
+                      <select class="select" name="term" data-edit-course-term-select>
+                        <option value="">학기 선택</option>
+                        <option value="1">1학기</option>
+                        <option value="SUMMER">여름 계절학기</option>
+                        <option value="2">2학기</option>
+                        <option value="WINTER">겨울 계절학기</option>
+                      </select>
+                    </label>
+
+                    <label class="field">
+                      <span class="field__label">세부 구분</span>
+                      <select class="select" name="subcategory" data-edit-course-subcategory-select>
+                        <option value="">세부 구분 선택</option>
+                        <option value="교양필수">교양필수</option>
+                        <option value="채플">채플</option>
+                        <option value="SEED">SEED</option>
+                        <option value="교양선택">교양선택</option>
+                        <option value="평생교육">평생교육</option>
+                        <option value="전공필수">전공필수</option>
+                        <option value="전공탐색">전공탐색</option>
+                        <option value="전공선택">전공선택</option>
+                      </select>
+                    </label>
+
+                    <label class="field">
+                      <span class="field__label">귀속 전공</span>
+                      <select class="select" name="attributedMajorId" data-edit-course-major-select></select>
+                    </label>
+
+                    <label class="field">
+                      <span class="field__label">귀속 학부</span>
+                      <select class="select" name="attributedDepartmentId" data-edit-course-department-select></select>
+                    </label>
+
+                    <label class="field">
+                      <span class="field__label">재수강 과목</span>
+                      <select class="select" name="retakeCourseId" data-edit-course-retake-select></select>
+                    </label>
+                  </div>
+
+                  <div class="courses-modal__footer">
+                    <button class="btn btn--secondary" type="button" data-cancel-edit-course>취소</button>
+                    <button class="btn btn--primary" type="submit">저장</button>
+                  </div>
+                </form>
+              </div>
+            </section>
+
+            <section class="courses-modal-overlay" data-major-select-modal hidden aria-hidden="true">
+              <div
+                class="courses-modal courses-modal--narrow"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="major-select-modal-title"
+              >
+                <div class="courses-modal__header">
+                  <div class="courses-modal__heading">
+                    <h2 class="courses-modal__title" id="major-select-modal-title">전공 선택</h2>
+                    <p class="courses-modal__subtitle">이 과목을 어떤 전공으로 등록할지 선택해주세요.</p>
+                  </div>
+
+                  <button class="courses-modal__close" type="button" aria-label="닫기" data-close-major-select>
+                    &times;
+                  </button>
+                </div>
+
+                <form class="courses-modal__body" data-major-select-form autocomplete="off">
+                  <div class="courses-modal__summary">
+                    <span class="courses-modal__summary-label">과목</span>
+                    <strong data-major-course-summary>-</strong>
+                  </div>
+
+                  <label class="field">
+                    <span class="field__label">전공</span>
+                    <select class="select" name="majorId" data-major-select-input></select>
+                  </label>
+
+                  <div class="courses-modal__footer">
+                    <button class="btn btn--secondary" type="button" data-cancel-major-select>취소</button>
+                    <button class="btn btn--primary" type="submit">과목 추가</button>
+                  </div>
+                </form>
+              </div>
+            </section>
+          </section>
+        </div>
       </main>
     </div>
     <script type="module" src="/src/scripts/pages/grad/courses/index.js"></script>

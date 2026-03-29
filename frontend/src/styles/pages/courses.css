@@ -1,4 +1,408 @@
-﻿/* Courses 페이지 제목 강조 색상 */
-body[data-page="grad-courses"] .page-title {
+/* Courses 페이지 전체 레이아웃 */
+body[data-page="grad-courses"] .page-section {
+  justify-items: stretch;
+}
+
+body.is-modal-open {
+  overflow: hidden;
+}
+
+.courses-page {
+  width: 100%;
+  display: grid;
+  gap: 1rem;
+}
+
+/* 상단 헤더 카드 */
+.courses-hero {
+  padding: 0.1rem 0 0.35rem;
+}
+
+.courses-hero__content {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.courses-hero__title {
   color: var(--color-page-title);
+}
+
+.courses-hero__subtitle {
+  max-width: 32rem;
+}
+
+/* 카드/헤더 공통 레이아웃 */
+.courses-card {
+  display: grid;
+  gap: 0.95rem;
+  padding: 1.05rem 1.1rem;
+  border: 1px solid #dfe7f2;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.courses-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.courses-card__header--split {
+  align-items: center;
+}
+
+.courses-card__title {
+  margin: 0;
+  font-size: 1.18rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.courses-total-credits {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.72rem;
+  border: 1px solid #d7e5fb;
+  border-radius: 999px;
+  background: #f8fbff;
+  color: #2357b8;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.courses-total-credits strong {
+  font-size: 1rem;
+}
+
+/* 검색 폼 배치 */
+.courses-search-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 0.7rem;
+  align-items: end;
+}
+
+.courses-search-form__action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.courses-search-form__submit {
+  min-width: 7.25rem;
+}
+
+.courses-search-form__icon {
+  width: 1rem;
+  height: 1rem;
+  filter: brightness(0) invert(1);
+}
+
+/* 검색 전/로딩/빈 상태 공통 패널 */
+.courses-state-panel {
+  min-height: 0;
+  padding: 0.1rem 0 0;
+  display: grid;
+  justify-items: flex-start;
+  text-align: left;
+}
+
+.courses-state-panel__content {
+  display: grid;
+  gap: 0.2rem;
+  justify-items: flex-start;
+}
+
+.courses-state-panel__title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.courses-state-panel__description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+}
+
+.courses-state-panel__loading {
+  justify-content: center;
+}
+
+/* 테이블/스크롤 영역 */
+.courses-table-wrap {
+  border: 1px solid #e5ebf4;
+  border-radius: 0.95rem;
+  overflow: hidden;
+}
+
+.courses-table-scroll--limited {
+  max-height: 35rem;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.courses-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8fafc;
+}
+
+.courses-table__row--clickable {
+  cursor: pointer;
+}
+
+.courses-table__code,
+.courses-table__number {
+  white-space: nowrap;
+}
+
+.courses-table__name {
+  min-width: 15rem;
+  font-weight: 700;
+  color: var(--color-text-subtle);
+}
+
+.courses-table__action {
+  white-space: nowrap;
+}
+
+.courses-action-button {
+  min-height: 2rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.7rem;
+}
+
+.courses-action-button--add {
+  border-color: var(--color-info-border-soft);
+  background: var(--color-info-bg-soft);
+  color: var(--color-info);
+}
+
+.courses-action-button--add:hover {
+  background: #dcecff;
+}
+
+.courses-action-button__icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  filter: invert(33%) sepia(80%) saturate(1506%) hue-rotate(205deg) brightness(94%) contrast(96%);
+}
+
+.courses-action-icon img {
+  width: 1rem;
+  height: 1rem;
+}
+
+.courses-action-icon--danger {
+  color: var(--color-danger);
+}
+
+.courses-action-icon--danger:hover {
+  background: var(--color-danger-bg-soft);
+}
+
+.courses-action-icon--danger img {
+  filter: invert(20%) sepia(86%) saturate(2924%) hue-rotate(347deg) brightness(95%) contrast(91%);
+}
+
+.courses-retake-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  color: var(--color-text-subtle);
+  font-size: 0.84rem;
+}
+
+.courses-retake-indicator input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
+/* 읽기 전용 필드/모달 공통 */
+.courses-input--readonly {
+  background: var(--color-surface-soft);
+  color: var(--color-text-subtle);
+}
+
+.courses-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(15, 23, 42, 0.24);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.18s ease,
+    visibility 0.18s ease;
+}
+
+.courses-modal-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.courses-modal-overlay[hidden] {
+  display: none !important;
+}
+
+.courses-modal {
+  width: min(100%, 48rem);
+  border: 1px solid rgba(219, 227, 239, 0.92);
+  border-radius: 1.1rem;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18);
+}
+
+.courses-modal--narrow {
+  width: min(100%, 30rem);
+}
+
+.courses-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem 1.2rem 0;
+}
+
+.courses-modal__heading {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.courses-modal__title {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.courses-modal__subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.courses-modal__close {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.8rem;
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.courses-modal__close:hover {
+  background: #e8eef8;
+  color: var(--color-text);
+}
+
+.courses-modal__body {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem 1.2rem 1.2rem;
+}
+
+.courses-modal__grid {
+  align-items: start;
+}
+
+.courses-modal__summary {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.9rem;
+  background: var(--color-surface-soft);
+}
+
+.courses-modal__summary-label {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.courses-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* 비차단 피드백 토스트 */
+/* 반응형 보정 */
+@media (max-width: 1080px) {
+  .courses-search-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .courses-search-form__action {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .courses-card {
+    padding: 1rem;
+  }
+
+  .courses-search-form {
+    grid-template-columns: 1fr;
+  }
+
+  .courses-card__header,
+  .courses-card__header--split {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .courses-total-credits {
+    align-self: flex-start;
+  }
+
+  .courses-table-scroll--limited {
+    max-height: 32rem;
+  }
+
+  .courses-modal-overlay {
+    padding: 0.8rem;
+  }
+
+  .courses-modal__header,
+  .courses-modal__body {
+    padding-inline: 1rem;
+  }
+
+  .courses-modal__header {
+    padding-top: 1rem;
+  }
+
+  .courses-modal__footer {
+    flex-direction: column-reverse;
+  }
+
+  .courses-modal__footer .btn {
+    width: 100%;
+  }
+
+  .courses-hero {
+    padding-bottom: 0.2rem;
+  }
 }

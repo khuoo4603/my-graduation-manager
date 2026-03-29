@@ -59,6 +59,12 @@ body {
   min-height: 100%;
 }
 
+/* 우측 스크롤바 유무에 따라 레이아웃이 흔들리지 않도록 고정 */
+html {
+  overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
+}
+
 /* 본문 기본 타이포그래피 및 배경 설정 */
 body {
   font-family: var(--font-family);
