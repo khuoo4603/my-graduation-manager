@@ -17,6 +17,7 @@ public class CoursePatchRequest {
     private String grade;
     private Integer takenYear;
     private String takenTerm;
+    private String courseSubcategory;
     private Long majorId;
     private Long attributedDepartmentId;
     private Long retakeCourseId;
@@ -32,6 +33,8 @@ public class CoursePatchRequest {
     @JsonIgnore
     private boolean takenTermPresent;
     @JsonIgnore
+    private boolean courseSubcategoryPresent;
+    @JsonIgnore
     private boolean majorIdPresent;
     @JsonIgnore
     private boolean attributedDepartmentIdPresent;
@@ -45,6 +48,7 @@ public class CoursePatchRequest {
     public boolean hasGrade() { return gradePresent; }
     public boolean hasTakenYear() { return takenYearPresent; }
     public boolean hasTakenTerm() { return takenTermPresent; }
+    public boolean hasCourseSubcategory() { return courseSubcategoryPresent; }
     public boolean hasMajorId() { return majorIdPresent; }
     public boolean hasAttributedDepartmentId() { return attributedDepartmentIdPresent; }
     public boolean hasRetakeCourseId() { return retakeCourseIdPresent; }
@@ -79,6 +83,12 @@ public class CoursePatchRequest {
     public void setTakenTerm(String takenTerm) {
         this.takenTermPresent = true;
         this.takenTerm = takenTerm;
+    }
+
+    @JsonSetter("courseSubcategory")
+    public void setCourseSubcategory(String courseSubcategory) {
+        this.courseSubcategoryPresent = true;
+        this.courseSubcategory = courseSubcategory;
     }
 
     @JsonSetter("majorId")

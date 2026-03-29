@@ -16,13 +16,15 @@ public class CourseMasterLookupDao {
 
     // course_master의 과목 존재여부, courseCode/category/subcategory분류를 위한 값 찾기
     public Optional<CourseMasterSnapshot> findSnapshotById(long courseMasterId) {
-
         String sql = """
                 SELECT
+                    course_master_id,
                     course_code,
+                    course_name,
                     default_credits,
                     course_category,
-                    course_subcategory
+                    course_subcategory,
+                    seed_area
                 FROM course_master
                 WHERE course_master_id = ?
                 """;
@@ -30,10 +32,13 @@ public class CourseMasterLookupDao {
         return jdbcTemplate.query(
                         sql,
                         (rs, rowNum) -> new CourseMasterSnapshot(
+                                rs.getLong("course_master_id"),
                                 rs.getString("course_code"),
+                                rs.getString("course_name"),
                                 rs.getInt("default_credits"),
                                 rs.getString("course_category"),
-                                rs.getString("course_subcategory")
+                                rs.getString("course_subcategory"),
+                                rs.getString("seed_area")
                         ),
                         courseMasterId
                 )
@@ -43,7 +48,6 @@ public class CourseMasterLookupDao {
 
     // 전공탐색 과목 등록 시 접근 가능한 학부 목록 조회
     public List<Long> findAccessibleDepartmentIdsByCourseMasterId(long courseMasterId) {
-
         String sql = """
                 SELECT department_id
                 FROM course_master_department_access
@@ -55,9 +59,12 @@ public class CourseMasterLookupDao {
     }
 
     public record CourseMasterSnapshot(
+            long courseMasterId,
             String courseCode,
+            String courseName,
             int defaultCredits,
             String courseCategory,
-            String courseSubcategory
+            String courseSubcategory,
+            String seedArea
     ) {}
 }

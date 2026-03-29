@@ -13,11 +13,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -45,8 +43,7 @@ public class CourseMasterService {
         String normalizedSubcategory = (subcategory == null || subcategory.trim().isBlank()) ? null : subcategory.trim(); // 세부구분 필터, 공백이면 미입력 처리
         String normalizedDeptName = (deptName == null || deptName.trim().isBlank()) ? null : deptName.trim(); // 개설 학부명 검색어, 공백이면 미입력 처리
 
-
-        // 파라미터가 blank면 null로 변환 후 실제 개설/기본 fallback 과목을 각각 조회
+        // 파라미터가 blank면 null로 변환 후 실제 개설 과목 먼저 조회
         List<CourseMasterSearchRow> openedRows = courseMasterRepository.searchOpenedRows(
                 openedYear,
                 term,
@@ -56,28 +53,21 @@ public class CourseMasterService {
                 normalizedSubcategory,
                 normalizedDeptName
         );
-        List<CourseMasterSearchRow> defaultRows = courseMasterRepository.searchDefaultRows(
-                openedYear,
-                term,
-                normalizedCode,
-                normalizedName,
-                normalizedCategory,
-                normalizedSubcategory,
-                normalizedDeptName
-        );
 
-        // 실제 개설된 course_code는 fallback 결과에서 숨기기 위해 별도 수집
-        Set<String> openedCourseCodes = new HashSet<>();
-        for (CourseMasterSearchRow row : openedRows) {
-            openedCourseCodes.add(row.courseCode()); // 실제 개설 과목이 있는 course_code 기록
-        }
-
-        // 실제 개설 과목 우선, 없는 course_code만 default 과목으로 보완
-        List<CourseMasterSearchRow> rows = new ArrayList<>(openedRows);
-        for (CourseMasterSearchRow row : defaultRows) {
-            if (!openedCourseCodes.contains(row.courseCode())) {
-                rows.add(row);
-            }
+        List<CourseMasterSearchRow> rows = openedRows;
+        // 해당 년도/학기에 실제 개설 과목이 하나도 없을 때만 default fallback 허용
+        if (rows.isEmpty()
+                && ("1".equals(term) || "2".equals(term))
+                && !courseMasterRepository.existsOpenedRows(openedYear, term)) {
+            rows = courseMasterRepository.searchDefaultRows(
+                    openedYear,
+                    term,
+                    normalizedCode,
+                    normalizedName,
+                    normalizedCategory,
+                    normalizedSubcategory,
+                    normalizedDeptName
+            );
         }
 
         // course_master_id 기준으로 items를 누적 (과목 1개 = items 1개)

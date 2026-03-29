@@ -66,6 +66,28 @@ public class CourseMasterDao implements CourseMasterRepository {
         return namedJdbcTemplate.query(sql.toString(), params, new CourseMasterRowMapper());
     }
 
+    // 요청한 개설년도/학기에 실제 개설 과목 존재 여부 확인
+    @Override
+    public boolean existsOpenedRows(int openedYear, String openedTerm) {
+        String sql = """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM course_master cm
+                    WHERE cm.is_default = FALSE
+                      AND cm.opened_year = :year
+                      AND cm.opened_term = :term
+                )
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("year", openedYear)
+                .addValue("term", openedTerm);
+
+        return Boolean.TRUE.equals(
+                namedJdbcTemplate.queryForObject(sql, params, Boolean.class)
+        );
+    }
+
     // 디폴트 과목 검색
     @Override
     public List<CourseMasterSearchRow> searchDefaultRows(

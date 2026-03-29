@@ -12,7 +12,6 @@ import com.khuoo.gradmanager.grad.domain.result.MajorEvaluation;
 import com.khuoo.gradmanager.grad.domain.result.MajorExplorationEvaluation;
 import com.khuoo.gradmanager.grad.domain.result.SeedEvaluation;
 import com.khuoo.gradmanager.grad.dto.GraduationStatusResponse;
-import com.khuoo.gradmanager.grad.loadmodel.CourseMasterRow;
 import com.khuoo.gradmanager.grad.loadmodel.CourseRow;
 import com.khuoo.gradmanager.grad.loadmodel.GradLoadData;
 import com.khuoo.gradmanager.grad.loadmodel.GraduationTemplateRow;
@@ -40,8 +39,7 @@ public class GraduationEvaluationService {
     // 로드된 졸업판정 데이터를 평가 후 응답 DTO로 변환
     public GraduationStatusResponse evaluate(GradLoadData gradLoadData) {
         // 졸업판정에 사용할 수강 이력을 전처리
-        Map<Long, CourseMasterRow> courseMasterById = gradLoadData.courseMastersById(); // 과목 분류(교양/전공/SEED 등) 확인용 course_master MAP
-        Map<Long, CourseRow> courseById = new HashMap<>(); // course_id 기준으로 수강 이력을 빠르게 찾기 위한 MAP
+        Map<Long, CourseRow> courseById = new HashMap<>();
         for (CourseRow course : gradLoadData.courses()) {
             courseById.put(course.courseId(), course);
         }
@@ -51,10 +49,10 @@ public class GraduationEvaluationService {
         if (courseById.isEmpty()) {
             activeCourses = gradLoadData.courses();
         } else {
-            Map<Long, CourseRow> latestCoursesByGroup = new HashMap<>(); // 같은 원본 과목 묶음에서 최신 수강 이력 1건만 보관
+            Map<Long, CourseRow> latestCoursesByGroup = new HashMap<>();
             for (CourseRow course : gradLoadData.courses()) {
-                Long originalCourseId = course.retakeCourseId(); // 재수강이면 원본 과목 course_id부터 시작
-                Set<Long> visitedCourseIds = new HashSet<>(); // 비정상 재수강 체인/순환 참조 방지용 방문 기록 (A <- B 재수강, B <- A 재수강 금지 / A <- B <- C 재수강 체인 확인)
+                Long originalCourseId = course.retakeCourseId();
+                Set<Long> visitedCourseIds = new HashSet<>();
 
                 // 재수강 원본 과목을 따라가며 최종 재수강 그룹을 완성
                 while (originalCourseId != null) {
@@ -66,16 +64,18 @@ public class GraduationEvaluationService {
                         break;
                     }
 
-                    CourseRow originalCourse = courseById.get(originalCourseId); // 현재 원본 후보 수강 이력 조회
+                    CourseRow originalCourse = courseById.get(originalCourseId);
                     // 원본 과목이 없거나 재수강한 과목이 아니면 종료
-                    if (originalCourse == null || originalCourse.retakeCourseId() == null) { break; }
+                    if (originalCourse == null || originalCourse.retakeCourseId() == null) {
+                        break;
+                    }
 
                     // 현재 원본 후보도 재수강이면 한 단계 더 이전 원본으로 이동
                     originalCourseId = originalCourse.retakeCourseId();
                 }
 
-                long groupKey = originalCourseId == null ? course.courseId() : originalCourseId; // 재수강이 아니면 현재 검색중인 수강내역ID, 재수강이면 원본 수강내역ID
-                CourseRow currentLatest = latestCoursesByGroup.get(groupKey); // 현재 그룹에서 최신으로 선택된 수강 이력
+                long groupKey = originalCourseId == null ? course.courseId() : originalCourseId;
+                CourseRow currentLatest = latestCoursesByGroup.get(groupKey);
 
                 // 아직 그룹에 과목이 없으면 현재 과목을 판정용 데이터로 입력
                 if (currentLatest == null) {
@@ -127,8 +127,7 @@ public class GraduationEvaluationService {
 
         List<CourseRow> validCourses = new ArrayList<>();
         for (CourseRow course : activeCourses) {
-            String grade = course.grade(); // 최신 수강 이력의 성적 확인
-
+            String grade = course.grade();
             // F, NP 성적은 취득학점과 졸업요건 계산에서 제외
             if (!"F".equals(grade) && !"NP".equals(grade)) {
                 validCourses.add(course);
@@ -136,9 +135,9 @@ public class GraduationEvaluationService {
         }
 
         // 각 Dto 섹션 별 졸업판정
-        CultureEvaluation cultureEvaluation = cultureEvaluator.evaluate(gradLoadData, validCourses, courseMasterById);
-        SeedEvaluation seedEvaluation = seedEvaluator.evaluate(gradLoadData, validCourses, courseMasterById);
-        MajorEvaluation majorEvaluation = majorEvaluator.evaluate(gradLoadData, validCourses, courseMasterById);
+        CultureEvaluation cultureEvaluation = cultureEvaluator.evaluate(gradLoadData, validCourses);
+        SeedEvaluation seedEvaluation = seedEvaluator.evaluate(gradLoadData, validCourses);
+        MajorEvaluation majorEvaluation = majorEvaluator.evaluate(gradLoadData, validCourses);
         MajorExplorationEvaluation majorExplorationEvaluation = majorExplorationEvaluator.evaluate(gradLoadData, validCourses);
 
         // 전체요약 데이터 (전체 총 취득학점, 전체 졸업 요건 여부)
@@ -147,6 +146,7 @@ public class GraduationEvaluationService {
             // 최종 평가 대상 과목만 총 취득학점에 합산
             totalEarnedCredits += course.earnedCredits();
         }
+
         boolean isOverallSatisfied = overallEvaluator.evaluate(
                 gradLoadData,
                 totalEarnedCredits,
@@ -204,8 +204,8 @@ public class GraduationEvaluationService {
             int totalEarnedCredits,
             boolean isOverallSatisfied
     ) {
-        int totalRequiredCredits = gradLoadData.template().totalRequiredCredits(); // 템플릿 기준 총 필요학점
-        int totalShortageCredits = Math.max(0, totalRequiredCredits - totalEarnedCredits); // 총학점 기준 부족 학점 계산
+        int totalRequiredCredits = gradLoadData.template().totalRequiredCredits();
+        int totalShortageCredits = Math.max(0, totalRequiredCredits - totalEarnedCredits);
 
         return new GraduationStatusResponse.Overall(
                 isOverallSatisfied,

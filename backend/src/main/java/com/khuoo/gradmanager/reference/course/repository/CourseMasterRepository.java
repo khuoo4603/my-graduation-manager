@@ -27,6 +27,15 @@ public interface CourseMasterRepository {
     );
 
     /**
+     * 요청한 개설년도/학기에 실제 개설 과목 존재 여부 확인
+     *
+     * @param openedYear 개설연도(필수)
+     * @param openedTerm 개설학기(필수)
+     * @return 실제 개설 과목 존재 여부
+     */
+    boolean existsOpenedRows(int openedYear, String openedTerm);
+
+    /**
      * 요청 년도에 반환 가능한 default 과목 검색(조인 결과 row 단위)
      *
      * @param openedYear       요청 연도(필수)

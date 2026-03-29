@@ -11,12 +11,11 @@ public class CourseRowMapper implements RowMapper<CourseItem> {
     // CourseItem으로 변환
     @Override
     public CourseItem mapRow(ResultSet rs, int rowNum) throws SQLException {
-
         return new CourseItem(
                 rs.getLong("course_id"),
-                rs.getLong("course_master_id"),
-                rs.getString("course_code"),
-                rs.getString("course_name"),
+                rs.getObject("course_master_id", Long.class),
+                rs.getString("course_code_snapshot"),
+                rs.getString("course_name_snapshot"),
                 rs.getInt("earned_credits"),
                 rs.getString("grade"),
                 rs.getInt("taken_year"),

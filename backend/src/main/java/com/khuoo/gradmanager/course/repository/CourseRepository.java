@@ -12,6 +12,11 @@ public interface CourseRepository {
      *
      * @param userId                  현재 로그인 사용자 PK
      * @param courseMasterId          강의목록 PK
+     * @param courseCodeSnapshot      과목코드 스냅샷
+     * @param courseNameSnapshot      과목명 스냅샷
+     * @param courseCategory          전공/교양 스냅샷
+     * @param courseSubcategory       세부 카테고리 스냅샷
+     * @param seedArea                SEED 영역 스냅샷
      * @param earnedCredits           취득 학점
      * @param grade                   성적 ex. A+, A0, P, NP
      * @param takenYear               수강 연도 ex. 2026
@@ -25,6 +30,11 @@ public interface CourseRepository {
     long insert(
             long userId,
             long courseMasterId,
+            String courseCodeSnapshot,
+            String courseNameSnapshot,
+            String courseCategory,
+            String courseSubcategory,
+            String seedArea,
             int earnedCredits,
             String grade,
             int takenYear,
@@ -40,6 +50,8 @@ public interface CourseRepository {
      *
      * @param courseId                수정할 수강내역 PK
      * @param userId                  현재 로그인 사용자 PK
+     * @param courseSubcategory       세부 카테고리
+     * @param seedArea                SEED 영역
      * @param recognitionType         전공 인정 유형
      * @param majorId                 전공 PK
      * @param attributedDepartmentId  귀속 학부 PK
@@ -53,6 +65,8 @@ public interface CourseRepository {
     int update(
             long courseId,
             long userId,
+            String courseSubcategory,
+            String seedArea,
             String recognitionType,
             Long majorId,
             Long attributedDepartmentId,
@@ -121,7 +135,7 @@ public interface CourseRepository {
     record CourseWriteRow(
             long courseId,
             long userId,
-            long courseMasterId,
+            Long courseMasterId,
             Integer earnedCredits,
             String grade,
             Integer takenYear,
@@ -129,8 +143,10 @@ public interface CourseRepository {
             Long majorId,
             Long attributedDepartmentId,
             Long retakeCourseId,
-            String courseCode,
+            String courseCodeSnapshot,
+            String courseNameSnapshot,
             String courseCategory,
-            String courseSubcategory
+            String courseSubcategory,
+            String seedArea
     ) {}
 }

@@ -19,6 +19,11 @@ public class CourseDao implements CourseRepository {
     public long insert(
             long userId,
             long courseMasterId,
+            String courseCodeSnapshot,
+            String courseNameSnapshot,
+            String courseCategory,
+            String courseSubcategory,
+            String seedArea,
             int earnedCredits,
             String grade,
             int takenYear,
@@ -32,6 +37,11 @@ public class CourseDao implements CourseRepository {
             INSERT INTO course(
                 user_id,
                 course_master_id,
+                course_code_snapshot,
+                course_name_snapshot,
+                course_category,
+                course_subcategory,
+                seed_area,
                 recognition_type,
                 major_id,
                 attributed_department_id,
@@ -41,7 +51,7 @@ public class CourseDao implements CourseRepository {
                 taken_term,
                 retake_course_id
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             RETURNING course_id
             """;
 
@@ -51,6 +61,11 @@ public class CourseDao implements CourseRepository {
                 Long.class,
                 userId,
                 courseMasterId,
+                courseCodeSnapshot,
+                courseNameSnapshot,
+                courseCategory,
+                courseSubcategory,
+                seedArea,
                 recognitionType,
                 majorId,
                 attributedDepartmentId,
@@ -67,6 +82,8 @@ public class CourseDao implements CourseRepository {
     public int update(
             long courseId,
             long userId,
+            String courseSubcategory,
+            String seedArea,
             String recognitionType,
             Long majorId,
             Long attributedDepartmentId,
@@ -78,7 +95,9 @@ public class CourseDao implements CourseRepository {
     ) {
         String sql = """
                 UPDATE course
-                SET recognition_type = ?,
+                SET course_subcategory = ?,
+                    seed_area = ?,
+                    recognition_type = ?,
                     major_id = ?,
                     attributed_department_id = ?,
                     earned_credits = ?,
@@ -93,6 +112,8 @@ public class CourseDao implements CourseRepository {
 
         return jdbcTemplate.update(
                 sql,
+                courseSubcategory,
+                seedArea,
                 recognitionType,
                 majorId,
                 attributedDepartmentId,
@@ -106,7 +127,7 @@ public class CourseDao implements CourseRepository {
         );
     }
 
-    // course + course_master + major + department 조인 쿼리
+    // course + major + department 조인 쿼리
     private static final String BASE_SELECT = """
         SELECT
             c.course_id,
@@ -121,13 +142,12 @@ public class CourseDao implements CourseRepository {
             c.taken_term,
             c.retake_course_id,
             c.updated_at,
-            cm.course_code,
-            cm.course_name,
-            cm.course_category,
-            cm.course_subcategory,
-            cm.seed_area
+            c.course_code_snapshot,
+            c.course_name_snapshot,
+            c.course_category,
+            c.course_subcategory,
+            c.seed_area
         FROM course c
-        JOIN course_master cm ON cm.course_master_id = c.course_master_id
         LEFT JOIN major m ON m.major_id = c.major_id
         LEFT JOIN department d ON d.department_id = c.attributed_department_id
         WHERE c.user_id = ?
@@ -164,11 +184,12 @@ public class CourseDao implements CourseRepository {
                     c.major_id,
                     c.attributed_department_id,
                     c.retake_course_id,
-                    cm.course_code,
-                    cm.course_category,
-                    cm.course_subcategory
+                    c.course_code_snapshot,
+                    c.course_name_snapshot,
+                    c.course_category,
+                    c.course_subcategory,
+                    c.seed_area
                 FROM course c
-                JOIN course_master cm ON cm.course_master_id = c.course_master_id
                 WHERE c.course_id = ?
                 """;
 
@@ -177,7 +198,7 @@ public class CourseDao implements CourseRepository {
                         (rs, rowNum) -> new CourseWriteRow(
                                 rs.getLong("course_id"),
                                 rs.getLong("user_id"),
-                                rs.getLong("course_master_id"),
+                                rs.getObject("course_master_id", Long.class),
                                 rs.getObject("earned_credits", Integer.class),
                                 rs.getString("grade"),
                                 rs.getObject("taken_year", Integer.class),
@@ -185,9 +206,11 @@ public class CourseDao implements CourseRepository {
                                 rs.getObject("major_id", Long.class),
                                 rs.getObject("attributed_department_id", Long.class),
                                 rs.getObject("retake_course_id", Long.class),
-                                rs.getString("course_code"),
+                                rs.getString("course_code_snapshot"),
+                                rs.getString("course_name_snapshot"),
                                 rs.getString("course_category"),
-                                rs.getString("course_subcategory")
+                                rs.getString("course_subcategory"),
+                                rs.getString("seed_area")
                         ),
                         courseId
                 )
