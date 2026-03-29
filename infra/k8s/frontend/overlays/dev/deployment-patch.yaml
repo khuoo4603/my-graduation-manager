@@ -4,6 +4,7 @@ metadata:
   name: frontend
 spec:
   strategy:
+    $patch: replace
     type: Recreate
   template:
     metadata:
