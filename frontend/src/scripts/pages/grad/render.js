@@ -1,6 +1,10 @@
 import { setText } from "/src/scripts/utils/dom.js";
 
 const STATUS_PRESETS = {
+  loading: {
+    label: "불러오는 중",
+    tone: "blue",
+  },
   satisfied: {
     label: "졸업요건 충족",
     tone: "green",
@@ -15,69 +19,88 @@ const STATUS_PRESETS = {
   },
 };
 
-const GRAD_DASHBOARD_SCENARIOS = {
-  summary: {
-    statusKey: "incomplete",
-    isBlocked: false,
-    progress: {
-      total: { current: 35, required: 130 },
-      liberalArts: { current: 11, required: 34 },
-      major: { current: 20, required: 60 },
-      exploration: { current: 6, required: 12 },
-    },
-    missing: [
-      "전공 핵심 학점 부족 (12학점 필요)",
-      "교양 학점 부족 (3학점 필요)",
-      "전공탐색 학점 부족 (3학점 필요)",
-    ],
-    overlayMessage: "학부 또는 졸업요건 템플릿 정보가 설정되지 않아 판정을 진행할 수 없습니다.",
-  },
-  blocked: {
-    statusKey: "blocked",
-    isBlocked: true,
-    progress: {
-      total: { current: 35, required: 130 },
-      liberalArts: { current: 11, required: 34 },
-      major: { current: 20, required: 60 },
-      exploration: { current: 6, required: 12 },
-    },
-    missing: [
-      "전공 핵심 학점 부족 (12학점 필요)",
-      "교양 학점 부족 (3학점 필요)",
-      "전공탐색 학점 부족 (3학점 필요)",
-    ],
-    overlayMessage: "학부 또는 졸업요건 템플릿 정보가 설정되지 않아 판정을 진행할 수 없습니다.",
-  },
-};
+const DEFAULT_NON_EVALUABLE_MESSAGE = "졸업 판정을 진행할 수 없습니다.";
 
-// 상태 배지 색상 클래스 선택
-function getBadgeClassName(tone) {
-  if (tone === "green") return "badge badge--green";
-  if (tone === "blue") return "badge badge--blue";
-  if (tone === "amber") return "badge badge--amber";
-  return "badge badge--red";
-}
-
-// 상태 배지 텍스트와 색상 반영
-function setBadge(element, label, tone) {
-  if (!element) return;
-
-  element.className = `${getBadgeClassName(tone)} ${element.dataset.badgeClass || ""}`.trim();
-  setText(element, label);
+// 숫자형 응답 필드를 안전하게 정규화
+function toSafeNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
 }
 
 // 진행률 width 계산
-function getProgressWidth(current, required) {
-  if (!required || Number(required) <= 0) return 0;
+function getProgressWidth(earned, required) {
+  if (required <= 0) return 0;
 
-  const ratio = (Number(current) / Number(required)) * 100;
+  const ratio = (earned / required) * 100;
   return Math.max(0, Math.min(100, Math.round(ratio)));
 }
 
-// 상단 인사말 반영
-function renderViewerContext(elements, viewer) {
-  setText(elements.userGreeting, `안녕하세요, ${viewer.name}님`);
-  setText(elements.userDepartment, viewer.department);
+// overall, culture, majorExploration처럼 earned/required가 바로 내려오는 영역 정리
+function buildDirectProgress(section) {
+  return {
+    earned: toSafeNumber(section?.earned),
+    required: toSafeNumber(section?.required),
+    shortage: toSafeNumber(section?.shortage),
+    isSatisfied: Boolean(section?.isSatisfied),
+  };
+}
+
+// major는 per-major 배열만 내려오므로 대시보드 한 줄 표현용으로만 합산
+function buildMajorProgress(major) {
+  const majors = Array.isArray(major?.majors) ? major.majors : [];
+
+  if (!major?.hasMajors || majors.length === 0) {
+    return {
+      earned: 0,
+      required: 0,
+      shortage: 0,
+      isSatisfied: Boolean(major?.isSatisfied),
+    };
+  }
+
+  let earned = 0;
+  let required = 0;
+
+  majors.forEach((item) => {
+    const earnedTotal =
+      "earnedTotal" in (item || {})
+        ? toSafeNumber(item.earnedTotal)
+        : toSafeNumber(item?.earnedCore) + toSafeNumber(item?.earnedElective);
+
+    earned += earnedTotal;
+    required += toSafeNumber(item?.requiredTotal);
+  });
+
+  return {
+    earned,
+    required,
+    shortage: Math.max(required - earned, 0),
+    isSatisfied: Boolean(major?.isSatisfied),
+  };
+}
+
+// API 응답을 현재 대시보드 구조에 맞는 뷰 모델로 정리
+function buildDashboardViewModel(dashboard) {
+  const isEvaluable = dashboard?.isEvaluable !== false;
+
+  return {
+    // 판정 불가는 에러가 아니라 200 OK 기반 정상 응답 UI 상태
+    statusKey: !isEvaluable ? "blocked" : dashboard?.overall?.isSatisfied ? "satisfied" : "incomplete",
+    isBlocked: !isEvaluable,
+    overlayMessage: dashboard?.message || DEFAULT_NON_EVALUABLE_MESSAGE,
+    progress: {
+      total: buildDirectProgress(dashboard?.overall),
+      liberalArts: buildDirectProgress(dashboard?.culture),
+      major: buildMajorProgress(dashboard?.major),
+      exploration: buildDirectProgress(dashboard?.majorExploration),
+    },
+    missing: Array.isArray(dashboard?.missing)
+      ? dashboard.missing
+          .slice(0, 3)
+          .map((item) => String(item?.message || "").trim())
+          .filter(Boolean)
+      : [],
+  };
 }
 
 // progress bar 영역 반영
@@ -86,21 +109,24 @@ function renderProgressItems(progressItems, progressData) {
     const item = progressData[key];
     if (!item) return;
 
-    const isComplete = Number(item.current) >= Number(item.required);
-    const width = getProgressWidth(item.current, item.required);
+    const earned = toSafeNumber(item.earned);
+    const required = toSafeNumber(item.required);
+    const width = getProgressWidth(earned, required);
 
-    setText(itemElements.value, `${item.current} / ${item.required}`);
-    itemElements.bar.className = isComplete ? "progress__bar progress__bar--success" : "progress__bar";
+    setText(itemElements.value, `${earned} / ${required}`);
+    itemElements.bar.className = item.isSatisfied ? "progress__bar progress__bar--success" : "progress__bar";
     itemElements.bar.style.width = `${width}%`;
   });
 }
 
 // 부족 항목 목록 반영
 function renderMissingItems(missingItems, items) {
+  let visibleCount = 0;
+
   missingItems.forEach((slot, index) => {
     const message = items[index] || "";
 
-    // 빈 슬롯은 숨겨서 최대 3개 구조만 유지
+    // 실제 부족 항목이 없는 슬롯은 숨겨서 최대 3개 구조만 유지
     if (!message) {
       slot.root.hidden = true;
       setText(slot.text, "");
@@ -109,7 +135,10 @@ function renderMissingItems(missingItems, items) {
 
     slot.root.hidden = false;
     setText(slot.text, message);
+    visibleCount += 1;
   });
+
+  return visibleCount;
 }
 
 // 판정 불가 오버레이 토글
@@ -120,21 +149,51 @@ function renderNonEvaluableOverlay(elements, shouldBlock, message) {
   setText(elements.overlayMessage, message);
 }
 
-// 현재 데모 상태에 맞는 시나리오 선택
-function getGradScenario(view) {
-  return GRAD_DASHBOARD_SCENARIOS[view] || GRAD_DASHBOARD_SCENARIOS.summary;
+// 첫 API 응답 전 로딩 상태 반영
+export function renderGradDashboardLoading(page) {
+  const { elements, viewer } = page;
+  const status = STATUS_PRESETS.loading;
+
+  setText(elements.userGreeting, `안녕하세요, ${viewer.name}님`);
+  elements.pageRoot.dataset.gradState = "loading";
+  elements.dashboardShell?.setAttribute("aria-busy", "true");
+
+  elements.statusBadge.className = `${status.tone === "blue" ? "badge badge--blue" : "badge badge--red"} ${elements.statusBadge.dataset.badgeClass || ""}`.trim();
+  setText(elements.statusBadge, status.label);
+
+  renderProgressItems(elements.progressItems, {
+    total: { earned: 0, required: 0, isSatisfied: false },
+    liberalArts: { earned: 0, required: 0, isSatisfied: false },
+    major: { earned: 0, required: 0, isSatisfied: false },
+    exploration: { earned: 0, required: 0, isSatisfied: false },
+  });
+  renderMissingItems(elements.missingItems, []);
+  if (elements.missingBox) {
+    elements.missingBox.hidden = true;
+  }
+  renderNonEvaluableOverlay(elements, false, "");
 }
 
 // Dashboard 화면 렌더
-export function renderGradDashboard(page) {
-  const scenario = getGradScenario(page.demoView);
-  const status = STATUS_PRESETS[scenario.statusKey] || STATUS_PRESETS.incomplete;
+export function renderGradDashboard(page, dashboard) {
+  const { elements, viewer } = page;
+  const viewModel = buildDashboardViewModel(dashboard);
+  const status = STATUS_PRESETS[viewModel.statusKey] || STATUS_PRESETS.incomplete;
+  const visibleMissingCount = renderMissingItems(elements.missingItems, viewModel.missing);
+  const shouldShowMissingBox = !viewModel.isBlocked && viewModel.statusKey !== "satisfied" && visibleMissingCount > 0;
 
-  page.elements.pageRoot.dataset.gradDemoView = page.demoView;
+  setText(elements.userGreeting, `안녕하세요, ${viewer.name}님`);
+  elements.pageRoot.dataset.gradState = viewModel.isBlocked ? "blocked" : "ready";
+  elements.dashboardShell?.setAttribute("aria-busy", "false");
 
-  renderViewerContext(page.elements, page.viewer);
-  setBadge(page.elements.statusBadge, status.label, status.tone);
-  renderProgressItems(page.elements.progressItems, scenario.progress);
-  renderMissingItems(page.elements.missingItems, scenario.missing);
-  renderNonEvaluableOverlay(page.elements, scenario.isBlocked, scenario.overlayMessage);
+  elements.statusBadge.className = `${status.tone === "green" ? "badge badge--green" : status.tone === "blue" ? "badge badge--blue" : status.tone === "amber" ? "badge badge--amber" : "badge badge--red"} ${elements.statusBadge.dataset.badgeClass || ""}`.trim();
+  setText(elements.statusBadge, status.label);
+
+  renderProgressItems(elements.progressItems, viewModel.progress);
+
+  if (elements.missingBox) {
+    elements.missingBox.hidden = !shouldShowMissingBox;
+  }
+
+  renderNonEvaluableOverlay(elements, viewModel.isBlocked, viewModel.overlayMessage);
 }

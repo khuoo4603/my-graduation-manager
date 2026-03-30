@@ -17,10 +17,10 @@
           <section class="grad-page" data-page-root data-grad-demo-view="summary">
             <header class="grad-greeting">
               <h1 class="grad-greeting__title" data-grad-user-greeting>안녕하세요, unknown님</h1>
-              <p class="grad-greeting__department" data-grad-user-department>졸업요건의 요약 내용입니다.</p>
+              <p class="grad-greeting__subtitle" data-grad-subtitle>졸업요건의 요약 내용입니다.</p>
             </header>
 
-            <section class="grad-dashboard-shell" data-grad-dashboard-shell>
+            <section class="grad-dashboard-shell" data-grad-dashboard-shell aria-busy="false">
               <div class="grad-dashboard-shell__content">
                 <section class="card grad-status-card">
                   <header class="grad-status-card__header">
@@ -35,49 +35,65 @@
                   </header>
 
                   <div class="grad-status-card__progress-list">
-                    <article class="progress-row grad-status-card__progress-item" data-progress-item data-progress-key="total">
+                    <article
+                      class="progress-row grad-status-card__progress-item"
+                      data-progress-item
+                      data-progress-key="total"
+                    >
                       <div class="progress-row__top">
                         <p class="progress-row__label">총학점</p>
-                        <p class="progress-row__value" data-progress-value>35 / 130</p>
+                        <p class="progress-row__value" data-progress-value>0 / 0</p>
                       </div>
                       <div class="progress">
-                        <div class="progress__bar" data-progress-bar style="width: 27%"></div>
+                        <div class="progress__bar" data-progress-bar style="width: 0%"></div>
                       </div>
                     </article>
 
-                    <article class="progress-row grad-status-card__progress-item" data-progress-item data-progress-key="liberalArts">
+                    <article
+                      class="progress-row grad-status-card__progress-item"
+                      data-progress-item
+                      data-progress-key="liberalArts"
+                    >
                       <div class="progress-row__top">
                         <p class="progress-row__label">교양</p>
-                        <p class="progress-row__value" data-progress-value>11 / 34</p>
+                        <p class="progress-row__value" data-progress-value>0 / 0</p>
                       </div>
                       <div class="progress">
-                        <div class="progress__bar" data-progress-bar style="width: 32%"></div>
+                        <div class="progress__bar" data-progress-bar style="width: 0%"></div>
                       </div>
                     </article>
 
-                    <article class="progress-row grad-status-card__progress-item" data-progress-item data-progress-key="major">
+                    <article
+                      class="progress-row grad-status-card__progress-item"
+                      data-progress-item
+                      data-progress-key="major"
+                    >
                       <div class="progress-row__top">
                         <p class="progress-row__label">전공</p>
-                        <p class="progress-row__value" data-progress-value>20 / 60</p>
+                        <p class="progress-row__value" data-progress-value>0 / 0</p>
                       </div>
                       <div class="progress">
-                        <div class="progress__bar" data-progress-bar style="width: 33%"></div>
+                        <div class="progress__bar" data-progress-bar style="width: 0%"></div>
                       </div>
                     </article>
 
-                    <article class="progress-row grad-status-card__progress-item" data-progress-item data-progress-key="exploration">
+                    <article
+                      class="progress-row grad-status-card__progress-item"
+                      data-progress-item
+                      data-progress-key="exploration"
+                    >
                       <div class="progress-row__top">
                         <p class="progress-row__label">전공탐색</p>
-                        <p class="progress-row__value" data-progress-value>6 / 12</p>
+                        <p class="progress-row__value" data-progress-value>0 / 0</p>
                       </div>
                       <div class="progress">
-                        <div class="progress__bar" data-progress-bar style="width: 50%"></div>
+                        <div class="progress__bar" data-progress-bar style="width: 0%"></div>
                       </div>
                     </article>
                   </div>
                 </section>
 
-                <section class="card card--danger grad-missing-box">
+                <section class="card card--danger grad-missing-box" data-grad-missing-box hidden>
                   <header class="grad-missing-box__header">
                     <img
                       class="grad-missing-box__icon"
@@ -89,17 +105,17 @@
                   </header>
 
                   <ul class="grad-missing-box__list">
-                    <li class="grad-missing-box__item" data-grad-missing-item>
+                    <li class="grad-missing-box__item" data-grad-missing-item hidden>
                       <span class="grad-missing-box__bullet" aria-hidden="true"></span>
-                      <p class="grad-missing-box__text" data-grad-missing-text>전공 핵심 학점 부족 (12학점 필요)</p>
+                      <p class="grad-missing-box__text" data-grad-missing-text></p>
                     </li>
-                    <li class="grad-missing-box__item" data-grad-missing-item>
+                    <li class="grad-missing-box__item" data-grad-missing-item hidden>
                       <span class="grad-missing-box__bullet" aria-hidden="true"></span>
-                      <p class="grad-missing-box__text" data-grad-missing-text>교양 학점 부족 (3학점 필요)</p>
+                      <p class="grad-missing-box__text" data-grad-missing-text></p>
                     </li>
-                    <li class="grad-missing-box__item" data-grad-missing-item>
+                    <li class="grad-missing-box__item" data-grad-missing-item hidden>
                       <span class="grad-missing-box__bullet" aria-hidden="true"></span>
-                      <p class="grad-missing-box__text" data-grad-missing-text>전공탐색 학점 부족 (3학점 필요)</p>
+                      <p class="grad-missing-box__text" data-grad-missing-text></p>
                     </li>
                   </ul>
 
@@ -145,9 +161,7 @@
                   <p class="grad-dashboard-overlay__message" data-grad-overlay-message>
                     학부 또는 졸업요건 템플릿 정보가 설정되지 않아 판정을 진행할 수 없습니다.
                   </p>
-                  <p class="grad-dashboard-overlay__hint">
-                    프로필 기준 정보를 먼저 설정한 뒤 다시 확인해주세요.
-                  </p>
+                  <p class="grad-dashboard-overlay__hint">프로필 기준 정보를 먼저 설정한 뒤 다시 확인해주세요.</p>
                   <a class="btn btn--primary grad-dashboard-overlay__action" href="/profile/">프로필 설정으로 이동</a>
                 </div>
               </div>

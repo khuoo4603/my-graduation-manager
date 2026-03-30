@@ -23,7 +23,7 @@ body[data-page="grad"] .page-section {
   color: var(--color-text);
 }
 
-.grad-greeting__department {
+.grad-greeting__subtitle {
   margin: 0;
   color: var(--color-text-muted);
   font-size: 0.98rem;
