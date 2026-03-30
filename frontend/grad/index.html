@@ -3,13 +3,157 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Graduation Manager | Graduation</title>
+    <title>My Graduation Manager | Dashboard</title>
+    <link rel="stylesheet" href="/src/styles/base.css" />
+    <link rel="stylesheet" href="/src/styles/layout.css" />
+    <link rel="stylesheet" href="/src/styles/components.css" />
+    <link rel="stylesheet" href="/src/styles/pages/grad.css" />
   </head>
   <body data-page="grad">
     <div class="page-shell" data-app-shell>
       <div data-header-root></div>
       <main class="page-main">
-        <div class="container page-section" data-page-root></div>
+        <div class="container page-section">
+          <section class="grad-page" data-page-root data-grad-demo-view="summary">
+            <header class="grad-greeting">
+              <h1 class="grad-greeting__title" data-grad-user-greeting>안녕하세요, unknown님</h1>
+              <p class="grad-greeting__department" data-grad-user-department>졸업요건의 요약 내용입니다.</p>
+            </header>
+
+            <section class="grad-dashboard-shell" data-grad-dashboard-shell>
+              <div class="grad-dashboard-shell__content">
+                <section class="card grad-status-card">
+                  <header class="grad-status-card__header">
+                    <h2 class="grad-status-card__title">Graduation Status</h2>
+                    <span
+                      class="badge badge--red grad-status-card__badge"
+                      data-grad-status-badge
+                      data-badge-class="grad-status-card__badge"
+                    >
+                      졸업요건 미충족
+                    </span>
+                  </header>
+
+                  <div class="grad-status-card__progress-list">
+                    <article class="progress-row grad-status-card__progress-item" data-progress-item data-progress-key="total">
+                      <div class="progress-row__top">
+                        <p class="progress-row__label">총학점</p>
+                        <p class="progress-row__value" data-progress-value>35 / 130</p>
+                      </div>
+                      <div class="progress">
+                        <div class="progress__bar" data-progress-bar style="width: 27%"></div>
+                      </div>
+                    </article>
+
+                    <article class="progress-row grad-status-card__progress-item" data-progress-item data-progress-key="liberalArts">
+                      <div class="progress-row__top">
+                        <p class="progress-row__label">교양</p>
+                        <p class="progress-row__value" data-progress-value>11 / 34</p>
+                      </div>
+                      <div class="progress">
+                        <div class="progress__bar" data-progress-bar style="width: 32%"></div>
+                      </div>
+                    </article>
+
+                    <article class="progress-row grad-status-card__progress-item" data-progress-item data-progress-key="major">
+                      <div class="progress-row__top">
+                        <p class="progress-row__label">전공</p>
+                        <p class="progress-row__value" data-progress-value>20 / 60</p>
+                      </div>
+                      <div class="progress">
+                        <div class="progress__bar" data-progress-bar style="width: 33%"></div>
+                      </div>
+                    </article>
+
+                    <article class="progress-row grad-status-card__progress-item" data-progress-item data-progress-key="exploration">
+                      <div class="progress-row__top">
+                        <p class="progress-row__label">전공탐색</p>
+                        <p class="progress-row__value" data-progress-value>6 / 12</p>
+                      </div>
+                      <div class="progress">
+                        <div class="progress__bar" data-progress-bar style="width: 50%"></div>
+                      </div>
+                    </article>
+                  </div>
+                </section>
+
+                <section class="card card--danger grad-missing-box">
+                  <header class="grad-missing-box__header">
+                    <img
+                      class="grad-missing-box__icon"
+                      src="/src/assets/icons/fluent/warning_24_regular.svg"
+                      alt=""
+                      aria-hidden="true"
+                    />
+                    <h2 class="grad-missing-box__title">Missing Requirements</h2>
+                  </header>
+
+                  <ul class="grad-missing-box__list">
+                    <li class="grad-missing-box__item" data-grad-missing-item>
+                      <span class="grad-missing-box__bullet" aria-hidden="true"></span>
+                      <p class="grad-missing-box__text" data-grad-missing-text>전공 핵심 학점 부족 (12학점 필요)</p>
+                    </li>
+                    <li class="grad-missing-box__item" data-grad-missing-item>
+                      <span class="grad-missing-box__bullet" aria-hidden="true"></span>
+                      <p class="grad-missing-box__text" data-grad-missing-text>교양 학점 부족 (3학점 필요)</p>
+                    </li>
+                    <li class="grad-missing-box__item" data-grad-missing-item>
+                      <span class="grad-missing-box__bullet" aria-hidden="true"></span>
+                      <p class="grad-missing-box__text" data-grad-missing-text>전공탐색 학점 부족 (3학점 필요)</p>
+                    </li>
+                  </ul>
+
+                  <p class="grad-missing-box__note">전체 부족 항목은 상세 판정에서 확인할 수 있습니다</p>
+                </section>
+
+                <div class="grad-quick-links">
+                  <a class="card grad-quick-link" href="/grad/courses/">
+                    <span class="icon-box icon-box--blue" aria-hidden="true">
+                      <img src="/src/assets/icons/fluent/book_24_regular.svg" alt="" />
+                    </span>
+                    <div class="grad-quick-link__content">
+                      <h3 class="grad-quick-link__title">과목 관리</h3>
+                      <p class="grad-quick-link__description">수강 과목을 등록하고 관리합니다</p>
+                    </div>
+                  </a>
+
+                  <a class="card grad-quick-link" href="/grad/status/">
+                    <span class="icon-box icon-box--green" aria-hidden="true">
+                      <img src="/src/assets/icons/fluent/clipboard_task_24_regular.svg" alt="" />
+                    </span>
+                    <div class="grad-quick-link__content">
+                      <h3 class="grad-quick-link__title">상세 판정 보기</h3>
+                      <p class="grad-quick-link__description">졸업요건 상세 분석을 확인합니다</p>
+                    </div>
+                  </a>
+
+                  <a class="card grad-quick-link" href="/storage/">
+                    <span class="icon-box icon-box--purple" aria-hidden="true">
+                      <img src="/src/assets/icons/fluent/folder_24_regular.svg" alt="" />
+                    </span>
+                    <div class="grad-quick-link__content">
+                      <h3 class="grad-quick-link__title">자료함</h3>
+                      <p class="grad-quick-link__description">졸업 관련 자료를 관리합니다</p>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              <div class="grad-dashboard-overlay" data-grad-overlay hidden aria-hidden="true">
+                <div class="grad-dashboard-overlay__panel">
+                  <h2 class="grad-dashboard-overlay__title">졸업 판정 불가</h2>
+                  <p class="grad-dashboard-overlay__message" data-grad-overlay-message>
+                    학부 또는 졸업요건 템플릿 정보가 설정되지 않아 판정을 진행할 수 없습니다.
+                  </p>
+                  <p class="grad-dashboard-overlay__hint">
+                    프로필 기준 정보를 먼저 설정한 뒤 다시 확인해주세요.
+                  </p>
+                  <a class="btn btn--primary grad-dashboard-overlay__action" href="/profile/">프로필 설정으로 이동</a>
+                </div>
+              </div>
+            </section>
+          </section>
+        </div>
       </main>
     </div>
     <script type="module" src="/src/scripts/pages/grad/index.js"></script>
