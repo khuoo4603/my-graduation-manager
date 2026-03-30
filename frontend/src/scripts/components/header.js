@@ -3,15 +3,7 @@ import { PAGE_PATHS, SERVICE_NAME } from "../utils/constants.js";
 import { redirectToErrorPageByError } from "../utils/error.js";
 import { getFluentIconPath } from "./icon-map.js";
 
-const HEADER_NAV_ITEMS = [
-  { label: "Dashboard", href: PAGE_PATHS.GRAD, icon: "apps" },
-  { label: "Courses", href: PAGE_PATHS.GRAD_COURSES, icon: "book" },
-  { label: "Graduation Status", href: PAGE_PATHS.GRAD_STATUS, icon: "clipboardTask" },
-  { label: "Storage", href: PAGE_PATHS.STORAGE, icon: "folder" },
-  { label: "Profile", href: PAGE_PATHS.PROFILE, icon: "person" },
-];
-
-// 헤더 사용자명 출력용 텍스트 이스케이프
+// 헤더 사용자명 출력용 특수문자 이스케이프
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -21,87 +13,19 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-// 경로 비교용 슬래시 정규화
+// 현재 경로 비교용 정규화
 function normalizePath(pathname = "") {
   if (!pathname) return "/";
-
   const trimmedPathname = pathname.replace(/\/+$/, "");
   return trimmedPathname || "/";
 }
 
-// 현재 경로 활성 상태 판별
+// 네비게이션 active 상태 판단
 function isActivePath(pathname, targetPath) {
   return normalizePath(pathname) === normalizePath(targetPath);
 }
 
-// 헤더 네비게이션 항목 HTML 조립
-function buildHeaderNavItemsHtml(currentPath) {
-  return HEADER_NAV_ITEMS.map((item) => {
-    const activeClassName = isActivePath(currentPath, item.href) ? " is-active" : "";
-
-    return `
-      <li class="app-nav__item">
-        <a class="app-nav__link${activeClassName}" href="${item.href}">
-          <img class="app-nav__icon" src="${getFluentIconPath(item.icon)}" alt="" aria-hidden="true" />
-          <span>${item.label}</span>
-        </a>
-      </li>
-    `;
-  }).join("");
-}
-
-// 공통 헤더 HTML 조립
-function buildHeaderHtml(options = {}) {
-  const currentPath = options.currentPath || window.location.pathname;
-  const userName = options.userName || "unknown";
-
-  return `
-    <header class="app-header">
-      <div class="container app-header__inner">
-        <a class="app-brand" href="${PAGE_PATHS.GRAD}">
-          <span class="app-brand__mark">
-            <img class="app-brand__icon" src="${getFluentIconPath("homeFilled")}" alt="" aria-hidden="true" />
-          </span>
-          <span class="app-brand__text">${SERVICE_NAME}</span>
-        </a>
-
-        <nav class="app-nav" aria-label="Primary">
-          <ul class="app-nav__list">
-            ${buildHeaderNavItemsHtml(currentPath)}
-          </ul>
-        </nav>
-
-        <div class="app-user">
-          <button
-            class="app-user__theme"
-            type="button"
-            aria-label="Toggle theme"
-            aria-pressed="false"
-            title="Toggle light and dark mode"
-            data-theme-toggle
-          >
-            <img
-              class="app-user__icon"
-              src="${getFluentIconPath("weatherMoon")}"
-              alt=""
-              aria-hidden="true"
-              data-theme-icon
-            />
-          </button>
-          <span class="app-user__avatar">
-            <img class="app-user__icon" src="${getFluentIconPath("person")}" alt="" aria-hidden="true" />
-          </span>
-          <span class="app-user__name">${escapeHtml(userName)}</span>
-          <button class="app-user__logout" type="button" aria-label="Logout" data-logout-action>
-            <img class="app-user__icon" src="${getFluentIconPath("signOut")}" alt="" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
-    </header>
-  `;
-}
-
-// 헤더 내부 DOM 요소 수집
+// 헤더 이벤트 대상 요소 수집
 function collectHeaderElements(host) {
   return {
     themeToggle: host.querySelector("[data-theme-toggle]"),
@@ -135,7 +59,7 @@ async function handleHeaderLogout() {
   }
 }
 
-// 헤더 이벤트 등록
+// 헤더 버튼 이벤트 바인딩
 function bindHeaderEvents(elements) {
   elements.themeToggle?.addEventListener("click", () => {
     handleThemeToggle(elements);
@@ -149,7 +73,87 @@ export function renderHeader(target, options = {}) {
   const host = target instanceof Element ? target : typeof target === "string" ? document.querySelector(target) : null;
   if (!host) return null;
 
-  host.innerHTML = buildHeaderHtml(options);
+  const currentPath = options.currentPath || window.location.pathname;
+  const userName = options.userName || "unknown";
+  const dashboardActive = isActivePath(currentPath, PAGE_PATHS.GRAD) ? " is-active" : "";
+  const coursesActive = isActivePath(currentPath, PAGE_PATHS.GRAD_COURSES) ? " is-active" : "";
+  const statusActive = isActivePath(currentPath, PAGE_PATHS.GRAD_STATUS) ? " is-active" : "";
+  const storageActive = isActivePath(currentPath, PAGE_PATHS.STORAGE) ? " is-active" : "";
+  const profileActive = isActivePath(currentPath, PAGE_PATHS.PROFILE) ? " is-active" : "";
+
+  host.innerHTML = `
+    <header class="app-header">
+      <div class="container app-header__inner">
+        <a class="app-brand" href="${PAGE_PATHS.GRAD}">
+          <span class="app-brand__mark">
+            <img class="app-brand__icon" src="${getFluentIconPath("homeFilled")}" alt="" aria-hidden="true" />
+          </span>
+          <span class="app-brand__text">${SERVICE_NAME}</span>
+        </a>
+
+        <nav class="app-nav" aria-label="Primary">
+          <ul class="app-nav__list">
+            <li class="app-nav__item">
+              <a class="app-nav__link${dashboardActive}" href="${PAGE_PATHS.GRAD}">
+                <img class="app-nav__icon" src="${getFluentIconPath("apps")}" alt="" aria-hidden="true" />
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li class="app-nav__item">
+              <a class="app-nav__link${coursesActive}" href="${PAGE_PATHS.GRAD_COURSES}">
+                <img class="app-nav__icon" src="${getFluentIconPath("book")}" alt="" aria-hidden="true" />
+                <span>Courses</span>
+              </a>
+            </li>
+            <li class="app-nav__item">
+              <a class="app-nav__link${statusActive}" href="${PAGE_PATHS.GRAD_STATUS}">
+                <img class="app-nav__icon" src="${getFluentIconPath("clipboardTask")}" alt="" aria-hidden="true" />
+                <span>Graduation Status</span>
+              </a>
+            </li>
+            <li class="app-nav__item">
+              <a class="app-nav__link${storageActive}" href="${PAGE_PATHS.STORAGE}">
+                <img class="app-nav__icon" src="${getFluentIconPath("folder")}" alt="" aria-hidden="true" />
+                <span>Storage</span>
+              </a>
+            </li>
+            <li class="app-nav__item">
+              <a class="app-nav__link${profileActive}" href="${PAGE_PATHS.PROFILE}">
+                <img class="app-nav__icon" src="${getFluentIconPath("person")}" alt="" aria-hidden="true" />
+                <span>Profile</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="app-user">
+          <button
+            class="app-user__theme"
+            type="button"
+            aria-label="Toggle theme"
+            aria-pressed="false"
+            title="Toggle light and dark mode"
+            data-theme-toggle
+          >
+            <img
+              class="app-user__icon"
+              src="${getFluentIconPath("weatherMoon")}"
+              alt=""
+              aria-hidden="true"
+              data-theme-icon
+            />
+          </button>
+          <span class="app-user__avatar">
+            <img class="app-user__icon" src="${getFluentIconPath("person")}" alt="" aria-hidden="true" />
+          </span>
+          <span class="app-user__name">${escapeHtml(userName)}</span>
+          <button class="app-user__logout" type="button" aria-label="Logout" data-logout-action>
+            <img class="app-user__icon" src="${getFluentIconPath("signOut")}" alt="" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    </header>
+  `;
 
   const elements = collectHeaderElements(host);
   bindHeaderEvents(elements);

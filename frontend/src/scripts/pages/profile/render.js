@@ -1,5 +1,15 @@
 import { getFluentIconPath } from "/src/scripts/components/icon-map.js";
-import { clearChildren, createElement, setText } from "/src/scripts/utils/dom.js";
+import { clearChildren, setText } from "/src/scripts/utils/dom.js";
+
+// HTML 문자열 주입 전 특수문자 이스케이프
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 // 사용자 정보 렌더링
 export function renderProfileSummary(page) {
@@ -11,32 +21,38 @@ export function renderProfileSummary(page) {
 export function renderBaseSettings(page) {
   const { departmentSelect, templateSelect } = page.elements;
 
+  // 학부 select가 있으면 서버 기준 학부 option 목록 렌더링
   if (departmentSelect) {
-    clearChildren(departmentSelect);
-
-    const placeholder = new Option("학부를 선택하세요", "", !page.draft.departmentId, !page.draft.departmentId);
-    placeholder.disabled = true;
-    departmentSelect.append(placeholder);
-
-    page.catalogs.departments.forEach((department) => {
-      departmentSelect.append(new Option(department.name || "", department.id, false, page.draft.departmentId === department.id));
-    });
-
+    departmentSelect.innerHTML = `
+      <option value="" ${page.draft.departmentId ? "" : "selected"} disabled>학부를 선택하세요.</option>
+      ${page.catalogs.departments
+        .map((department) => {
+          return `
+            <option value="${escapeHtml(department.id)}">
+              ${escapeHtml(department.name || "")}
+            </option>
+          `;
+        })
+        .join("")}
+    `;
     departmentSelect.value = page.draft.departmentId;
   }
 
+  // 템플릿 select가 있으면 서버 기준 템플릿 option 목록 렌더링
   if (templateSelect) {
-    clearChildren(templateSelect);
-
-    const placeholder = new Option("졸업 템플릿을 선택하세요", "", !page.draft.templateId, !page.draft.templateId);
-    placeholder.disabled = true;
-    templateSelect.append(placeholder);
-
-    page.catalogs.templates.forEach((template) => {
-      const label = template.applicableYear ? `${template.name} (${template.applicableYear})` : template.name || "";
-      templateSelect.append(new Option(label, template.id, false, page.draft.templateId === template.id));
-    });
-
+    templateSelect.innerHTML = `
+      <option value="" ${page.draft.templateId ? "" : "selected"} disabled>졸업 템플릿을 선택하세요.</option>
+      ${page.catalogs.templates
+        .map((template) => {
+          const label = template.applicableYear ? `${template.name} (${template.applicableYear})` : template.name || "";
+          return `
+            <option value="${escapeHtml(template.id)}">
+              ${escapeHtml(label)}
+            </option>
+          `;
+        })
+        .join("")}
+    `;
     templateSelect.value = page.draft.templateId;
   }
 }
@@ -52,41 +68,41 @@ export function renderMajorForm(page) {
     page.draft.majorFormMajorId = "";
   }
 
+  // 전공 추가 폼의 학부 select option 목록 렌더링
   if (majorDepartmentSelect) {
-    clearChildren(majorDepartmentSelect);
-
-    const placeholder = new Option(
-      "학부를 선택하세요",
-      "",
-      !page.draft.majorFormDepartmentId,
-      !page.draft.majorFormDepartmentId,
-    );
-    placeholder.disabled = true;
-    majorDepartmentSelect.append(placeholder);
-
-    page.catalogs.departments.forEach((department) => {
-      majorDepartmentSelect.append(
-        new Option(department.name || "", department.id, false, page.draft.majorFormDepartmentId === department.id),
-      );
-    });
-
+    majorDepartmentSelect.innerHTML = `
+      <option value="" ${page.draft.majorFormDepartmentId ? "" : "selected"} disabled>학부를 선택하세요.</option>
+      ${page.catalogs.departments
+        .map((department) => {
+          return `
+            <option value="${escapeHtml(department.id)}">
+              ${escapeHtml(department.name || "")}
+            </option>
+          `;
+        })
+        .join("")}
+    `;
     majorDepartmentSelect.value = page.draft.majorFormDepartmentId;
   }
 
+  // 선택한 학부에 속한 전공만 전공 select option으로 렌더링
   if (majorSelect) {
-    clearChildren(majorSelect);
-
-    const placeholder = new Option("전공을 선택하세요", "", !page.draft.majorFormMajorId, !page.draft.majorFormMajorId);
-    placeholder.disabled = true;
-    majorSelect.append(placeholder);
-
-    filteredMajors.forEach((major) => {
-      majorSelect.append(new Option(major.name || "", major.id, false, page.draft.majorFormMajorId === major.id));
-    });
-
+    majorSelect.innerHTML = `
+      <option value="" ${page.draft.majorFormMajorId ? "" : "selected"} disabled>전공을 선택하세요.</option>
+      ${filteredMajors
+        .map((major) => {
+          return `
+            <option value="${escapeHtml(major.id)}">
+              ${escapeHtml(major.name || "")}
+            </option>
+          `;
+        })
+        .join("")}
+    `;
     majorSelect.value = page.draft.majorFormMajorId;
   }
 
+  // 전공 유형 select는 현재 draft 값을 그대로 반영
   if (majorTypeSelect) {
     majorTypeSelect.value = page.draft.majorFormMajorType || page.defaultMajorType;
   }
@@ -95,66 +111,43 @@ export function renderMajorForm(page) {
 // 전공 목록 렌더링
 export function renderMajorList(page) {
   const { majorList, majorEmpty } = page.elements;
-
   if (!majorList || !majorEmpty) return;
 
-  clearChildren(majorList);
+  // 담아둔 전공이 없으면 목록을 비우고 empty 문구 노출
+  if (page.draft.majors.length === 0) {
+    clearChildren(majorList);
+    majorEmpty.hidden = false;
+    return;
+  }
 
-  page.draft.majors.forEach((major) => {
-    const item = createElement("li", {
-      className: "profile-major-item",
-      dataset: { majorDraftId: major.draftId },
-    });
+  // draft에 담긴 전공이 있으면 카드형 목록으로 렌더링
+  majorList.innerHTML = page.draft.majors
+    .map((major) => {
+      return `
+        <li class="profile-major-item" data-major-draft-id="${escapeHtml(major.draftId)}">
+          <span class="profile-major-item__icon" aria-hidden="true">
+            <img src="${getFluentIconPath("person")}" alt="" />
+          </span>
+          <span class="profile-major-chip profile-major-chip--name">${escapeHtml(major.name || "")}</span>
+          <span class="profile-major-chip profile-major-chip--type">${escapeHtml(major.majorType || "")}</span>
+          <button
+            type="button"
+            class="btn btn--ghost btn--icon profile-major-item__remove"
+            aria-label="Remove major"
+            data-major-delete
+            data-major-draft-id="${escapeHtml(major.draftId)}"
+          >
+            <img src="${getFluentIconPath("delete")}" alt="" />
+          </button>
+        </li>
+      `;
+    })
+    .join("");
 
-    const icon = createElement("span", { className: "profile-major-item__icon", attrs: { "aria-hidden": "true" } });
-    icon.append(
-      createElement("img", {
-        attrs: {
-          src: getFluentIconPath("person"),
-          alt: "",
-        },
-      }),
-    );
-
-    const nameChip = createElement("span", {
-      className: "profile-major-chip profile-major-chip--name",
-      text: major.name || "",
-    });
-
-    const typeChip = createElement("span", {
-      className: "profile-major-chip profile-major-chip--type",
-      text: major.majorType || "",
-    });
-
-    const deleteButton = createElement("button", {
-      className: "btn btn--ghost btn--icon profile-major-item__remove",
-      attrs: {
-        type: "button",
-        "aria-label": "Remove major",
-      },
-      dataset: {
-        majorDelete: "",
-        majorDraftId: major.draftId,
-      },
-    });
-
-    deleteButton.append(
-      createElement("img", {
-        attrs: {
-          src: getFluentIconPath("delete"),
-          alt: "",
-        },
-      }),
-    );
-
-    item.append(icon, nameChip, typeChip, deleteButton);
-    majorList.append(item);
-  });
-
-  majorEmpty.hidden = page.draft.majors.length > 0;
+  majorEmpty.hidden = true;
 }
 
-// 저장 중 상태 렌더링
+// 저장 중 상태 반영
 export function renderPendingState(page) {
   const { elements, pending, draft } = page;
 
