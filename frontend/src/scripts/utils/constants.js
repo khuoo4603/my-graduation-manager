@@ -36,19 +36,6 @@ export const PAGE_PATHS = {
   ERROR: "/error/",
 };
 
-export const AUTH_PATHS = {
-  GOOGLE_OAUTH_START: "/oauth2/authorization/google",
-};
-
-// Google OAuth 시작 URL 조립
-export function getGoogleLoginUrl() {
-  if (!API_BASE_URL) {
-    throw new Error("VITE_API_BASE_URL is required");
-  }
-
-  return `${API_BASE_URL}${AUTH_PATHS.GOOGLE_OAUTH_START}`;
-}
-
 export const UI_MESSAGES = {
   READY_TITLE: "페이지 구조 준비 완료",
   READY_DESCRIPTION: "아직 준비 중인 페이지입니다.",

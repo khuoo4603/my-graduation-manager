@@ -1,6 +1,5 @@
 import { logout } from "../api/auth.js";
 import { PAGE_PATHS, SERVICE_NAME } from "../utils/constants.js";
-import { resolveElement } from "../utils/dom.js";
 import { redirectToErrorPageByError } from "../utils/error.js";
 import { getFluentIconPath } from "./icon-map.js";
 
@@ -147,7 +146,7 @@ function bindHeaderEvents(elements) {
 
 // 공통 헤더 렌더링
 export function renderHeader(target, options = {}) {
-  const host = resolveElement(target);
+  const host = target instanceof Element ? target : typeof target === "string" ? document.querySelector(target) : null;
   if (!host) return null;
 
   host.innerHTML = buildHeaderHtml(options);

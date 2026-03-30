@@ -4,7 +4,7 @@ import "/src/styles/components.css";
 import "/src/styles/pages/home.css";
 
 import { getFluentIconPath } from "/src/scripts/components/icon-map.js";
-import { getGoogleLoginUrl } from "/src/scripts/utils/constants.js";
+import { API_BASE_URL } from "/src/scripts/utils/constants.js";
 import { qs } from "/src/scripts/utils/dom.js";
 
 // 홈 로그인 페이지 레이아웃 렌더링
@@ -71,7 +71,11 @@ function collectHomeElements(pageRoot) {
 // 홈 페이지 이벤트 등록
 function bindHomePageEvents(elements) {
   elements.loginButton?.addEventListener("click", () => {
-    window.location.href = getGoogleLoginUrl();
+    if (!API_BASE_URL) {
+      throw new Error("VITE_API_BASE_URL is required");
+    }
+
+    window.location.href = `${API_BASE_URL}/oauth2/authorization/google`;
   });
 }
 

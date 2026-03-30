@@ -1,8 +1,8 @@
 import { ApiError } from "../api/client.js";
 import { PAGE_PATHS, UI_MESSAGES } from "./constants.js";
 
-// 에러 페이지 query string URL 생성
-export function buildErrorPageUrl({ code, message }) {
+// 공통 에러 페이지 이동
+export function redirectToErrorPage({ code, message }) {
   const params = new URLSearchParams();
 
   if (code !== undefined && code !== null && String(code).trim() !== "") {
@@ -14,12 +14,7 @@ export function buildErrorPageUrl({ code, message }) {
   }
 
   const queryString = params.toString();
-  return queryString ? `${PAGE_PATHS.ERROR}?${queryString}` : PAGE_PATHS.ERROR;
-}
-
-// 공통 에러 페이지 이동
-export function redirectToErrorPage({ code, message }) {
-  window.location.href = buildErrorPageUrl({ code, message });
+  window.location.href = queryString ? `${PAGE_PATHS.ERROR}?${queryString}` : PAGE_PATHS.ERROR;
 }
 
 // 응답/네트워크 오류를 표시용 코드/메시지로 정규화

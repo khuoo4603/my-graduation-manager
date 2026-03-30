@@ -4,12 +4,115 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Graduation Manager | Profile</title>
+    <link rel="stylesheet" href="/src/styles/base.css" />
+    <link rel="stylesheet" href="/src/styles/layout.css" />
+    <link rel="stylesheet" href="/src/styles/components.css" />
+    <link rel="stylesheet" href="/src/styles/pages/profile.css" />
   </head>
   <body data-page="profile">
     <div class="page-shell" data-app-shell>
       <div data-header-root></div>
       <main class="page-main">
-        <div class="container page-section" data-page-root></div>
+        <div class="container page-section">
+          <section class="profile-page" data-page-root>
+            <header class="profile-page__header">
+              <h1 class="profile-page__title">Profile</h1>
+              <p class="profile-page__subtitle">사용자 정보 확인과 학부/졸업 템플릿/전공 변경이 가능합니다.</p>
+            </header>
+
+            <section class="card profile-card">
+              <div class="profile-card__header">
+                <h2 class="profile-card__title">User Information</h2>
+              </div>
+
+              <div class="profile-field-stack">
+                <div class="field">
+                  <span class="field__label">Name</span>
+                  <div class="profile-value" data-profile-name>해당 없음</div>
+                </div>
+
+                <div class="field">
+                  <span class="field__label">Email</span>
+                  <div class="profile-value" data-profile-email>해당 없음</div>
+                </div>
+              </div>
+            </section>
+
+            <section class="card profile-card">
+              <div class="profile-card__header">
+                <h2 class="profile-card__title">Department &amp; Template</h2>
+              </div>
+
+              <div class="profile-field-stack">
+                <label class="field">
+                  <span class="field__label">Department</span>
+                  <select class="select" data-department-select>
+                    <option value="" selected disabled>학부를 선택하세요</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Graduation Template</span>
+                  <select class="select" data-template-select>
+                    <option value="" selected disabled>졸업 템플릿을 선택하세요</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="profile-card__actions">
+                <button class="btn btn--secondary" type="button" data-base-settings-cancel>Cancel</button>
+                <button class="btn btn--primary" type="button" data-base-settings-save>Save</button>
+              </div>
+            </section>
+
+            <section class="card profile-card">
+              <div class="profile-card__header">
+                <h2 class="profile-card__title">Majors</h2>
+              </div>
+
+              <div class="profile-major-builder">
+                <label class="field">
+                  <span class="field__label">학부 필터</span>
+                  <select class="select" data-major-department-select>
+                    <option value="" selected disabled>학부를 선택하세요</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">전공</span>
+                  <select class="select" data-major-select>
+                    <option value="" selected disabled>전공을 선택하세요</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Major Type</span>
+                  <select class="select" data-major-type-select>
+                    <option value="심화전공">심화전공</option>
+                    <option value="주전공">주전공</option>
+                    <option value="부전공">부전공</option>
+                    <option value="복수전공" selected>복수전공</option>
+                  </select>
+                </label>
+
+                <div class="profile-major-builder__action">
+                  <button class="btn btn--primary" type="button" data-major-add>
+                    <img class="btn__icon-image" src="/src/assets/icons/fluent/add_24_regular.svg" alt="" aria-hidden="true" />
+                    <span>Add Major</span>
+                  </button>
+                </div>
+              </div>
+
+              <p class="profile-empty" data-major-empty hidden>등록된 전공이 없습니다.</p>
+              <ul class="profile-major-list" data-major-list></ul>
+
+              <div class="profile-card__actions">
+                <button class="btn btn--secondary" type="button" data-major-cancel>Cancel</button>
+                <button class="btn btn--primary" type="button" data-major-save>Save</button>
+              </div>
+            </section>
+          </section>
+        </div>
       </main>
     </div>
     <script type="module" src="/src/scripts/pages/profile/index.js"></script>
