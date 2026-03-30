@@ -3,30 +3,21 @@ body[data-page="grad"] .page-section {
 }
 
 .grad-page {
-  width: min(100%, 72rem);
-  margin: 0 auto;
+  width: 100%;
   display: grid;
-  gap: 1.2rem;
+  gap: 1rem;
 }
 
 .grad-greeting {
-  display: grid;
-  gap: 0.15rem;
-  padding-top: 0.15rem;
+  padding: 0.1rem 0 0.35rem;
 }
 
 .grad-greeting__title {
-  margin: 0;
-  font-size: clamp(2rem, 3vw, 2.3rem);
-  line-height: 1.12;
-  letter-spacing: -0.03em;
-  color: var(--color-text);
+  color: var(--color-page-title);
 }
 
 .grad-greeting__subtitle {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.98rem;
+  max-width: 32rem;
 }
 
 .grad-dashboard-shell {
@@ -293,10 +284,6 @@ body[data-page="grad"] .page-section {
   .grad-missing-box,
   .grad-quick-link {
     padding: 1rem;
-  }
-
-  .grad-greeting__title {
-    font-size: 1.7rem;
   }
 
   .grad-dashboard-overlay__action {
