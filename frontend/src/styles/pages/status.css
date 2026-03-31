@@ -141,6 +141,24 @@ body[data-page="grad-status"] .page-section {
   background: #fbfcfe;
 }
 
+.status-unevaluable-card--danger {
+  border-color: var(--color-danger-border-soft);
+  background: #fff5f5;
+}
+
+.status-unevaluable-card--danger .status-unevaluable-card__title,
+.status-unevaluable-card--danger .status-unevaluable-card__message {
+  color: var(--color-danger-strong);
+}
+
+.status-unevaluable-card--danger .status-unevaluable-card__description {
+  color: rgba(185, 28, 28, 0.78);
+}
+
+.status-unevaluable-card--danger .status-unevaluable-card__actions {
+  display: none;
+}
+
 .status-unevaluable-card__row {
   display: grid;
   gap: 0.28rem;
