@@ -14,11 +14,214 @@
       <div data-header-root></div>
       <main class="page-main">
         <div class="container page-section">
-          <section class="grad-page" data-page-root data-grad-demo-view="summary">
+          <section class="grad-page" data-page-root>
             <header class="page-header grad-greeting">
               <h1 class="page-title grad-greeting__title" data-grad-user-greeting>안녕하세요, unknown님</h1>
               <p class="page-subtitle grad-greeting__subtitle" data-grad-subtitle>졸업요건의 요약 내용입니다.</p>
             </header>
+
+            <section
+              class="grad-grade-summary"
+              data-grade-summary-root
+              data-grade-summary-state="success"
+              aria-label="Grade summary"
+            >
+              <section class="card grad-grade-summary__state-panel" data-grade-summary-panel="loading" hidden>
+                <div class="loading-state">
+                  <span class="loading-state__spinner" aria-hidden="true"></span>
+                  <span>성적 요약 정보를 준비하고 있습니다.</span>
+                </div>
+              </section>
+
+              <section
+                class="card grad-grade-summary__state-panel grad-grade-summary__state-panel--error"
+                data-grade-summary-panel="error"
+                hidden
+              >
+                <div class="grad-grade-summary__state-copy">
+                  <h2 class="grad-grade-summary__state-title" data-grade-error-title>성적 요약을 불러오지 못했어요.</h2>
+                  <p class="grad-grade-summary__state-description" data-grade-error-description>
+                    네트워크 연결을 확인해 주세요. 또는 잠시 후 다시 시도해 주세요.
+                  </p>
+                </div>
+              </section>
+
+              <div class="grad-grade-summary__success" data-grade-summary-panel="success">
+                <section class="card grad-grade-summary__hero">
+                  <div class="grad-grade-summary__hero-header">
+                    <div class="grad-grade-summary__hero-copy">
+                      <h3 class="grad-grade-summary__title" id="semester-gpa-title">Semester GPA</h3>
+                    </div>
+
+                    <div class="grad-grade-summary__gpa-metrics">
+                      <article
+                        class="grad-grade-summary__gpa-metric grad-grade-summary__gpa-metric--overall"
+                        data-grade-gpa-metric="overall"
+                      >
+                        <p class="grad-grade-summary__gpa-label">전체 평점</p>
+                        <p class="grad-grade-summary__gpa-value" data-grade-gpa-value>0.00</p>
+                      </article>
+
+                      <article
+                        class="grad-grade-summary__gpa-metric grad-grade-summary__gpa-metric--major"
+                        data-grade-gpa-metric="major"
+                      >
+                        <p class="grad-grade-summary__gpa-label">전공 평점</p>
+                        <p class="grad-grade-summary__gpa-value" data-grade-gpa-value>0.00</p>
+                      </article>
+                    </div>
+                  </div>
+
+                  <div class="grad-grade-summary__chart-wrap">
+                    <section class="grad-gpa-chart" aria-labelledby="semester-gpa-title">
+                      <div class="grad-gpa-chart__header">
+                        <h4 class="grad-gpa-chart__title">학기별 평점 추이</h4>
+                        <div class="grad-gpa-chart__legend" aria-label="Semester GPA trend legend">
+                          <span class="grad-gpa-chart__legend-item">
+                            <span class="grad-gpa-chart__legend-swatch grad-gpa-chart__legend-swatch--overall"></span>
+                            <span>전체 평점</span>
+                          </span>
+                          <span class="grad-gpa-chart__legend-item">
+                            <span class="grad-gpa-chart__legend-swatch grad-gpa-chart__legend-swatch--major"></span>
+                            <span>전공 평점</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="grad-gpa-chart__plot" data-grade-trend-plot>
+                        <svg class="grad-gpa-chart__svg" viewBox="0 0 1000 320" data-grade-trend-svg aria-hidden="true">
+                          <defs>
+                            <linearGradient id="grad-gpa-fill" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stop-color="#2f7df6" stop-opacity="0.16"></stop>
+                              <stop offset="100%" stop-color="#2f7df6" stop-opacity="0.02"></stop>
+                            </linearGradient>
+                          </defs>
+                          <g data-grade-trend-grid></g>
+                          <line
+                            class="grad-gpa-chart__axis-line"
+                            data-grade-trend-axis="x"
+                            x1="64"
+                            y1="270"
+                            x2="968"
+                            y2="270"
+                          ></line>
+                          <line
+                            class="grad-gpa-chart__axis-line"
+                            data-grade-trend-axis="y"
+                            x1="64"
+                            y1="22"
+                            x2="64"
+                            y2="270"
+                          ></line>
+                          <path class="grad-gpa-chart__area" data-grade-trend-area></path>
+                          <path
+                            class="grad-gpa-chart__line grad-gpa-chart__line--overall"
+                            data-grade-trend-line="overall"
+                          ></path>
+                          <path
+                            class="grad-gpa-chart__line grad-gpa-chart__line--major"
+                            data-grade-trend-line="major"
+                          ></path>
+                          <g data-grade-trend-labels></g>
+                        </svg>
+                        <div class="grad-gpa-chart__points" data-grade-trend-points></div>
+                        <div class="grad-gpa-chart__empty" data-grade-trend-empty hidden>
+                          <p class="grad-gpa-chart__empty-text">표시할 학기별 성적 데이터가 없습니다.</p>
+                        </div>
+                        <div class="grad-gpa-chart__tooltip-shell" data-grade-trend-tooltip hidden aria-hidden="true">
+                          <strong class="grad-gpa-chart__tooltip-title" data-grade-trend-tooltip-label>2024-1</strong>
+                          <span class="grad-gpa-chart__tooltip-row">
+                            <span class="grad-gpa-chart__tooltip-dot grad-gpa-chart__tooltip-dot--overall"></span>
+                            <span>전체 평점: <span data-grade-trend-tooltip-value="overall">0.00</span></span>
+                          </span>
+                          <span class="grad-gpa-chart__tooltip-row">
+                            <span class="grad-gpa-chart__tooltip-dot grad-gpa-chart__tooltip-dot--major"></span>
+                            <span>전공 평점: <span data-grade-trend-tooltip-value="major">0.00</span></span>
+                          </span>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </section>
+
+                <div class="grad-grade-summary__grid">
+                  <section class="card grad-grade-summary__distribution">
+                    <header class="grad-grade-summary__subcard-header">
+                      <h3 class="grad-grade-summary__subcard-title">Grade Distribution</h3>
+                    </header>
+
+                    <div class="grad-distribution">
+                      <div class="grad-distribution__chart-wrap">
+                        <svg
+                          class="grad-distribution__chart grad-distribution__svg"
+                          viewBox="0 0 220 220"
+                          data-grade-distribution-chart
+                          aria-hidden="true"
+                        >
+                          <g transform="rotate(-90 110 110)">
+                            <circle class="grad-distribution__track" cx="110" cy="110" r="98"></circle>
+                            <g data-grade-distribution-segments></g>
+                          </g>
+                        </svg>
+                        <div class="grad-distribution__center">
+                          <p class="grad-distribution__total" data-grade-distribution-total>0</p>
+                          <p class="grad-distribution__caption">반영 과목</p>
+                        </div>
+                      </div>
+
+                      <div class="grad-distribution__empty" data-grade-distribution-empty hidden>
+                        <p class="grad-distribution__empty-text">표시할 성적 분포가 없습니다.</p>
+                      </div>
+                      <div class="grad-distribution__legend" data-grade-distribution-legend></div>
+                    </div>
+                  </section>
+
+                  <section class="card grad-grade-summary__policy">
+                    <header class="grad-grade-summary__subcard-header">
+                      <h3 class="grad-grade-summary__subcard-title">Summary &amp; Policy</h3>
+                    </header>
+
+                    <div class="grad-policy">
+                      <div class="grad-policy__stats">
+                        <article class="grad-policy__stat" data-grade-summary-stat="included">
+                          <p class="grad-policy__stat-label">반영 과목</p>
+                          <p class="grad-policy__stat-value">
+                            <span data-grade-summary-stat-value>0</span>
+                            <span class="grad-policy__stat-unit">개</span>
+                          </p>
+                        </article>
+
+                        <article class="grad-policy__stat" data-grade-summary-stat="retakeExcluded">
+                          <p class="grad-policy__stat-label">재수강 제외</p>
+                          <p class="grad-policy__stat-value">
+                            <span data-grade-summary-stat-value>0</span>
+                            <span class="grad-policy__stat-unit">개</span>
+                          </p>
+                        </article>
+
+                        <article class="grad-policy__stat" data-grade-summary-stat="gpaExcluded">
+                          <p class="grad-policy__stat-label">F/NP 제외</p>
+                          <p class="grad-policy__stat-value">
+                            <span data-grade-summary-stat-value>0</span>
+                            <span class="grad-policy__stat-unit">개</span>
+                          </p>
+                        </article>
+                      </div>
+
+                      <div class="grad-policy__notes">
+                        <h4 class="grad-policy__notes-title">산출 정책</h4>
+
+                        <ul class="grad-policy__list">
+                          <li class="grad-policy__item">재수강 과목은 최신 수강 이력 1건만 최종 반영됩니다.</li>
+                          <li class="grad-policy__item">P, NP 성적은 평점 계산에서 제외됩니다.</li>
+                          <li class="grad-policy__item">전공 평점은 전공필수 및 전공선택만 포함됩니다.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </section>
 
             <section class="grad-dashboard-shell" data-grad-dashboard-shell aria-busy="false">
               <div class="grad-dashboard-shell__content">
@@ -34,7 +237,20 @@
                     </span>
                   </header>
 
-                  <div class="grad-status-card__progress-list">
+                  <div class="grad-status-card__state-panel" data-grad-status-panel hidden>
+                    <h3 class="grad-status-card__state-title" data-grad-status-panel-title></h3>
+                    <p class="grad-status-card__state-description" data-grad-status-panel-description></p>
+                    <a
+                      class="btn btn--primary grad-status-card__state-action"
+                      data-grad-status-panel-action
+                      href="/profile/"
+                      hidden
+                    >
+                      프로필 설정으로 이동
+                    </a>
+                  </div>
+
+                  <div class="grad-status-card__progress-list" data-grad-status-progress-list>
                     <article
                       class="progress-row grad-status-card__progress-item"
                       data-progress-item
