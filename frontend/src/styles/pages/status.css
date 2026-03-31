@@ -1,4 +1,347 @@
-﻿/* Graduation Status 페이지 제목 강조 색상 */
+body[data-page="grad-status"] {
+  font-family: var(--font-family);
+}
+
 body[data-page="grad-status"] .page-title {
   color: var(--color-page-title);
+}
+
+body[data-page="grad-status"] .page-section {
+  justify-items: stretch;
+}
+
+.status-page {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.status-page__header {
+  gap: 0.18rem;
+}
+
+.status-page__subtitle {
+  font-size: 0.86rem;
+}
+
+.status-primary-stack,
+.status-success-shell {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.status-summary-card {
+  display: grid;
+  gap: 0.95rem;
+  padding: 1rem 1.1rem;
+  border-color: #dbe6f2;
+  background: linear-gradient(135deg, #ffffff 0%, #fbfdff 58%, #f6f9fd 100%);
+  box-shadow: 0 3px 18px rgba(15, 23, 42, 0.04);
+}
+
+.status-summary-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.status-summary-card__left {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.status-summary-card__title {
+  margin: 0;
+  font-size: 1.08rem;
+  letter-spacing: -0.02em;
+}
+
+.status-summary-card__badge {
+  width: fit-content;
+}
+
+.status-summary-card__right {
+  text-align: right;
+}
+
+.status-summary-card__score {
+  margin: 0;
+  color: var(--color-primary);
+  font-family: var(--font-family);
+  font-size: clamp(1.65rem, 3.6vw, 2rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.status-summary-card__label {
+  margin: 0.28rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.status-applied-card {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+  padding-top: 0.92rem;
+  border-top: 1px solid #e4ecf5;
+}
+
+.status-applied-card__group {
+  display: grid;
+  gap: 0.34rem;
+}
+
+.status-applied-card__label,
+.status-unevaluable-card__label {
+  color: var(--color-text-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.status-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+}
+
+.status-panel,
+.status-unevaluable-card {
+  padding: 1rem 1.05rem;
+}
+
+.status-panel__copy {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.status-panel__title,
+.status-unevaluable-card__title,
+.status-missing-card__title {
+  margin: 0;
+  font-size: 1.02rem;
+  letter-spacing: -0.02em;
+}
+
+.status-panel__description,
+.status-unevaluable-card__description,
+.status-missing-card__description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.status-unevaluable-card {
+  display: grid;
+  gap: 0.8rem;
+  border-color: var(--color-border);
+  background: #fbfcfe;
+}
+
+.status-unevaluable-card__row {
+  display: grid;
+  gap: 0.28rem;
+}
+
+.status-unevaluable-card__message {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.87rem;
+  line-height: 1.5;
+}
+
+.status-unevaluable-card__actions {
+  display: flex;
+  gap: 0.7rem;
+}
+
+.status-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.status-major-list {
+  display: contents;
+}
+
+.status-eval-card {
+  display: grid;
+  grid-template-rows: auto auto auto 1fr;
+  gap: 0.72rem;
+  padding: 0.95rem 1rem;
+  min-height: 15rem;
+}
+
+.status-eval-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.status-eval-card__title {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.status-missing-card__icon,
+.status-missing-list__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-danger-strong);
+  color: var(--color-danger-strong);
+  font-size: 0.67rem;
+  font-weight: 700;
+  line-height: 1;
+  flex: none;
+}
+
+.status-missing-list__item--empty .status-missing-list__icon {
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.status-eval-card__status {
+  width: fit-content;
+  flex: none;
+}
+
+.status-value-list {
+  margin: 0;
+  display: grid;
+  gap: 0.52rem;
+}
+
+.status-value-list__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.status-value-list__row dt {
+  color: var(--color-text-muted);
+  font-size: 0.79rem;
+}
+
+.status-value-list__row dd {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.status-value-list__row--danger dd {
+  color: var(--color-danger-strong);
+}
+
+.status-eval-card .progress {
+  height: 0.36rem;
+}
+
+.status-note-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.55rem 0 0;
+  display: grid;
+  gap: 0.35rem;
+  border-top: 1px solid #eef2f7;
+}
+
+.status-note-list__item {
+  position: relative;
+  padding-left: 0.7rem;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.status-note-list__item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.42rem;
+  width: 0.18rem;
+  height: 0.18rem;
+  border-radius: 999px;
+  background: var(--color-border-strong);
+}
+
+.status-missing-card {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1rem 1.05rem;
+  border-color: var(--color-danger-border-soft);
+  background: #fff5f5;
+}
+
+.status-missing-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.62rem;
+}
+
+.status-missing-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.44rem;
+}
+
+.status-missing-list__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.48rem;
+  align-items: start;
+  color: var(--color-danger-strong);
+  font-size: 0.78rem;
+  line-height: 1.42;
+}
+
+.status-missing-list__item--empty {
+  color: var(--color-success);
+}
+
+.status-missing-list__icon,
+.status-missing-card__icon {
+  margin-top: 0.08rem;
+}
+
+@media (max-width: 980px) {
+  .status-applied-card,
+  .status-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .status-summary-card__top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .status-summary-card__right {
+    text-align: left;
+  }
+
+  .status-summary-card,
+  .status-applied-card,
+  .status-panel,
+  .status-unevaluable-card,
+  .status-eval-card,
+  .status-missing-card {
+    padding: 0.9rem;
+  }
+
+  .status-unevaluable-card__actions .btn {
+    width: 100%;
+  }
 }
