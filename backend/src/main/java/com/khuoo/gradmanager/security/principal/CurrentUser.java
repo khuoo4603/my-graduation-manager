@@ -1,5 +1,7 @@
 package com.khuoo.gradmanager.security.principal;
 
+import com.khuoo.gradmanager.error.exception.ApiException;
+import com.khuoo.gradmanager.error.exception.ErrorCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -12,7 +14,7 @@ public class CurrentUser {
                 SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !(authentication.getPrincipal() instanceof AuthPrincipal principal)) {
-            throw new IllegalStateException("인증된 사용자가 없습니다.");
+            throw new ApiException(ErrorCode.UNAUTHORIZED);
         }
 
         return principal.getUserId();
@@ -23,7 +25,7 @@ public class CurrentUser {
                 SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !(authentication.getPrincipal() instanceof AuthPrincipal principal)) {
-            throw new IllegalStateException("인증된 사용자가 없습니다.");
+            throw new ApiException(ErrorCode.UNAUTHORIZED);
         }
 
         return principal.getEmail();
