@@ -4,12 +4,180 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Graduation Manager | Storage</title>
+    <link rel="stylesheet" href="/src/styles/base.css" />
+    <link rel="stylesheet" href="/src/styles/layout.css" />
+    <link rel="stylesheet" href="/src/styles/components.css" />
+    <link rel="stylesheet" href="/src/styles/pages/storage.css" />
   </head>
   <body data-page="storage">
     <div class="page-shell" data-app-shell>
       <div data-header-root></div>
       <main class="page-main">
-        <div class="container page-section" data-page-root></div>
+        <div class="container page-section">
+          <section class="storage-page" data-page-root>
+            <header class="storage-page__header">
+              <h1 class="page-title storage-page__title">Storage</h1>
+              <p class="page-subtitle storage-page__subtitle">졸업 관련 자료를 관리하세요</p>
+            </header>
+
+            <section class="card storage-usage-card">
+              <div class="storage-usage-card__header">
+                <div class="storage-usage-card__summary">
+                  <p class="storage-usage-card__label">저장 용량</p>
+                  <p class="storage-usage-card__value" data-storage-usage-value>0 MB / 1 GB 사용 중</p>
+                </div>
+
+                <button class="btn btn--primary storage-usage-card__button" type="button" data-open-upload-modal>
+                  <img
+                    class="btn__icon-image storage-usage-card__button-icon"
+                    src="/src/assets/icons/fluent/add_24_regular.svg"
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <span>파일 업로드</span>
+                </button>
+              </div>
+
+              <div class="storage-usage-card__progress">
+                <div class="progress">
+                  <div class="progress__bar" data-storage-progress-bar></div>
+                </div>
+                <p class="storage-usage-card__caption" data-storage-usage-caption>0% 사용 중</p>
+              </div>
+            </section>
+
+            <section class="storage-tabs" aria-label="파일 카테고리">
+              <button class="storage-tabs__button is-active" type="button" data-storage-category="all" aria-pressed="true">
+                전체
+              </button>
+              <button class="storage-tabs__button" type="button" data-storage-category="requirements" aria-pressed="false">
+                졸업요건
+              </button>
+              <button class="storage-tabs__button" type="button" data-storage-category="documents" aria-pressed="false">
+                졸업제출서류
+              </button>
+              <button class="storage-tabs__button" type="button" data-storage-category="project" aria-pressed="false">
+                프로젝트
+              </button>
+              <button class="storage-tabs__button" type="button" data-storage-category="portfolio" aria-pressed="false">
+                포트폴리오
+              </button>
+              <button
+                class="storage-tabs__button"
+                type="button"
+                data-storage-category="class-materials"
+                aria-pressed="false"
+              >
+                수업자료
+              </button>
+            </section>
+
+            <section class="card storage-list-card">
+              <div class="storage-list-card__header">
+                <h2 class="storage-list-card__title">파일 (<span data-storage-file-count>0</span>)</h2>
+              </div>
+
+              <p class="storage-empty" data-storage-empty hidden>업로드된 파일이 없습니다.</p>
+
+              <div class="table-wrap storage-table-wrap" data-storage-table-wrap>
+                <div class="table-scroll storage-table-scroll">
+                  <table class="table storage-table">
+                    <colgroup>
+                      <col class="storage-table__col storage-table__col--name" />
+                      <col class="storage-table__col storage-table__col--category" />
+                      <col class="storage-table__col storage-table__col--size" />
+                      <col class="storage-table__col storage-table__col--uploaded" />
+                      <col class="storage-table__col storage-table__col--actions" />
+                    </colgroup>
+                    <thead>
+                      <tr>
+                        <th scope="col">파일명</th>
+                        <th scope="col">카테고리</th>
+                        <th scope="col">크기</th>
+                        <th scope="col">업로드 일시</th>
+                        <th scope="col">관리</th>
+                      </tr>
+                    </thead>
+                    <tbody data-storage-file-rows></tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <section class="alert alert--info storage-guide">
+              <h2 class="storage-guide__title">업로드 안내</h2>
+              <ul class="key-list storage-guide__list">
+                <li class="key-list__item">
+                  <span class="key-list__bullet">•</span>
+                  <span>단일 파일 업로드만 지원합니다.</span>
+                </li>
+                <li class="key-list__item">
+                  <span class="key-list__bullet">•</span>
+                  <span>파일 1개 최대 크기는 20MB입니다.</span>
+                </li>
+                <li class="key-list__item">
+                  <span class="key-list__bullet">•</span>
+                  <span>같은 이름의 파일은 중복 업로드할 수 없습니다.</span>
+                </li>
+                <li class="key-list__item">
+                  <span class="key-list__bullet">•</span>
+                  <span>졸업 관련 중요 서류는 별도로 백업해 두세요.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section class="storage-modal-overlay" data-storage-upload-modal hidden aria-hidden="true">
+              <div class="storage-modal" role="dialog" aria-modal="true" aria-labelledby="storage-upload-modal-title">
+                <div class="storage-modal__header">
+                  <h2 class="storage-modal__title" id="storage-upload-modal-title">파일 업로드</h2>
+                  <button class="storage-modal__close" type="button" aria-label="닫기" data-close-upload-modal>
+                    &times;
+                  </button>
+                </div>
+
+                <div class="storage-modal__body">
+                  <label class="field">
+                    <span class="field__label">카테고리</span>
+                    <select class="select" data-upload-category-select>
+                      <option value="" selected>카테고리 선택</option>
+                      <option value="requirements">졸업요건</option>
+                      <option value="documents">졸업제출서류</option>
+                      <option value="project">프로젝트</option>
+                      <option value="portfolio">포트폴리오</option>
+                      <option value="class-materials">수업자료</option>
+                    </select>
+                  </label>
+
+                  <div class="storage-dropzone" data-upload-dropzone tabindex="0">
+                    <div class="storage-dropzone__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M12 15V5M12 5L8 9M12 5L16 9M6 15.5V17C6 18.6569 7.34315 20 9 20H15C16.6569 20 18 18.6569 18 17V15.5"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </div>
+                    <p class="storage-dropzone__title">파일을 여기로 드래그하거나</p>
+                    <button class="storage-dropzone__button" type="button" data-select-upload-file>파일 선택</button>
+                    <input class="storage-dropzone__input" type="file" data-upload-file-input hidden />
+                  </div>
+
+                  <p class="storage-dropzone__file-name" data-upload-file-name aria-live="polite">
+                    선택된 파일이 없습니다.
+                  </p>
+                </div>
+
+                <div class="storage-modal__footer">
+                  <button class="btn btn--secondary" type="button" data-cancel-upload-modal>취소</button>
+                  <button class="btn btn--primary" type="button" data-upload-submit>업로드</button>
+                </div>
+              </div>
+            </section>
+          </section>
+        </div>
       </main>
     </div>
     <script type="module" src="/src/scripts/pages/storage/index.js"></script>
