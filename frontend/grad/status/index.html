@@ -21,14 +21,14 @@
                 <div class="status-summary-card__top">
                   <div class="status-summary-card__left">
                     <h2 class="status-summary-card__title">Overall Status</h2>
-                    <span class="badge badge--red status-summary-card__badge" data-status-summary-badge>
-                      졸업 요건 미충족
-                    </span>
+                    <span class="badge badge--red status-summary-card__badge" data-status-summary-badge
+                      >판정 준비 중</span
+                    >
                   </div>
 
                   <div class="status-summary-card__right">
                     <p class="status-summary-card__score">
-                      <span data-status-summary-earned>35</span>/<span data-status-summary-required>130</span>
+                      <span data-status-summary-earned>--</span>/<span data-status-summary-required>--</span>
                     </p>
                     <p class="status-summary-card__label">총 취득 학점</p>
                   </div>
@@ -38,191 +38,28 @@
                   <div class="status-applied-card__group">
                     <p class="status-applied-card__label">학부</p>
                     <div class="status-badge-row">
-                      <span class="badge badge--blue" data-status-department-badge>소프트웨어공학과</span>
+                      <span class="badge badge--blue" data-status-department-badge>미설정</span>
                     </div>
                   </div>
 
                   <div class="status-applied-card__group">
                     <p class="status-applied-card__label">템플릿</p>
                     <div class="status-badge-row">
-                      <span class="badge badge--blue" data-status-template-badge>2022학번 졸업요건</span>
+                      <span class="badge badge--blue" data-status-template-badge>미설정</span>
                     </div>
                   </div>
 
                   <div class="status-applied-card__group">
                     <p class="status-applied-card__label">전공</p>
                     <div class="status-badge-row" data-status-major-type-badges>
-                      <span class="badge">컴퓨터공학(주전공)</span>
+                      <span class="badge">전공 미설정</span>
                     </div>
                   </div>
                 </div>
               </section>
             </div>
 
-            <section class="card status-panel" data-status-loading-panel hidden>
-              <div class="loading-state" aria-live="polite">
-                <span class="loading-state__spinner" aria-hidden="true"></span>
-                <div class="status-panel__copy">
-                  <h2 class="status-panel__title">졸업 판정 정보를 불러오는 중입니다.</h2>
-                  <p class="status-panel__description">화면 구성을 준비하고 있습니다.</p>
-                </div>
-              </div>
-            </section>
-
-            <section class="card card--danger status-panel" data-status-error-panel hidden>
-              <div class="status-panel__copy">
-                <h2 class="status-panel__title" data-status-error-title>졸업 판정 정보를 불러오지 못했습니다.</h2>
-                <p class="status-panel__description" data-status-error-description>
-                  현재는 목업 상태입니다. API 연결은 다음 단계에서 추가됩니다.
-                </p>
-              </div>
-            </section>
-
-            <section class="card status-unevaluable-card" data-status-unevaluable-panel hidden>
-              <h2 class="status-unevaluable-card__title" data-status-unevaluable-title>판정 불가</h2>
-              <p class="status-unevaluable-card__description" data-status-unevaluable-description>
-                졸업 판정에 필요한 프로필 정보가 아직 충분하지 않습니다.
-              </p>
-
-              <p class="status-unevaluable-card__message" data-status-unevaluable-message>
-                프로필에서 학부, 템플릿, 전공 정보를 먼저 설정해 주세요.
-              </p>
-
-              <div class="status-unevaluable-card__actions">
-                <a class="btn btn--primary" href="/profile/" data-status-unevaluable-action>프로필로 이동</a>
-              </div>
-            </section>
-
-            <section class="status-success-shell" data-status-success-shell hidden>
-              <div class="status-detail-grid">
-                <article class="card status-eval-card">
-                  <div class="status-eval-card__header">
-                    <h2 class="status-eval-card__title">교양 학점</h2>
-                    <span class="badge badge--red status-eval-card__status" data-status-culture-badge>미충족</span>
-                  </div>
-
-                  <dl class="status-value-list">
-                    <div class="status-value-list__row">
-                      <dt>필요 학점</dt>
-                      <dd data-status-culture-required>34학점</dd>
-                    </div>
-                    <div class="status-value-list__row">
-                      <dt>취득 학점</dt>
-                      <dd data-status-culture-earned>11학점</dd>
-                    </div>
-                    <div class="status-value-list__row status-value-list__row--danger">
-                      <dt>부족 학점</dt>
-                      <dd data-status-culture-shortage>23학점</dd>
-                    </div>
-                  </dl>
-
-                  <div class="progress" aria-hidden="true">
-                    <div class="progress__bar" data-status-culture-bar style="width: 32.4%"></div>
-                  </div>
-
-                  <ul class="status-note-list" data-status-culture-details>
-                    <li class="status-note-list__item">일반교양: 8/12학점</li>
-                    <li class="status-note-list__item">언어: 3/6학점</li>
-                    <li class="status-note-list__item">비판적 사고: 0/6학점</li>
-                  </ul>
-                </article>
-
-                <article class="card status-eval-card">
-                  <div class="status-eval-card__header">
-                    <h2 class="status-eval-card__title">SEED 요건</h2>
-                    <span class="badge badge--red status-eval-card__status" data-status-seed-badge>미충족</span>
-                  </div>
-
-                  <dl class="status-value-list">
-                    <div class="status-value-list__row">
-                      <dt>필요 학점</dt>
-                      <dd data-status-seed-required>12학점</dd>
-                    </div>
-                    <div class="status-value-list__row">
-                      <dt>취득 학점</dt>
-                      <dd data-status-seed-earned>6학점</dd>
-                    </div>
-                    <div class="status-value-list__row status-value-list__row--danger">
-                      <dt>부족 학점</dt>
-                      <dd data-status-seed-shortage>6학점</dd>
-                    </div>
-                  </dl>
-
-                  <div class="progress" aria-hidden="true">
-                    <div class="progress__bar" data-status-seed-bar style="width: 50%"></div>
-                  </div>
-
-                  <ul class="status-note-list" data-status-seed-details>
-                    <li class="status-note-list__item">Economy, Environment, Diversity: 0/3학점</li>
-                  </ul>
-                </article>
-
-                <div class="status-major-list" data-status-major-list></div>
-
-                <article class="card status-eval-card">
-                  <div class="status-eval-card__header">
-                    <h2 class="status-eval-card__title">전공탐색</h2>
-                    <span class="badge badge--red status-eval-card__status" data-status-major-exploration-badge>
-                      미충족
-                    </span>
-                  </div>
-
-                  <dl class="status-value-list">
-                    <div class="status-value-list__row">
-                      <dt>필요 학점</dt>
-                      <dd data-status-major-exploration-required>6학점</dd>
-                    </div>
-                    <div class="status-value-list__row">
-                      <dt>취득 학점</dt>
-                      <dd data-status-major-exploration-earned>0학점</dd>
-                    </div>
-                    <div class="status-value-list__row status-value-list__row--danger">
-                      <dt>부족 학점</dt>
-                      <dd data-status-major-exploration-shortage>6학점</dd>
-                    </div>
-                  </dl>
-
-                  <div class="progress" aria-hidden="true">
-                    <div class="progress__bar" data-status-major-exploration-bar style="width: 0%"></div>
-                  </div>
-
-                  <ul class="status-note-list" data-status-major-exploration-details>
-                    <li class="status-note-list__item">본인 학부 전공 탐색: 0/3학점</li>
-                  </ul>
-                </article>
-              </div>
-
-              <section class="card status-missing-card">
-                <div class="status-missing-card__header">
-                  <span class="status-missing-card__icon" aria-hidden="true">!</span>
-                  <div>
-                    <h2 class="status-missing-card__title">부족 항목</h2>
-                    <p class="status-missing-card__description" data-status-missing-description>
-                      졸업 가능 상태가 되려면 아래 항목을 충족해야 합니다.
-                    </p>
-                  </div>
-                </div>
-
-                <ul class="status-missing-list" data-status-missing-list>
-                  <li class="status-missing-list__item">
-                    <span class="status-missing-list__icon" aria-hidden="true">x</span>
-                    <span>전공 필수 학점 부족 (12학점 필요)</span>
-                  </li>
-                  <li class="status-missing-list__item">
-                    <span class="status-missing-list__icon" aria-hidden="true">x</span>
-                    <span>SEED 필요영역 학점 부족 (3학점 필요)</span>
-                  </li>
-                  <li class="status-missing-list__item">
-                    <span class="status-missing-list__icon" aria-hidden="true">x</span>
-                    <span>비판적 사고 교양 필요 (6학점 필요)</span>
-                  </li>
-                  <li class="status-missing-list__item">
-                    <span class="status-missing-list__icon" aria-hidden="true">x</span>
-                    <span>전공탐색 필요 (6학점 필요)</span>
-                  </li>
-                </ul>
-              </section>
-            </section>
+            <div class="status-page__body" data-status-body></div>
           </section>
         </div>
       </main>

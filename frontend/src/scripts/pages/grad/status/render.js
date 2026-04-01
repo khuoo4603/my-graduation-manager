@@ -1,8 +1,9 @@
 import { setText } from "/src/scripts/utils/dom.js";
 
 const BADGE_VARIANTS = ["badge--blue", "badge--green", "badge--red", "badge--amber"];
+const DEFAULT_PAGE_DESCRIPTION = "상세 졸업 판정 결과를 확인할 수 있습니다.";
 
-// HTML 주입 시 특수문자를 이스케이프
+// HTML 문자열 이스케이프
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -12,96 +13,57 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-// 상태 배지는 전달받은 variant만 적용되도록 정리
-function setBadgeVariant(element, variant) {
-  if (!element) return;
-
-  BADGE_VARIANTS.forEach((className) => element.classList.remove(className));
-
-  if (variant && BADGE_VARIANTS.includes(variant)) {
-    element.classList.add(variant);
-  }
+// 배지 class 조합
+function getBadgeClass(variant) {
+  return `badge${BADGE_VARIANTS.includes(variant) ? ` ${variant}` : ""}`;
 }
 
-// progress bar width는 계산된 최종 값만 반영
-function setProgress(bar, progressPercent) {
-  if (!bar) return;
-
-  const resolvedPercent =
-    typeof progressPercent === "number" ? Math.max(0, Math.min(progressPercent, 100)) : 0;
-
-  bar.style.width = `${resolvedPercent}%`;
-}
-
-// 상단 적용 정보 배지 목록을 공통 형식으로 렌더
-function renderBadgeRow(container, values, variant = "") {
-  if (!container) return;
-
-  container.innerHTML = values
-    .map((value) => `<span class="badge${variant ? ` ${variant}` : ""}">${escapeHtml(value)}</span>`)
-    .join("");
-}
-
-// 카드 하단 리스트는 전달받은 문자열 배열만 그대로 렌더
-function renderDetailList(container, items) {
-  if (!container) return;
-
-  if (!items || items.length === 0) {
-    container.hidden = true;
-    container.innerHTML = "";
-    return;
-  }
-
-  container.hidden = false;
-  container.innerHTML = items
-    .map((item) => `<li class="status-note-list__item">${escapeHtml(item)}</li>`)
-    .join("");
-}
-
-// 상단 요약 카드의 상태 배지와 점수만 갱신
+// Overall summary 렌더링
 function renderSummary(elements, summary) {
-  setBadgeVariant(elements.badge, summary.badgeVariant);
+  if (!elements || !summary) return;
+
+  elements.badge.className = `${getBadgeClass(summary.badgeVariant)} status-summary-card__badge`;
   setText(elements.badge, summary.badgeText);
   setText(elements.earned, summary.earned);
   setText(elements.required, summary.required);
 }
 
-// 페이지 상단 설명 문구를 현재 상태에 맞게 교체
-function renderPageDescription(element, description) {
-  if (!element || !description) return;
-  setText(element, description);
-}
-
-// 상단 카드 하단 적용 정보 영역을 표시용 값 기준으로 렌더
+// 적용 정보 렌더링
 function renderAppliedInfo(elements, appliedInfo) {
-  if (!appliedInfo) return;
+  if (!elements || !appliedInfo) return;
 
   setText(elements.department, appliedInfo.department);
   setText(elements.template, appliedInfo.template);
-  renderBadgeRow(elements.majors, appliedInfo.majors || []);
+  elements.majors.innerHTML = (appliedInfo.majors || [])
+    .map((value) => `<span class="${getBadgeClass("")}">${escapeHtml(value)}</span>`)
+    .join("");
 }
 
-// 교양/SEED/전공탐색 공통 카드 구조는 전달받은 표시값만 반영
-function renderCard(elements, card) {
-  if (!elements || !card) return;
+// 평가 카드 HTML 생성
+function buildEvalCardHtml(title, card) {
+  if (!card) return "";
 
-  setBadgeVariant(elements.badge, card.badgeVariant);
-  setText(elements.badge, card.badgeText);
-  setText(elements.required, card.requiredText);
-  setText(elements.earned, card.earnedText);
-  setText(elements.shortage, card.shortageText);
-  setProgress(elements.bar, card.progressPercent);
-  renderDetailList(elements.details, card.details);
-}
+  const progressPercent =
+    typeof card.progressPercent === "number" && !Number.isNaN(card.progressPercent)
+      ? Math.max(0, Math.min(card.progressPercent, 100))
+      : 0;
+  const detailItems = Array.isArray(card.details) ? card.details : [];
+  const detailsHtml =
+    detailItems.length > 0
+      ? `
+          <ul class="status-note-list">
+            ${detailItems.map((item) => `<li class="status-note-list__item">${escapeHtml(item)}</li>`).join("")}
+          </ul>
+        `
+      : "";
 
-// 전공 카드 한 장 HTML을 현재 표시값 기준으로 생성
-function renderMajorCardHtml(card) {
   return `
     <article class="card status-eval-card">
       <div class="status-eval-card__header">
-        <h2 class="status-eval-card__title">${escapeHtml(card.title)}</h2>
-        <span class="badge ${escapeHtml(card.badgeVariant)} status-eval-card__status">${escapeHtml(card.badgeText)}</span>
+        <h2 class="status-eval-card__title">${escapeHtml(title)}</h2>
+        <span class="${getBadgeClass(card.badgeVariant)} status-eval-card__status">${escapeHtml(card.badgeText)}</span>
       </div>
+
       <dl class="status-value-list">
         <div class="status-value-list__row">
           <dt>필요 학점</dt>
@@ -116,145 +78,163 @@ function renderMajorCardHtml(card) {
           <dd>${escapeHtml(card.shortageText)}</dd>
         </div>
       </dl>
+
       <div class="progress" aria-hidden="true">
-        <div class="progress__bar" style="width: ${card.progressPercent}%"></div>
+        <div class="progress__bar" style="width: ${progressPercent}%"></div>
       </div>
-      <ul class="status-note-list">
-        ${card.details.map((detail) => `<li class="status-note-list__item">${escapeHtml(detail)}</li>`).join("")}
-      </ul>
+
+      ${detailsHtml}
     </article>
   `;
 }
 
-// 전공 영역은 실제 카드 목록 또는 빈 상태 카드 중 하나만 렌더
-function renderMajorCards(container, majorSection) {
-  if (!container || !majorSection) return;
+// 전공 카드 묶음 HTML 생성
+function buildMajorCardsHtml(majorSection) {
+  if (!majorSection) return "";
 
-  if (Array.isArray(majorSection.items) && majorSection.items.length > 0) {
-    container.innerHTML = majorSection.items.map(renderMajorCardHtml).join("");
-    return;
+  const cards =
+    Array.isArray(majorSection.items) && majorSection.items.length > 0
+      ? majorSection.items
+      : majorSection.emptyState
+        ? [majorSection.emptyState]
+        : [];
+
+  if (cards.length === 0) {
+    return "";
   }
 
-  if (!majorSection.emptyState) {
-    container.innerHTML = "";
-    return;
+  return `
+    <div class="status-major-list">
+      ${cards.map((card) => buildEvalCardHtml(card.title, card)).join("")}
+    </div>
+  `;
+}
+
+// 부족 항목 카드 HTML 생성
+function buildMissingHtml(missing) {
+  if (!missing) return "";
+
+  const itemsHtml =
+    missing?.items && missing.items.length > 0
+      ? missing.items
+          .map(
+            (item) => `
+              <li class="status-missing-list__item">
+                <span class="status-missing-list__icon" aria-hidden="true">x</span>
+                <span>${escapeHtml(item)}</span>
+              </li>
+            `,
+          )
+          .join("")
+      : `
+          <li class="status-missing-list__item status-missing-list__item--empty">
+            <span class="status-missing-list__icon" aria-hidden="true">-</span>
+            <span>${escapeHtml(missing?.emptyText || "현재 부족한 항목이 없습니다.")}</span>
+          </li>
+        `;
+
+  return `
+    <section class="card status-missing-card">
+      <div class="status-missing-card__header">
+        <span class="status-missing-card__icon" aria-hidden="true">!</span>
+        <div>
+          <h2 class="status-missing-card__title">부족 항목</h2>
+          <p class="status-missing-card__description">${escapeHtml(missing.description || "")}</p>
+        </div>
+      </div>
+
+      <ul class="status-missing-list">
+        ${itemsHtml}
+      </ul>
+    </section>
+  `;
+}
+
+// loading body HTML 생성
+function buildLoadingHtml() {
+  return `
+    <section class="card status-panel">
+      <div class="loading-state" aria-live="polite">
+        <span class="loading-state__spinner" aria-hidden="true"></span>
+        <div class="status-panel__copy">
+          <h2 class="status-panel__title">졸업 판정 정보를 불러오는 중입니다.</h2>
+          <p class="status-panel__description">화면 구성을 준비하고 있습니다.</p>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+// 판정 불가 카드 HTML 생성
+function buildUnevaluableHtml(panel) {
+  const actionHtml =
+    panel?.actionLabel && panel?.actionHref
+      ? `
+          <div class="status-unevaluable-card__actions">
+            <a class="btn btn--primary" href="${escapeHtml(panel.actionHref)}">${escapeHtml(panel.actionLabel)}</a>
+          </div>
+        `
+      : "";
+  const messageHtml = panel?.message
+    ? `<p class="status-unevaluable-card__message">${escapeHtml(panel.message)}</p>`
+    : "";
+
+  return `
+    <section class="card status-unevaluable-card">
+      <h2 class="status-unevaluable-card__title">${escapeHtml(panel?.title || "판정 불가")}</h2>
+      <p class="status-unevaluable-card__description">${escapeHtml(panel?.description || "")}</p>
+      ${messageHtml}
+      ${actionHtml}
+    </section>
+  `;
+}
+
+// success body HTML 생성
+function buildSuccessHtml(cards, missing) {
+  return `
+    <div class="status-detail-grid">
+      ${buildEvalCardHtml("교양 학점", cards?.culture)}
+      ${buildEvalCardHtml("SEED 요건", cards?.seed)}
+      ${buildMajorCardsHtml(cards?.major)}
+      ${buildEvalCardHtml("전공탐색", cards?.majorExploration)}
+    </div>
+    ${buildMissingHtml(missing)}
+  `;
+}
+
+// 상태별 body HTML 생성
+function buildBodyHtml(viewModel) {
+  switch (viewModel.state) {
+    case "success":
+      // success에서만 상세 카드와 부족 항목 렌더링
+      return buildSuccessHtml(viewModel.cards, viewModel.missing);
+    case "unevaluable":
+    case "network-error":
+      // 판정 불가 카드 레이아웃 재사용
+      return buildUnevaluableHtml(viewModel.unevaluable);
+    case "loading":
+    default:
+      // 예외 상태는 loading UI로 처리
+      return buildLoadingHtml();
   }
-
-  container.innerHTML = renderMajorCardHtml(majorSection.emptyState);
 }
 
-// 부족 항목 카드의 리스트는 message 중심 표시 규칙만 적용
-function renderMissingList(container, missing) {
-  if (!container || !missing) return;
-
-  if (!missing.items || missing.items.length === 0) {
-    container.innerHTML = `
-      <li class="status-missing-list__item status-missing-list__item--empty">
-        <span class="status-missing-list__icon" aria-hidden="true">-</span>
-        <span>${escapeHtml(missing.emptyText || "현재 부족한 항목이 없습니다.")}</span>
-      </li>
-    `;
-    return;
-  }
-
-  container.innerHTML = missing.items
-    .map(
-      (item) => `
-        <li class="status-missing-list__item">
-          <span class="status-missing-list__icon" aria-hidden="true">x</span>
-          <span>${escapeHtml(item)}</span>
-        </li>
-      `,
-    )
-    .join("");
-}
-
-// 판정 불가 패널은 해석이 끝난 문구와 액션만 반영
-function renderUnevaluablePanel(elements, panel) {
-  if (!elements || !panel) return;
-
-  const actionWrap = elements.action?.closest(".status-unevaluable-card__actions") || null;
-
-  elements.root.classList.remove("status-unevaluable-card--danger");
-  setText(elements.title, panel.title);
-  setText(elements.description, panel.description);
-  setText(elements.message, panel.message);
-  elements.description.hidden = !panel.description;
-  elements.message.hidden = !panel.message;
-
-  if (!elements.action) return;
-
-  const hasAction = Boolean(panel.actionLabel && panel.actionHref);
-
-  if (actionWrap) {
-    actionWrap.hidden = !hasAction;
-  }
-
-  elements.action.hidden = !hasAction;
-
-  if (hasAction) {
-    setText(elements.action, panel.actionLabel);
-    elements.action.setAttribute("href", panel.actionHref);
-    return;
-  }
-
-  elements.action.removeAttribute("href");
-  setText(elements.action, "");
-}
-
-// 에러 패널은 제목과 설명만 갱신
-function renderErrorPanel(elements, panel) {
-  if (!elements || !panel) return;
-
-  setText(elements.title, panel.title);
-  setText(elements.description, panel.description);
-}
-
-// 현재 상태에 따라 loading/success/unevaluable/error 패널 노출을 제어
-function showStatePanels(elements, state) {
-  const isSuccess = state === "success";
-  const isNetworkError = state === "network-error";
-  const isUnevaluable = state === "unevaluable";
-  const isLoading = state === "loading";
-  const isError = state === "error";
-
-  elements.primaryShell.hidden = !(isSuccess || isNetworkError || isUnevaluable);
-  elements.successShell.hidden = !(isSuccess || isNetworkError);
-  elements.unevaluablePanel.root.hidden = !isUnevaluable;
-  elements.loadingPanel.hidden = !isLoading;
-  elements.errorPanel.root.hidden = !isError;
-}
-
-// /grad/status/ 페이지 전체 DOM은 최종 view model만 받아 반영
+// /grad/status/ 페이지 렌더링
 export function renderStatusPage(page, viewModel) {
   const { elements } = page;
+  const isLoading = viewModel.state === "loading";
 
-  renderPageDescription(elements.subtitle, viewModel.pageDescription);
+  setText(elements.subtitle, viewModel.pageDescription || DEFAULT_PAGE_DESCRIPTION);
+  elements.primaryShell.hidden = isLoading;
+  elements.primaryShell.setAttribute("aria-hidden", String(isLoading));
 
-  if (viewModel.summary) {
+  if (!isLoading) {
     renderSummary(elements.summary, viewModel.summary);
-  }
-
-  if (viewModel.appliedInfo) {
     renderAppliedInfo(elements.appliedInfo, viewModel.appliedInfo);
   }
 
-  if (viewModel.state === "success" || viewModel.state === "network-error") {
-    renderCard(elements.culture, viewModel.cards.culture);
-    renderCard(elements.seed, viewModel.cards.seed);
-    renderCard(elements.majorExploration, viewModel.cards.majorExploration);
-    renderMajorCards(elements.majorList, viewModel.cards.major);
-    setText(elements.missing.description, viewModel.missing.description);
-    renderMissingList(elements.missing.list, viewModel.missing);
+  if (elements.body) {
+    // 하단 body는 항상 전체 교체
+    elements.body.innerHTML = buildBodyHtml(viewModel);
   }
-
-  if (viewModel.state === "unevaluable") {
-    renderUnevaluablePanel(elements.unevaluablePanel, viewModel.unevaluable);
-  }
-
-  if (viewModel.state === "error") {
-    renderErrorPanel(elements.errorPanel, viewModel.error);
-  }
-
-  showStatePanels(elements, viewModel.state);
 }

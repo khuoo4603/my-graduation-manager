@@ -24,7 +24,7 @@ body[data-page="grad-status"] .page-section {
 }
 
 .status-primary-stack,
-.status-success-shell {
+.status-page__body {
   display: grid;
   gap: 0.9rem;
 }
