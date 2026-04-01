@@ -188,16 +188,17 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-// 파일 한 행에 필요한 아이콘과 텍스트 UI를 함께 생성
-function buildStorageFileRow(file) {
+// 파일 타입에 맞는 아이콘과 관리 버튼을 포함한 row HTML 생성
+function buildStorageFileRow(file, isActionDisabled) {
   const extension =
     String(file.name || "")
       .split(".")
       .pop()
       ?.toLowerCase() || "";
+
   let fileType = "generic";
 
-  // 확장별 문서 아이콘 선택
+  // 확장자 기준 파일 아이콘 선택
   if (extension === "pdf") {
     fileType = "pdf";
   } else if (["doc", "docx", "hwp", "hwpx"].includes(extension)) {
@@ -222,6 +223,7 @@ function buildStorageFileRow(file) {
 
   const className = `storage-file-icon--${fileType}`;
   const iconSvg = FILE_TYPE_ICON_SVGS[fileType] || FILE_TYPE_ICON_SVGS.generic;
+  const disabledAttr = isActionDisabled ? " disabled" : "";
 
   return `
     <tr>
@@ -243,7 +245,7 @@ function buildStorageFileRow(file) {
             type="button"
             aria-label="다운로드"
             title="다운로드"
-            data-storage-download="${escapeHtml(file.id)}"
+            data-storage-download="${escapeHtml(file.id)}"${disabledAttr}
           >
             ${DOWNLOAD_ICON_SVG}
           </button>
@@ -252,7 +254,7 @@ function buildStorageFileRow(file) {
             type="button"
             aria-label="삭제"
             title="삭제"
-            data-storage-delete="${escapeHtml(file.id)}"
+            data-storage-delete="${escapeHtml(file.id)}"${disabledAttr}
           >
             ${DELETE_ICON_SVG}
           </button>
@@ -262,53 +264,60 @@ function buildStorageFileRow(file) {
   `;
 }
 
-// 저장 용량 카드의 더미 수치와 진행률을 반영
+// 상단 저장 용량 카드의 문구와 진행률을 반영
 export function renderStorageUsage(page) {
   setText(page.elements.usageValue, page.usage.usedLabel);
   setText(page.elements.usageCaption, page.usage.percentLabel);
 
-  // 프로그레스 바가 있으면 퍼센트 값만큼 너비를 갱신
+  // 진행률 바가 있으면 현재 퍼센트만큼 너비를 갱신
   if (page.elements.progressBar) {
     page.elements.progressBar.style.width = `${page.usage.percent}%`;
   }
+
+  // 용량이 꽉 찼거나 업로드 중이면 업로드 버튼을 비활성화
+  if (page.elements.openUploadModalButton) {
+    const isDisabled = page.usage.isLimitReached || page.pending.isUploadSubmitting;
+    page.elements.openUploadModalButton.disabled = isDisabled;
+    page.elements.openUploadModalButton.setAttribute("aria-disabled", String(isDisabled));
+    page.elements.openUploadModalButton.title = page.usage.isLimitReached ? "저장 용량이 가득 찼습니다." : "";
+  }
 }
 
-// 현재 선택된 카테고리 탭 스타일을 갱신
+// 현재 선택된 카테고리 탭의 활성 상태를 갱신
 export function renderStorageTabs(page) {
   page.elements.categoryButtons.forEach((button) => {
     const isActive = button.dataset.storageCategory === page.activeCategory;
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-pressed", String(isActive));
+    button.disabled = page.pending.isFilesLoading;
   });
 }
 
-// 현재 탭 기준 파일 목록과 empty 상태를 함께 렌더링
+// 현재 서버에서 받아온 파일 목록과 empty 상태를 렌더링
 export function renderStorageFiles(page) {
-  let visibleFiles = page.files;
-
-  // 전체 탭이 아니면 선택된 카테고리 파일만 추려서 보여줌
-  if (page.activeCategory !== "all") {
-    visibleFiles = page.files.filter((file) => file.categoryId === page.activeCategory);
-  }
-
+  const visibleFiles = page.files;
   const hasFiles = visibleFiles.length > 0;
+  const isActionDisabled = Boolean(page.pending.deletingFileId);
 
   setText(page.elements.fileCount, String(visibleFiles.length));
 
-  // 파일 목록 영역이 있으면 행 HTML을 한 번에 갱신
+  // 파일 목록 영역이 있으면 현재 row HTML로 한 번에 갱신
   if (page.elements.fileRows) {
-    page.elements.fileRows.innerHTML = hasFiles ? visibleFiles.map(buildStorageFileRow).join("") : "";
+    page.elements.fileRows.innerHTML = hasFiles
+      ? visibleFiles.map((file) => buildStorageFileRow(file, isActionDisabled)).join("")
+      : "";
   }
 
-  // 현재 탭에 파일이 없으면 empty 문구를 노출
+  // 빈 목록이면 empty 문구를 노출
   if (page.elements.emptyState) {
     page.elements.emptyState.hidden = hasFiles;
   }
 
-  // 테이블 래퍼는 파일이 있을 때만 보이게 처리
+  // 테이블 래퍼는 파일이 있을 때만 보여줌
   if (page.elements.tableWrap) {
     page.elements.tableWrap.hidden = !hasFiles;
     page.elements.tableWrap.setAttribute("aria-hidden", String(!hasFiles));
+    page.elements.tableWrap.setAttribute("aria-busy", String(page.pending.isFilesLoading));
   }
 }
 
@@ -318,10 +327,61 @@ export function renderSelectedUploadFile(page) {
   setText(page.elements.uploadFileName, fileName);
 }
 
+// 업로드 중 여부에 따라 모달 버튼과 입력 상태를 갱신
+export function renderUploadPendingState(page) {
+  const isUploading = page.pending.isUploadSubmitting;
+  const defaultLabel = page.elements.uploadSubmitButton?.dataset.defaultLabel || "업로드";
+
+  // 업로드 버튼 기본 라벨을 최초 한 번 저장
+  if (page.elements.uploadSubmitButton && !page.elements.uploadSubmitButton.dataset.defaultLabel) {
+    page.elements.uploadSubmitButton.dataset.defaultLabel = defaultLabel;
+  }
+
+  // 카테고리 select는 업로드 중에 변경하지 못하도록 잠금
+  if (page.elements.uploadCategorySelect) {
+    page.elements.uploadCategorySelect.disabled = isUploading;
+  }
+
+  // 파일 선택 버튼은 업로드 중에 다시 누르지 못하도록 잠금
+  if (page.elements.selectUploadFileButton) {
+    page.elements.selectUploadFileButton.disabled = isUploading;
+  }
+
+  // 숨겨진 file input도 같은 기준으로 비활성화
+  if (page.elements.uploadFileInput) {
+    page.elements.uploadFileInput.disabled = isUploading;
+  }
+
+  // 업로드 전송 중에는 취소 버튼 사용을 막음
+  if (page.elements.cancelUploadButton) {
+    page.elements.cancelUploadButton.disabled = isUploading;
+  }
+
+  // 헤더 닫기 버튼도 업로드 중에는 잠가 모달 종료를 막음
+  if (page.elements.closeUploadModalButton) {
+    page.elements.closeUploadModalButton.disabled = isUploading;
+  }
+
+  // 드롭존은 업로드 중 여부에 따라 비활성 스타일과 aria 상태를 갱신
+  if (page.elements.uploadDropzone) {
+    page.elements.uploadDropzone.classList.toggle("is-disabled", isUploading);
+    page.elements.uploadDropzone.setAttribute("aria-busy", String(isUploading));
+  }
+
+  // 업로드 버튼은 스피너와 문구를 포함한 진행 상태로 전환
+  if (page.elements.uploadSubmitButton) {
+    page.elements.uploadSubmitButton.disabled = isUploading;
+    page.elements.uploadSubmitButton.innerHTML = isUploading
+      ? `<span class="loading-state__spinner" aria-hidden="true"></span><span>업로드 중...</span>`
+      : escapeHtml(defaultLabel);
+  }
+}
+
 // Storage 페이지의 동적 UI를 한 번에 갱신
 export function renderStoragePage(page) {
   renderStorageUsage(page);
   renderStorageTabs(page);
   renderStorageFiles(page);
   renderSelectedUploadFile(page);
+  renderUploadPendingState(page);
 }

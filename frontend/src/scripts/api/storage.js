@@ -1,8 +1,10 @@
-﻿import { del, get, post } from "./client.js";
+import { buildUrl, del, get, post } from "./client.js";
 
 // 자료함 파일 목록을 조회
-export function getStorageFiles() {
-  return get("/api/v1/storage/files");
+export function getStorageFiles(category = "") {
+  return get("/api/v1/storage/files", {
+    query: category ? { category } : null,
+  });
 }
 
 // 자료함 사용량 요약 정보를 조회
@@ -10,12 +12,11 @@ export function getStorageUsage() {
   return get("/api/v1/storage/usage");
 }
 
-// 파일 또는 FormData를 업로드 API 형식으로 맞춰 전송
-export function uploadFile(fileOrFormData) {
-  const formData = fileOrFormData instanceof FormData ? fileOrFormData : new FormData();
-  if (!(fileOrFormData instanceof FormData) && fileOrFormData) {
-    formData.append("file", fileOrFormData);
-  }
+// 자료함 파일을 multipart/form-data 형식으로 업로드
+export function uploadStorageFile(category, file) {
+  const formData = new FormData();
+  formData.append("category", category);
+  formData.append("file", file);
 
   return post("/api/v1/storage/files", formData);
 }
@@ -25,9 +26,7 @@ export function deleteStorageFile(fileId) {
   return del(`/api/v1/storage/files/${fileId}`);
 }
 
-// 파일 ID 기준으로 자료함 파일을 다운로드
-export function downloadStorageFile(fileId) {
-  return get(`/api/v1/storage/files/${fileId}/download`, {
-    responseType: "blob",
-  });
+// 파일 ID 기준으로 자료함 다운로드 URL을 생성
+export function buildStorageDownloadUrl(fileId) {
+  return buildUrl(`/api/v1/storage/files/${fileId}/download`);
 }

@@ -436,6 +436,10 @@ body.is-modal-open {
   transform: translateY(-1px);
 }
 
+.storage-dropzone.is-disabled {
+  opacity: 0.72;
+}
+
 .storage-dropzone__icon {
   width: 3.5rem;
   height: 3.5rem;
@@ -485,6 +489,11 @@ body.is-modal-open {
   gap: 0.6rem;
   padding: 1rem 1.25rem 1.25rem;
   border-top: 1px solid #eef3f8;
+}
+
+.storage-modal__footer [data-upload-submit] .loading-state__spinner {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
 }
 
 @media (max-width: 760px) {
