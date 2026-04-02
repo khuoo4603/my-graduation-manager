@@ -13,6 +13,7 @@ import lombok.experimental.Accessors;
 public class CoursePatchRequest {
 
     private Long courseMasterId;
+    private String courseName;
     private Integer earnedCredits;
     private String grade;
     private Integer takenYear;
@@ -24,6 +25,8 @@ public class CoursePatchRequest {
 
     @JsonIgnore
     private boolean courseMasterIdPresent;
+    @JsonIgnore
+    private boolean courseNamePresent;
     @JsonIgnore
     private boolean earnedCreditsPresent;
     @JsonIgnore
@@ -41,9 +44,9 @@ public class CoursePatchRequest {
     @JsonIgnore
     private boolean retakeCourseIdPresent;
 
-
     // 각 필드가 요청 JSON에 포함되었는지 여부 확인
     public boolean hasCourseMasterId() { return courseMasterIdPresent; }
+    public boolean hasCourseName() { return courseNamePresent; }
     public boolean hasEarnedCredits() { return earnedCreditsPresent; }
     public boolean hasGrade() { return gradePresent; }
     public boolean hasTakenYear() { return takenYearPresent; }
@@ -53,12 +56,17 @@ public class CoursePatchRequest {
     public boolean hasAttributedDepartmentId() { return attributedDepartmentIdPresent; }
     public boolean hasRetakeCourseId() { return retakeCourseIdPresent; }
 
-
     // 필드가 요청에 포함되면 present 플래그를 함께 기록
     @JsonSetter("courseMasterId")
     public void setCourseMasterId(Long courseMasterId) {
         this.courseMasterIdPresent = true;
         this.courseMasterId = courseMasterId;
+    }
+
+    @JsonSetter("courseName")
+    public void setCourseName(String courseName) {
+        this.courseNamePresent = true;
+        this.courseName = courseName;
     }
 
     @JsonSetter("earnedCredits")

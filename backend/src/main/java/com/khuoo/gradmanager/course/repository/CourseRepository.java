@@ -50,6 +50,8 @@ public interface CourseRepository {
      *
      * @param courseId                수정할 수강내역 PK
      * @param userId                  현재 로그인 사용자 PK
+     * @param courseNameSnapshot      과목명 스냅샷
+     * @param courseCategory          전공/교양 스냅샷
      * @param courseSubcategory       세부 카테고리
      * @param seedArea                SEED 영역
      * @param recognitionType         전공 인정 유형
@@ -65,6 +67,8 @@ public interface CourseRepository {
     int update(
             long courseId,
             long userId,
+            String courseNameSnapshot,
+            String courseCategory,
             String courseSubcategory,
             String seedArea,
             String recognitionType,

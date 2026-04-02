@@ -10,11 +10,17 @@ public class UserProfileDao implements UserProfileRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
+    // user의 이름 update
+    @Override
+    public int updateUserName(Long userId, String userName) {
+        String sql = "update users set user_name = ?, updated_at = now() where user_id = ?";
+        return jdbcTemplate.update(sql, userName, userId);
+    }
+
     // user의 템플릿 update
     @Override
     public int updateTemplateId(Long userId, Long templateId) {
         String sql = "update users set template_id = ?, updated_at = now() where user_id = ?";
-
         return jdbcTemplate.update(sql, templateId, userId);
     }
 
@@ -22,7 +28,6 @@ public class UserProfileDao implements UserProfileRepository {
     @Override
     public int updateDepartmentId(Long userId, Long departmentId) {
         String sql = "update users set department_id = ?, updated_at = now() where user_id = ?";
-
         return jdbcTemplate.update(sql, departmentId, userId);
     }
 }

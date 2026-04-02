@@ -10,6 +10,7 @@ import com.khuoo.gradmanager.course.repository.CourseRepository;
 import com.khuoo.gradmanager.course.support.AcademicTermPolicy;
 import com.khuoo.gradmanager.error.exception.ApiException;
 import com.khuoo.gradmanager.error.exception.ErrorCode;
+import com.khuoo.gradmanager.profile.repository.DepartmentRepository;
 import com.khuoo.gradmanager.profile.repository.ProfileRepository;
 import com.khuoo.gradmanager.profile.repository.UserMajorRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +19,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class CourseService {
+    private static final int MAX_COURSE_NAME_LENGTH = 300;
     private static final Set<String> ALLOWED_GRADES = Set.of(
             "A+",
             "A0",
@@ -37,11 +38,24 @@ public class CourseService {
             "P",
             "NP"
     );
+    private static final Set<String> CULTURE_SUBCATEGORIES = Set.of(
+            "교양필수",
+            "채플",
+            "SEED",
+            "교양선택",
+            "평생교육"
+    );
+    private static final Set<String> MAJOR_SUBCATEGORIES = Set.of(
+            "전공필수",
+            "전공탐색",
+            "전공선택"
+    );
 
     private final CourseRepository courseRepository;
     private final CourseMasterLookupDao courseMasterLookupDao;
     private final UserMajorRepository userMajorRepository;
     private final ProfileRepository profileRepository;
+    private final DepartmentRepository departmentRepository;
 
     // 수강 내역 등록
     @Transactional
@@ -57,7 +71,7 @@ public class CourseService {
         Long attributedDepartmentId = null;
 
         // 전공탐색 과목이면 접근 가능 학부 목록과 사용자 학부를 함께 보고 귀속 학부 결정
-        if ("전공탐색".equals(normalizeRequired(courseMaster.courseSubcategory()))) {
+        if ("전공탐색".equals(normalizeCourseSubcategory(courseMaster.courseSubcategory()))) {
             List<Long> accessibleDepartmentIds = courseMasterLookupDao.findAccessibleDepartmentIdsByCourseMasterId(courseMasterId);
 
             // 소속학부가 없는 과목일 경우 오류
@@ -75,7 +89,6 @@ public class CourseService {
 
         // 과목 분류에 맞는 이수구분/전공/귀속학부 저장값 결정
         CourseWriteDecision decision = decideWriteValues(
-                courseMaster.courseCategory(),
                 courseMaster.courseSubcategory(),
                 req.majorId(),
                 attributedDepartmentId
@@ -99,7 +112,7 @@ public class CourseService {
                     courseMaster.courseMasterId(),
                     courseMaster.courseCode(),
                     courseMaster.courseName(),
-                    courseMaster.courseCategory(),
+                    decision.courseCategory(),
                     courseMaster.courseSubcategory(),
                     courseMaster.seedArea(),
                     courseMaster.defaultCredits(), // 최초 등록 시 과목 마스터 기본 학점 사용
@@ -129,56 +142,83 @@ public class CourseService {
         // 수강 내역 소유자 검증
         if (current.userId() != userId) { throw new ApiException(ErrorCode.FORBIDDEN); }
 
+        // 수강 내역의 courseMasterId가 있는지 검증
+        Long currentCourseMasterId = current.courseMasterId();
+        if (currentCourseMasterId == null) { throw new ApiException(ErrorCode.INVALID_REQUEST); }
+
         // courseMasterId 수정 요청 포함 여부 검증
         if (req.hasCourseMasterId()) {
             long validatedCourseMasterId = requirePositive(req.courseMasterId());
             // courseMasterId 변경 시도 여부 검증
-            if (validatedCourseMasterId != current.courseMasterId()) { throw new ApiException(ErrorCode.INVALID_REQUEST); }
+            if (validatedCourseMasterId != currentCourseMasterId) {
+                throw new ApiException(ErrorCode.INVALID_REQUEST);
+            }
         }
 
+        // 과목명은 course_master 원본이 아닌 snapshot 값만 수정
+        String courseName = req.hasCourseName()
+                ? normalizeRequiredText(req.courseName())
+                : normalizeRequiredText(current.courseNameSnapshot());
         int earnedCredits = req.hasEarnedCredits() ? requirePositive(req.earnedCredits()) : current.earnedCredits(); // 학점 수정 요청이 없으면 기존 취득학점 유지
 
-        String grade = req.hasGrade() ? normalizeRequired(req.grade()).toUpperCase() : current.grade(); // 성적 수정 요청이 없으면 기존 성적 유지
-        if (req.hasGrade() && !ALLOWED_GRADES.contains(grade)) { throw new ApiException(ErrorCode.INVALID_REQUEST); } // 허용된 성적 코드 여부 검증
-        int takenYear = req.hasTakenYear() ? requirePositive(req.takenYear()) : current.takenYear(); // 수강 연도 수정 요청이 없으면 기존 수강 연도 유지
-        String takenTerm = req.hasTakenTerm() ? AcademicTermPolicy.normalize(req.takenTerm()) : current.takenTerm(); // 수강 학기 수정 요청이 없으면 기존 수강 학기 유지
-        String courseCategory = normalizeRequired(current.courseCategory()); // 현재 과목 카테고리
-        String courseSubcategory = req.hasCourseSubcategory() ? normalizeRequired(req.courseSubcategory()) : normalizeRequired(current.courseSubcategory()); // 수정 요청이 없으면 기존 세부 구분 유지
-        Long majorId = req.hasMajorId() ? req.majorId() : current.majorId(); // 전공 귀속 수정 요청이 없으면 기존 전공 귀속 유지
-        Long attributedDepartmentId = req.hasAttributedDepartmentId() ? req.attributedDepartmentId() : current.attributedDepartmentId(); // 전공탐색 귀속 학부 수정 요청이 없으면 기존 학부 유지
+        // 성적 수정 요청이 없으면 기존 성적 유지
+        String grade = req.hasGrade()
+                ? normalizeRequired(req.grade()).toUpperCase()
+                : current.grade();
+        // 허용된 성적 코드 여부 검증
+        if (req.hasGrade() && !ALLOWED_GRADES.contains(grade)) {
+            throw new ApiException(ErrorCode.INVALID_REQUEST);
+        }
 
-        // 전공 과목만 세부 구분 수정 허용
-        if (req.hasCourseSubcategory() && !"전공".equals(courseCategory)) { throw new ApiException(ErrorCode.INVALID_REQUEST); }
+        // 수강 연도 수정 요청이 없으면 기존 수강 연도 유지
+        int takenYear = req.hasTakenYear()
+                ? requirePositive(req.takenYear())
+                : current.takenYear();
 
-        // 과목 분류에 맞는 이수구분/전공/귀속학부 저장값 재계산
-        CourseWriteDecision decision = decideWriteValues(
-                courseCategory,
-                courseSubcategory,
-                majorId,
-                attributedDepartmentId
-        );
+        // 수강 학기 수정 요청이 없으면 기존 수강 학기 유지
+        String takenTerm = req.hasTakenTerm()
+                ? AcademicTermPolicy.normalize(req.takenTerm())
+                : current.takenTerm();
 
-        validateOwnedMajor(userId, decision.majorId()); // 최종 저장될 전공 귀속이 본인 전공인지 검증
+        // 수정 요청이 없으면 기존 세부 구분 유지
+        String courseSubcategory = req.hasCourseSubcategory()
+                ? normalizeCourseSubcategory(req.courseSubcategory())
+                : normalizeCourseSubcategory(current.courseSubcategory());
+
+        // 전공 귀속 수정 요청이 없으면 기존 전공 귀속 유지
+        Long majorId = req.hasMajorId()
+                ? req.majorId()
+                : current.majorId();
+
+        // 전공탐색 귀속 학부 수정 요청이 없으면 기존 학부 유지
+        Long attributedDepartmentId = req.hasAttributedDepartmentId()
+                ? req.attributedDepartmentId()
+                : current.attributedDepartmentId();
+
+        // 세부구분 기준으로 course_category / recognition_type / 전공 / 귀속학부를 다시 결정
+        CourseWriteDecision decision = decideWriteValues(courseSubcategory, majorId, attributedDepartmentId);
+
+        validateOwnedMajor(userId, decision.majorId()); // 최종 저장할 전공 귀속이 본인 전공인지 검증
         String seedArea = "SEED".equals(courseSubcategory) ? current.seedArea() : null; // SEED 외 과목은 patch 시 seed_area 정리
 
         // 재수강 원본 수정 요청이 없으면 기존 재수강 원본 유지
         Long retakeCourseId = req.hasRetakeCourseId() ? req.retakeCourseId() : current.retakeCourseId();
 
-        // PATCH에서 retakeCourseId가 변경되면 재수강 정책 검증
+        // PATCH에서 retakeCourseId가 변경되면 재수강 정합성 검증
         retakeCourseId = validateRetakeCourse(
                 retakeCourseId,
                 validatedCourseId,
                 userId
         );
 
-        Long currentCourseMasterId = current.courseMasterId();
-        if (currentCourseMasterId == null) { throw new ApiException(ErrorCode.INVALID_REQUEST); }
         validateDuplicate(userId, currentCourseMasterId, takenYear, takenTerm, validatedCourseId); // 수정 후에도 동일 과목/연도/학기 중복 방지
 
         try {
             int updated = courseRepository.update(
                     validatedCourseId,
                     userId,
+                    courseName,
+                    decision.courseCategory(),
                     courseSubcategory,
                     seedArea,
                     decision.recognitionType(),
@@ -225,38 +265,36 @@ public class CourseService {
     // 수강 내역 삭제
     @Transactional
     public void delete(long userId, long courseId) {
-        long validatedCourseId = requirePositive(courseId); // 0이하의 값 요청 오류 처리
+        long validatedCourseId = requirePositive(courseId); // 0이하 값은 요청 오류 처리
         int affected = courseRepository.deleteByIdAndUser(validatedCourseId, userId);
 
         // 삭제 대상 수강 내역 존재 여부 검증
-        if (affected == 0) { throw new ApiException(ErrorCode.COURSE_NOT_FOUND); }
+        if (affected == 0) {
+            throw new ApiException(ErrorCode.COURSE_NOT_FOUND);
+        }
     }
 
-    // 과목 분류에 따라 저장 가능한 이수구분/전공/귀속학부 값을 결정
+    // 과목 세부구분에 따라 저장 가능한 과목분류/이수구분/전공/귀속학부 값을 결정
     private CourseWriteDecision decideWriteValues(
-            String courseCategory,
             String courseSubcategory,
             Long majorId,
             Long attributedDepartmentId
     ) {
-        String category = normalizeRequired(courseCategory); // 과목 카테고리, 공백/NULL은 허용하지 않음
-        String subcategory = normalizeRequired(courseSubcategory); // 과목 세부 구분, 공백/NULL은 허용하지 않음
+        String subcategory = normalizeCourseSubcategory(courseSubcategory); // 과목 세부 구분, 공백/NULL은 허용하지 않음
 
-        if ("교양".equals(category)) {
-            return new CourseWriteDecision(null, null, null);
+        if (CULTURE_SUBCATEGORIES.contains(subcategory)) {
+            return new CourseWriteDecision("교양", null, null, null);
         }
-
-        // 허용된 과목 카테고리 검증
-        if (!"전공".equals(category)) { throw new ApiException(ErrorCode.INVALID_REQUEST); }
 
         if ("전공탐색".equals(subcategory)) {
             Long validatedDepartmentId = requirePositive(attributedDepartmentId);
-            return new CourseWriteDecision("전공탐색", null, validatedDepartmentId);
+            validateDepartmentExists(validatedDepartmentId); // 귀속 학부가 실제 존재하는지 확인
+            return new CourseWriteDecision("전공", "전공탐색", null, validatedDepartmentId);
         }
 
         if ("전공필수".equals(subcategory) || "전공선택".equals(subcategory)) {
             Long validatedMajorId = requirePositive(majorId);
-            return new CourseWriteDecision(subcategory, validatedMajorId, null);
+            return new CourseWriteDecision("전공", subcategory, validatedMajorId, null);
         }
 
         throw new ApiException(ErrorCode.INVALID_REQUEST);
@@ -271,6 +309,13 @@ public class CourseService {
         if (!userMajorRepository.existsByUserIdAndMajorId(userId, validatedMajorId)) { throw new ApiException(ErrorCode.INVALID_REQUEST); }
     }
 
+    // 전공탐색 귀속 학부가 실제 학부 테이블에 존재하는지 검증
+    private void validateDepartmentExists(long departmentId) {
+        if (!departmentRepository.existsByDepartmentId(departmentId)) {
+            throw new ApiException(ErrorCode.INVALID_REQUEST);
+        }
+    }
+
     // 재수강 원본 과목 검증
     private Long validateRetakeCourse(
             Long retakeCourseId,
@@ -279,7 +324,8 @@ public class CourseService {
     ) {
         if (retakeCourseId == null) { return null; } // 재수강 과목 ID null 검증
         long validatedRetakeCourseId = requirePositive(retakeCourseId); // 재수강 원본 수강 ID, 0 이하 값은 요청 오류 처리
-        if (currentCourseId != null && validatedRetakeCourseId == currentCourseId) { throw new ApiException(ErrorCode.INVALID_REQUEST); } // 자기 자신을 재수강 원본으로 선택하는지 검증
+        // 자기 자신을 재수강 원본으로 선택하는지 검증
+        if (currentCourseId != null && validatedRetakeCourseId == currentCourseId) { throw new ApiException(ErrorCode.INVALID_REQUEST); }
 
         CourseRepository.CourseWriteRow retakeCourse = courseRepository.findWriteRowById(validatedRetakeCourseId)
                 .orElseThrow(() -> new ApiException(ErrorCode.COURSE_NOT_FOUND));
@@ -330,8 +376,27 @@ public class CourseService {
         return trimmed;
     }
 
+    // 과목명은 trim 후 저장하고, 빈 문자열/길이 초과는 허용하지 않음
+    private String normalizeRequiredText(String value) {
+        String trimmed = normalizeRequired(value);
+        if (trimmed.length() > MAX_COURSE_NAME_LENGTH) {
+            throw new ApiException(ErrorCode.INVALID_REQUEST);
+        }
+        return trimmed;
+    }
+
+    // 허용 가능한 세부구분 값만 통과시키고 trim 데이터 반환
+    private String normalizeCourseSubcategory(String value) {
+        String normalized = normalizeRequired(value);
+        if (!CULTURE_SUBCATEGORIES.contains(normalized) && !MAJOR_SUBCATEGORIES.contains(normalized)) {
+            throw new ApiException(ErrorCode.INVALID_REQUEST);
+        }
+        return normalized;
+    }
+
     // 과목 분류 저장값
     private record CourseWriteDecision(
+            String courseCategory,
             String recognitionType,
             Long majorId,
             Long attributedDepartmentId

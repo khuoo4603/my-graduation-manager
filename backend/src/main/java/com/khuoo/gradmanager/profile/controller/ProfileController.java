@@ -29,7 +29,6 @@ public class ProfileController {
     @PutMapping("/template")
     public ResponseEntity<Void> updateTemplate(@RequestBody @Valid UpdateTemplateRequest request) {
         profileService.updateMyTemplate(request.templateId());
-
         return ResponseEntity.noContent().build();
     }
 
@@ -40,6 +39,13 @@ public class ProfileController {
         return ResponseEntity.noContent().build();
     }
 
+    // 내 이름 변경
+    @PutMapping("/name")
+    public ResponseEntity<Void> updateName(@RequestBody UpdateNameRequest request) {
+        profileService.updateMyName(request.name());
+        return ResponseEntity.noContent().build();
+    }
+
     // 내 전공 추가
     @PostMapping("/major")
     @ResponseStatus(HttpStatus.CREATED)
@@ -47,7 +53,7 @@ public class ProfileController {
         return profileMajorService.addUserMajor(currentUser.userId(), request);
     }
 
-    // 내 전공을 삭제
+    // 내 전공 삭제
     @DeleteMapping("/major/{userMajorId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUserMajor(@PathVariable long userMajorId) {

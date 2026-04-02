@@ -82,6 +82,8 @@ public class CourseDao implements CourseRepository {
     public int update(
             long courseId,
             long userId,
+            String courseNameSnapshot,
+            String courseCategory,
             String courseSubcategory,
             String seedArea,
             String recognitionType,
@@ -95,7 +97,9 @@ public class CourseDao implements CourseRepository {
     ) {
         String sql = """
                 UPDATE course
-                SET course_subcategory = ?,
+                SET course_name_snapshot = ?,
+                    course_category = ?,
+                    course_subcategory = ?,
                     seed_area = ?,
                     recognition_type = ?,
                     major_id = ?,
@@ -112,6 +116,8 @@ public class CourseDao implements CourseRepository {
 
         return jdbcTemplate.update(
                 sql,
+                courseNameSnapshot,
+                courseCategory,
                 courseSubcategory,
                 seedArea,
                 recognitionType,

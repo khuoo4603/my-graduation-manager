@@ -4,7 +4,11 @@ import com.khuoo.gradmanager.error.exception.ApiException;
 import com.khuoo.gradmanager.error.exception.ErrorCode;
 import com.khuoo.gradmanager.profile.dto.ProfileResponse;
 import com.khuoo.gradmanager.profile.mapper.ProfileMapper;
-import com.khuoo.gradmanager.profile.repository.*;
+import com.khuoo.gradmanager.profile.repository.DepartmentRepository;
+import com.khuoo.gradmanager.profile.repository.MajorRepository;
+import com.khuoo.gradmanager.profile.repository.ProfileRepository;
+import com.khuoo.gradmanager.profile.repository.TemplateRepository;
+import com.khuoo.gradmanager.profile.repository.UserProfileRepository;
 import com.khuoo.gradmanager.security.principal.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ProfileService {
+
+    private static final int MAX_NAME_LENGTH = 50;
 
     private final CurrentUser currentUser;
     private final ProfileRepository profileRepository;
@@ -33,14 +39,12 @@ public class ProfileService {
         }
 
         var majorRows = majorRepository.findMajorsByUserId(userId); // 사용자 전공 조회
-
         return profileMapper.toProfileResponse(base, majorRows);
     }
 
     // 내 템플릿 변경
     @Transactional
     public void updateMyTemplate(Long templateId) {
-
         Long userId = currentUser.userId();
 
         // 템플릿이 적용받고 있는 학부 조회
@@ -63,7 +67,6 @@ public class ProfileService {
 
     @Transactional
     public void updateMyDepartment(Long departmentId) {
-
         Long userId = currentUser.userId();
 
         // 학부 존재 확인
@@ -77,5 +80,32 @@ public class ProfileService {
         if (updated != 1) {
             throw new ApiException(ErrorCode.USER_NOT_FOUND);
         }
+    }
+
+    // 유저 이름 변경
+    @Transactional
+    public void updateMyName(String name) {
+        Long userId = currentUser.userId();
+        String normalizedName = normalizeRequiredText(name);
+
+        // 이름 변경
+        int updated = userProfileRepository.updateUserName(userId, normalizedName);
+        if (updated != 1) {
+            throw new ApiException(ErrorCode.USER_NOT_FOUND);
+        }
+    }
+
+    // 이름은 trim 후 저장하고, 빈 문자열/과도한 길이는 허용하지 않음
+    private String normalizeRequiredText(String value) {
+        if (value == null) {
+            throw new ApiException(ErrorCode.INVALID_REQUEST);
+        }
+
+        String trimmed = value.trim();
+        if (trimmed.isBlank() || trimmed.length() > MAX_NAME_LENGTH) {
+            throw new ApiException(ErrorCode.INVALID_REQUEST);
+        }
+
+        return trimmed;
     }
 }
