@@ -10,12 +10,6 @@ const termLabelMap = {
   WINTER: "겨울 계절학기",
 };
 
-const COURSE_MAJOR_EDIT_SUBCATEGORY_OPTIONS = [
-  { value: "전공필수", label: "전공필수" },
-  { value: "전공선택", label: "전공선택" },
-  { value: "전공탐색", label: "전공탐색" },
-];
-
 // HTML 문자열 주입 전 특수문자 이스케이프
 function escapeHtml(value) {
   return String(value ?? "")
@@ -124,7 +118,10 @@ export function renderSearchResults(page) {
 // Taken Courses 목록 렌더링
 export function renderTakenCourses(page) {
   const { totalCreditsText, takenEmptyPanel, takenTableWrap, takenCourseRows } = page.elements;
-  const totalCredits = page.takenCourses.reduce((creditSum, course) => creditSum + Number(course.earnedCredits || 0), 0);
+  const totalCredits = page.takenCourses.reduce(
+    (creditSum, course) => creditSum + Number(course.earnedCredits || 0),
+    0,
+  );
   const hasTakenResults = page.takenStatus === "results" && page.takenCourses.length > 0;
 
   setText(totalCreditsText, String(totalCredits));
@@ -201,6 +198,7 @@ export function renderTakenCourses(page) {
           <td class="courses-table__code">${escapeHtml(course.code)}</td>
           <td class="courses-table__name">${escapeHtml(course.name)}</td>
           <td class="courses-table__number">${escapeHtml(String(course.earnedCredits ?? ""))}</td>
+          <td>${escapeHtml(course.grade || "")}</td>
           <td class="courses-table__number">${escapeHtml(course.takenYear)}</td>
           <td>${escapeHtml(termLabel)}</td>
           <td>${escapeHtml(course.courseSubcategory)}</td>
@@ -268,48 +266,37 @@ export function renderEditModal(page) {
   editCourseYearInput.value = page.editCourseDraft.year || "";
   editCourseTermSelect.value = page.editCourseDraft.term || "";
 
-  const isMajorCategory = selectedCourse.courseCategory === "전공";
-  // 전공 과목이면 수정 가능한 세부 구분 옵션 전체 렌더링
-  if (isMajorCategory) {
-    editCourseSubcategorySelect.innerHTML = `
-      <option value="">세부 구분 선택</option>
-      ${COURSE_MAJOR_EDIT_SUBCATEGORY_OPTIONS.map((option) => {
-        return `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`;
-      }).join("")}
-    `;
-    editCourseSubcategorySelect.disabled = false;
-  // 교양 계열이면 현재 세부 구분만 보여주고 변경 비활성화
-  } else {
-    editCourseSubcategorySelect.innerHTML = `
-      <option value="${escapeHtml(selectedCourse.courseSubcategory || "")}">
-        ${escapeHtml(selectedCourse.courseSubcategory || "")}
-      </option>
-    `;
-    editCourseSubcategorySelect.disabled = true;
-  }
+  editCourseSubcategorySelect.disabled = false;
   editCourseSubcategorySelect.value = page.editCourseDraft.subcategory || "";
 
-  const isMajorChoice =
-    page.editCourseDraft.subcategory === "전공필수" || page.editCourseDraft.subcategory === "전공선택";
-  const isDepartmentChoice = page.editCourseDraft.subcategory === "전공탐색";
+  const needsMajor = page.editCourseDraft.subcategory === "전공필수" || page.editCourseDraft.subcategory === "전공선택";
+  const needsDepartment = page.editCourseDraft.subcategory === "전공탐색";
+  const majorField = editCourseMajorSelect.closest(".field");
+  const departmentField = editCourseDepartmentSelect.closest(".field");
+
+  if (majorField) {
+    // 전공필수/전공선택에서만 전공 귀속 입력 노출
+    majorField.hidden = !needsMajor;
+  }
+
+  if (departmentField) {
+    // 전공탐색에서만 학부 귀속 입력 노출
+    departmentField.hidden = !needsDepartment;
+  }
 
   editCourseMajorSelect.innerHTML = `
-    <option value="">${isMajorChoice ? "전공 선택" : "미지정"}</option>
+    <option value="">${needsMajor ? "전공 선택" : "미사용"}</option>
     ${page.userMajors
       .map((major) => {
         return `<option value="${escapeHtml(String(major.majorId))}">${escapeHtml(major.label || "")}</option>`;
       })
       .join("")}
   `;
-  editCourseMajorSelect.disabled = !isMajorChoice;
+  editCourseMajorSelect.disabled = !needsMajor || page.userMajors.length === 0;
   editCourseMajorSelect.value = page.editCourseDraft.attributedMajorId || "";
 
-  const canChooseDepartment = isDepartmentChoice && page.departmentsStatus === "ready" && page.departments.length > 0;
-  const departmentPlaceholder = canChooseDepartment
-    ? "학부 선택"
-    : isDepartmentChoice
-      ? "학부 목록 없음"
-      : "미지정";
+  const canChooseDepartment = needsDepartment && page.departmentsStatus === "ready" && page.departments.length > 0;
+  const departmentPlaceholder = canChooseDepartment ? "학부 선택" : needsDepartment ? "학부 목록 없음" : "미사용";
 
   let departmentOptionsHtml = `
     <option value="">${departmentPlaceholder}</option>
@@ -321,7 +308,7 @@ export function renderEditModal(page) {
   `;
 
   // 학부 목록 조회 실패 상태라도 기존 귀속 학부 값은 확인 가능하게 유지
-  if (isDepartmentChoice && !canChooseDepartment && selectedCourse.attributedDepartmentId) {
+  if (needsDepartment && !canChooseDepartment && selectedCourse.attributedDepartmentId) {
     departmentOptionsHtml += `
       <option value="${escapeHtml(String(selectedCourse.attributedDepartmentId))}">
         ${escapeHtml(selectedCourse.attributedDepartmentLabel || "현재 귀속 학부")}
@@ -334,7 +321,9 @@ export function renderEditModal(page) {
   editCourseDepartmentSelect.value = page.editCourseDraft.attributedDepartmentId || "";
 
   const retakeCandidates = page.takenCourses.filter((course) => {
+    // 자기 자신은 재수강 대상으로 고를 수 없음
     if (course.courseId === selectedCourse.courseId) return false;
+    // 이미 다른 과목의 재수강 대상으로 묶인 과목은 제외
     if (course.retakeCourseId) return false;
 
     const courseYear = Number(course.takenYear || 0);
@@ -361,7 +350,10 @@ export function renderEditModal(page) {
       .join("")}
   `;
 
-  if (!retakeCandidates.some((course) => String(course.courseId) === String(page.editCourseDraft.retakeCourseId || ""))) {
+  // 연도/학기 변경으로 후보군이 바뀌면 기존 재수강 선택값 정리
+  if (
+    !retakeCandidates.some((course) => String(course.courseId) === String(page.editCourseDraft.retakeCourseId || ""))
+  ) {
     page.editCourseDraft.retakeCourseId = "";
   }
 

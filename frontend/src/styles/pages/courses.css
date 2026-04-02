@@ -75,7 +75,7 @@ body.is-modal-open {
   font-size: 1rem;
 }
 
-/* 검색 폼 배치 */
+/* 검색/필터 폼 */
 .courses-search-form {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
@@ -98,7 +98,20 @@ body.is-modal-open {
   filter: brightness(0) invert(1);
 }
 
-/* 검색 전/로딩/빈 상태 공통 패널 */
+.courses-taken-filter {
+  display: grid;
+  grid-template-columns: minmax(0, 10rem) minmax(0, 12rem) auto;
+  gap: 0.7rem;
+  align-items: end;
+}
+
+.courses-taken-filter__actions {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+/* 로딩/빈 상태 공통 표현 */
 .courses-state-panel {
   min-height: 0;
   padding: 0.1rem 0 0;
@@ -129,7 +142,7 @@ body.is-modal-open {
   justify-content: center;
 }
 
-/* 테이블/스크롤 영역 */
+/* 테이블 스크롤 영역 */
 .courses-table-wrap {
   border: 1px solid #e5ebf4;
   border-radius: 0.95rem;
@@ -345,7 +358,6 @@ body.is-modal-open {
   border-top: 1px solid var(--color-border);
 }
 
-/* 비차단 피드백 토스트 */
 /* 반응형 보정 */
 @media (max-width: 1080px) {
   .courses-search-form {
@@ -356,6 +368,15 @@ body.is-modal-open {
     grid-column: 1 / -1;
     justify-content: flex-start;
   }
+
+  .courses-taken-filter {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .courses-taken-filter__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 760px) {
@@ -363,7 +384,8 @@ body.is-modal-open {
     padding: 1rem;
   }
 
-  .courses-search-form {
+  .courses-search-form,
+  .courses-taken-filter {
     grid-template-columns: 1fr;
   }
 
@@ -398,8 +420,14 @@ body.is-modal-open {
     flex-direction: column-reverse;
   }
 
-  .courses-modal__footer .btn {
+  .courses-modal__footer .btn,
+  .courses-taken-filter__actions .btn {
     width: 100%;
+  }
+
+  .courses-taken-filter__actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
   }
 
   .courses-hero {

@@ -4,13 +4,23 @@ import { addCourse, deleteCourse, patchCourse } from "/src/scripts/api/course.js
 import { UI_MESSAGES } from "/src/scripts/utils/constants.js";
 import { resolveErrorInfo } from "/src/scripts/utils/error.js";
 
-import { renderEditModal, renderMajorModal, renderSearchResults, renderTakenCourses } from "./render.js";
+import { renderEditModal, renderMajorModal, renderSearchResults } from "./render.js";
 
 // Courses 페이지 이벤트 바인딩
 export function bindCoursesPageEvents(page) {
   // 검색 폼 submit 이벤트
   page.elements.searchForm?.addEventListener("submit", (event) => {
     handleSearchSubmit(event, page);
+  });
+
+  // Taken Courses 필터 submit 이벤트
+  page.elements.takenFilterForm?.addEventListener("submit", (event) => {
+    handleTakenFilterSubmit(event, page);
+  });
+
+  // Taken Courses 필터 초기화 버튼 click 이벤트
+  page.elements.takenFilterResetButton?.addEventListener("click", () => {
+    handleTakenFilterReset(page);
   });
 
   // 검색 결과 Add 버튼 click 이벤트
@@ -177,6 +187,54 @@ async function handleSearchSubmit(event, page) {
   }, 220);
 }
 
+// Taken Courses 필터 submit 처리
+async function handleTakenFilterSubmit(event, page) {
+  event.preventDefault();
+
+  const year = String(page.elements.takenYearInput?.value || "").trim();
+  const term = String(page.elements.takenTermSelect?.value || "").trim();
+
+  // 연도/학기를 모두 비우면 전체 학기 조회로 되돌림
+  if (!year && !term) {
+    page.takenFilters = { year: "", term: "" };
+    await page.refreshTakenCourses();
+    return;
+  }
+
+  // 백엔드가 year + term 동시 전송만 허용하므로 단독 입력은 차단
+  if (!year) {
+    window.alert("학기별 조회는 연도와 학기를 함께 입력해주세요.");
+    page.elements.takenYearInput?.focus();
+    return;
+  }
+
+  // 백엔드가 year + term 동시 전송만 허용하므로 단독 입력은 차단
+  if (!term) {
+    window.alert("학기별 조회는 연도와 학기를 함께 입력해주세요.");
+    page.elements.takenTermSelect?.focus();
+    return;
+  }
+
+  page.takenFilters = { year, term };
+  await page.refreshTakenCourses();
+}
+
+// Taken Courses 필터 초기화
+async function handleTakenFilterReset(page) {
+  // 필터 입력값을 화면에서도 함께 비운다.
+  if (page.elements.takenYearInput) {
+    page.elements.takenYearInput.value = "";
+  }
+
+  // 필터 입력값을 화면에서도 함께 비운다.
+  if (page.elements.takenTermSelect) {
+    page.elements.takenTermSelect.value = "";
+  }
+
+  page.takenFilters = { year: "", term: "" };
+  await page.refreshTakenCourses();
+}
+
 // Add 버튼 처리
 async function handleAddCourse(courseMasterId, page) {
   const selectedCourse = page.searchResults.find((course) => String(course.courseMasterId) === String(courseMasterId));
@@ -193,8 +251,7 @@ async function handleAddCourse(courseMasterId, page) {
   }
 
   // 전공필수/전공선택만 majorId 결정이 필요한 분기 대상
-  const needsMajorChoice =
-    selectedCourse.subcategory === "전공필수" || selectedCourse.subcategory === "전공선택";
+  const needsMajorChoice = selectedCourse.subcategory === "전공필수" || selectedCourse.subcategory === "전공선택";
 
   if (!needsMajorChoice) {
     // 교양/전공탐색은 majorId 없이 바로 등록
@@ -284,12 +341,14 @@ function handleEditCourseFieldChange(event, page) {
   page.editCourseDraft[target.name] = target.value;
 
   if (target.name === "subcategory") {
-    // 세부 구분 정책에 따라 함께 쓰면 안 되는 귀속 값 초기화
+    // 전공필수/전공선택은 학부 귀속을 함께 보내지 않도록 정리
     if (target.value === "전공필수" || target.value === "전공선택") {
       page.editCourseDraft.attributedDepartmentId = "";
     } else if (target.value === "전공탐색") {
+      // 전공탐색은 majorId를 함께 보내지 않도록 정리
       page.editCourseDraft.attributedMajorId = "";
     } else {
+      // 교양 계열은 전공/학부 귀속을 모두 정리
       page.editCourseDraft.attributedMajorId = "";
       page.editCourseDraft.attributedDepartmentId = "";
     }
@@ -324,7 +383,8 @@ function openEditModal(courseId, page) {
   renderEditModal(page);
 
   requestAnimationFrame(() => {
-    page.elements.editCourseCreditsInput?.focus();
+    // 과목명 snapshot 수정이 새로 가능해졌으므로 이름 입력에 바로 포커스
+    page.elements.editCourseNameInput?.focus();
   });
 }
 
@@ -363,7 +423,9 @@ async function handleMajorModalSubmit(page) {
     return;
   }
 
-  const selectedMajor = page.pendingMajorOptions.find((major) => String(major.majorId) === String(page.selectedMajorId));
+  const selectedMajor = page.pendingMajorOptions.find(
+    (major) => String(major.majorId) === String(page.selectedMajorId),
+  );
   // majorId를 선택하지 않은 submit 방지
   if (!selectedMajor) {
     window.alert("등록할 전공을 먼저 선택해주세요.");
@@ -387,8 +449,12 @@ async function handleMajorModalSubmit(page) {
 // PATCH payload 작성
 function buildCoursePatchPayload(originalCourse, draft) {
   const payload = {};
+  const draftName = String(draft.name || "").trim();
 
-  // 숫자 input은 문자열 비교 뒤 실제 전송 시 Number 변환
+  if (String(originalCourse.name || "") !== draftName) {
+    payload.courseName = draftName;
+  }
+
   if (String(originalCourse.earnedCredits) !== String(draft.credits).trim()) {
     payload.earnedCredits = Number(draft.credits);
   }
@@ -409,13 +475,14 @@ function buildCoursePatchPayload(originalCourse, draft) {
     payload.courseSubcategory = draft.subcategory;
   }
 
-  // 선택값이 비면 null로 보내 귀속 해제 의도 전달
+  // 전공 선택값이 비면 null로 보내 귀속 해제 의도 전달
   const originalMajorId = String(originalCourse.majorId || "");
   const draftMajorId = String(draft.attributedMajorId || "");
   if (originalMajorId !== draftMajorId) {
     payload.majorId = draftMajorId ? Number(draftMajorId) : null;
   }
 
+  // 학부 선택값이 비면 null로 보내 귀속 해제 의도 전달
   const originalDepartmentId = String(originalCourse.attributedDepartmentId || "");
   const draftDepartmentId = String(draft.attributedDepartmentId || "");
   if (originalDepartmentId !== draftDepartmentId) {
@@ -447,42 +514,67 @@ async function handleSaveCourseEdit(page) {
     return;
   }
 
+  const normalizedDraft = {
+    ...page.editCourseDraft,
+    // 화면 입력은 trim 기준으로 비교/검증해서 빈 공백 입력을 미리 정리
+    name: String(page.editCourseDraft.name || "").trim(),
+    credits: String(page.editCourseDraft.credits || "").trim(),
+    grade: String(page.editCourseDraft.grade || "").trim(),
+    year: String(page.editCourseDraft.year || "").trim(),
+    term: String(page.editCourseDraft.term || "").trim(),
+    subcategory: String(page.editCourseDraft.subcategory || "").trim(),
+    attributedMajorId: String(page.editCourseDraft.attributedMajorId || "").trim(),
+    attributedDepartmentId: String(page.editCourseDraft.attributedDepartmentId || "").trim(),
+    retakeCourseId: String(page.editCourseDraft.retakeCourseId || "").trim(),
+  };
+
+  page.editCourseDraft = normalizedDraft;
+
+  // 과목명 snapshot 수정이 가능해졌으므로 blank 이름 저장 방지
+  if (!normalizedDraft.name) {
+    window.alert("과목명을 입력해주세요.");
+    page.elements.editCourseNameInput?.focus();
+    return;
+  }
+
   // PATCH 필수 입력 검증
-  if (!page.editCourseDraft.credits) {
+  if (!normalizedDraft.credits) {
     window.alert("학점을 입력해주세요.");
     page.elements.editCourseCreditsInput?.focus();
     return;
   }
 
-  if (!page.editCourseDraft.grade) {
+  // PATCH 필수 입력 검증
+  if (!normalizedDraft.grade) {
     window.alert("성적을 선택해주세요.");
     page.elements.editCourseGradeSelect?.focus();
     return;
   }
 
-  if (!page.editCourseDraft.year) {
+  // PATCH 필수 입력 검증
+  if (!normalizedDraft.year) {
     window.alert("연도를 입력해주세요.");
     page.elements.editCourseYearInput?.focus();
     return;
   }
 
-  if (!page.editCourseDraft.term) {
+  // PATCH 필수 입력 검증
+  if (!normalizedDraft.term) {
     window.alert("학기를 선택해주세요.");
     page.elements.editCourseTermSelect?.focus();
     return;
   }
 
-  const isMajorCategory = originalCourse.courseCategory === "전공";
-  // 전공 과목만 세부 구분 변경 허용
-  if (isMajorCategory && !page.editCourseDraft.subcategory) {
-    window.alert("세부 구분을 선택해주세요.");
+  // 이제 모든 과목에서 세부구분 수정이 가능하므로 공통 검증으로 처리
+  if (!normalizedDraft.subcategory) {
+    window.alert("세부구분을 선택해주세요.");
     page.elements.editCourseSubcategorySelect?.focus();
     return;
   }
 
   if (
-    (page.editCourseDraft.subcategory === "전공필수" || page.editCourseDraft.subcategory === "전공선택") &&
-    !page.editCourseDraft.attributedMajorId
+    (normalizedDraft.subcategory === "전공필수" || normalizedDraft.subcategory === "전공선택") &&
+    !normalizedDraft.attributedMajorId
   ) {
     // 전공필수/전공선택은 전공 귀속이 필수
     window.alert("귀속 전공을 선택해주세요.");
@@ -490,14 +582,14 @@ async function handleSaveCourseEdit(page) {
     return;
   }
 
-  if (page.editCourseDraft.subcategory === "전공탐색" && !page.editCourseDraft.attributedDepartmentId) {
+  if (normalizedDraft.subcategory === "전공탐색" && !normalizedDraft.attributedDepartmentId) {
     // 전공탐색은 학부 귀속이 필수
     window.alert("귀속 학부를 선택해주세요.");
     page.elements.editCourseDepartmentSelect?.focus();
     return;
   }
 
-  const payload = buildCoursePatchPayload(originalCourse, page.editCourseDraft);
+  const payload = buildCoursePatchPayload(originalCourse, normalizedDraft);
   // 변경점이 없으면 PATCH 요청 생략
   if (Object.keys(payload).length === 0) {
     window.alert("변경된 내용이 없습니다.");
@@ -507,7 +599,7 @@ async function handleSaveCourseEdit(page) {
   try {
     await patchCourse(Number(page.openEditCourseId), payload);
     closeEditModal(page);
-    window.alert("과목 정보가 수정되었습니다.");
+    window.alert("과목 정보를 수정했습니다.");
     await page.refreshTakenCourses();
   } catch (error) {
     console.error("[Courses][PatchCourseFailed]", error);

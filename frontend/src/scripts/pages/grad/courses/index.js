@@ -22,6 +22,10 @@ function collectCoursesPageElements(pageRoot) {
     searchTableWrap: qs("[data-search-table-wrap]", pageRoot),
     searchCourseRows: qs("[data-search-course-rows]", pageRoot),
     totalCreditsText: qs("[data-total-credits]", pageRoot),
+    takenFilterForm: qs("[data-taken-filter-form]", pageRoot),
+    takenYearInput: qs("[data-taken-year-input]", pageRoot),
+    takenTermSelect: qs("[data-taken-term-select]", pageRoot),
+    takenFilterResetButton: qs("[data-taken-filter-reset-button]", pageRoot),
     takenEmptyPanel: qs("[data-taken-empty-panel]", pageRoot),
     takenTableWrap: qs("[data-taken-table-wrap]", pageRoot),
     takenCourseRows: qs("[data-taken-course-rows]", pageRoot),
@@ -58,6 +62,10 @@ function createCoursesPageState(elements, authResult) {
     departmentsStatus: "loading",
     searchResults: [],
     takenCourses: [],
+    takenFilters: {
+      year: "",
+      term: "",
+    },
     searchStatus: "idle",
     takenStatus: "loading",
     searchTimerId: 0,
@@ -157,6 +165,19 @@ function sortTakenCourses(courses, termSortOrder) {
   });
 }
 
+// 현재 적용 중인 Taken Courses 필터를 API query로 변환
+function buildTakenCoursesParams(page) {
+  // 연도/학기가 모두 비어 있으면 전체 학기 조회
+  if (!page.takenFilters.year || !page.takenFilters.term) {
+    return {};
+  }
+
+  return {
+    year: Number(page.takenFilters.year),
+    term: page.takenFilters.term,
+  };
+}
+
 // 프로필과 전공 목록 반영
 function applyProfileToPage(page, profile) {
   page.profile = profile || null;
@@ -174,7 +195,10 @@ async function loadInitialCoursesPageData(page, authResult) {
   const profile = authResult.profile || (await getProfile());
   applyProfileToPage(page, profile);
 
-  const [departmentsResult, coursesResult] = await Promise.allSettled([getDepartments(), getCourses()]);
+  const [departmentsResult, coursesResult] = await Promise.allSettled([
+    getDepartments(),
+    getCourses(buildTakenCoursesParams(page)),
+  ]);
   let coursesLoadError = null;
 
   if (departmentsResult.status === "fulfilled") {
@@ -224,18 +248,20 @@ export async function initCoursesPage() {
   const page = createCoursesPageState(collectCoursesPageElements(pageRoot), authResult);
   page.elements.searchYearInput.value = String(new Date().getFullYear());
 
+  // Search Courses는 검색 시점마다 서버 응답을 정규화해서 사용
   page.searchCourseMasters = async (params) => {
     const response = await getCourseMasters(params);
     const items = Array.isArray(response?.items) ? response.items : [];
     return items.map(normalizeCourseMaster).filter(Boolean);
   };
 
+  // 수정/삭제 후에도 현재 학기 필터를 유지한 채 다시 조회
   page.refreshTakenCourses = async () => {
     page.takenStatus = "loading";
     renderTakenCourses(page);
 
     try {
-      const response = await getCourses();
+      const response = await getCourses(buildTakenCoursesParams(page));
       const items = Array.isArray(response?.items) ? response.items : [];
       page.takenCourses = sortTakenCourses(items.map(normalizeTakenCourse).filter(Boolean), page.termSortOrder);
       page.takenStatus = page.takenCourses.length > 0 ? "results" : "empty";
