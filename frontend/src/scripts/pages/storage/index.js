@@ -250,6 +250,7 @@ export async function initStoragePage() {
   renderHeader("[data-header-root]", {
     currentPath: PAGE_PATHS.STORAGE,
     userName: authResult.profile?.user?.name || "unknown",
+    profile: authResult.profile,
   });
 
   const pageRoot = qs("[data-page-root]");

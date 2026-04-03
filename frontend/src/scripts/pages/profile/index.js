@@ -14,8 +14,10 @@ const DEFAULT_MAJOR_TYPE = "복수전공";
 // Profile 페이지 DOM 수집
 function collectProfileElements(pageRoot) {
   return {
-    profileName: qs("[data-profile-name]", pageRoot),
+    profileNameInput: qs("[data-profile-name-input]", pageRoot),
     profileEmail: qs("[data-profile-email]", pageRoot),
+    profileNameCancelButton: qs("[data-profile-name-cancel]", pageRoot),
+    profileNameSaveButton: qs("[data-profile-name-save]", pageRoot),
     departmentSelect: qs("[data-department-select]", pageRoot),
     templateSelect: qs("[data-template-select]", pageRoot),
     baseSettingsCancelButton: qs("[data-base-settings-cancel]", pageRoot),
@@ -28,6 +30,10 @@ function collectProfileElements(pageRoot) {
     majorEmpty: qs("[data-major-empty]", pageRoot),
     majorCancelButton: qs("[data-major-cancel]", pageRoot),
     majorSaveButton: qs("[data-major-save]", pageRoot),
+    accountDeleteOpenButton: qs("[data-account-delete-open]", pageRoot),
+    accountDeleteModal: qs("[data-account-delete-modal]", pageRoot),
+    accountDeleteCancelButton: qs("[data-account-delete-cancel]", pageRoot),
+    accountDeleteConfirmButton: qs("[data-account-delete-confirm]", pageRoot),
   };
 }
 
@@ -51,6 +57,7 @@ function createProfilePage(elements, authResult) {
       majors: [],
     },
     draft: {
+      userName: authResult.profile?.user?.name || "",
       departmentId: "",
       templateId: "",
       majors: [],
@@ -59,15 +66,26 @@ function createProfilePage(elements, authResult) {
       majorFormMajorType: DEFAULT_MAJOR_TYPE,
     },
     pending: {
+      isUserSaving: false,
       isBaseSaving: false,
       isMajorsSaving: false,
+      isAccountDeleting: false,
+    },
+    ui: {
+      isDeleteModalOpen: false,
     },
     defaultMajorType: DEFAULT_MAJOR_TYPE,
     majorDraftSequence: 0,
     render: null,
+    renderHeader: null,
     loadProfile: null,
     loadCatalogs: null,
   };
+}
+
+// 사용자 정보 draft를 서버 기준으로 복원
+function syncUserDraft(page) {
+  page.draft.userName = page.profile.user.name || "";
 }
 
 // 기본 설정 draft를 서버 기준으로 복원
@@ -133,6 +151,7 @@ function applyProfileResponse(page, response) {
       .filter(Boolean),
   };
 
+  syncUserDraft(page);
   syncBaseDraft(page);
   syncMajorDraft(page);
 }
@@ -200,17 +219,22 @@ export async function initProfilePage() {
   const authResult = await ensureProtectedPageAccess();
   if (!authResult) return;
 
-  renderHeader("[data-header-root]", {
-    currentPath: PAGE_PATHS.PROFILE,
-    userName: authResult.profile?.user?.name || "unknown",
-  });
-
   const pageRoot = qs("[data-page-root]");
   if (!pageRoot) return;
 
   const page = createProfilePage(collectProfileElements(pageRoot), authResult);
 
+  // 헤더 뱃지와 요약 카드도 최신 프로필 상태를 기준으로 함께 갱신
+  page.renderHeader = () => {
+    renderHeader("[data-header-root]", {
+      currentPath: PAGE_PATHS.PROFILE,
+      userName: page.profile.user.name || "unknown",
+      profile: page.profile,
+    });
+  };
+
   page.render = () => {
+    page.renderHeader();
     renderProfilePage(page);
   };
 

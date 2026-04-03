@@ -1,6 +1,9 @@
-/* Profile 페이지 메인 레이아웃 */
 body[data-page="profile"] .page-section {
   justify-items: stretch;
+}
+
+body[data-page="profile"].is-modal-open {
+  overflow: hidden;
 }
 
 .profile-page {
@@ -9,7 +12,6 @@ body[data-page="profile"] .page-section {
   gap: var(--space-lg);
 }
 
-/* 상단 타이틀 영역 */
 .profile-page__header {
   display: grid;
   gap: 0.3rem;
@@ -29,7 +31,6 @@ body[data-page="profile"] .page-section {
   font-size: 1rem;
 }
 
-/* 카드 공통 간격 */
 .profile-card {
   display: grid;
   gap: var(--space-lg);
@@ -49,7 +50,6 @@ body[data-page="profile"] .page-section {
   letter-spacing: -0.01em;
 }
 
-/* 사용자 정보/설정 필드 스택 */
 .profile-field-stack {
   display: grid;
   gap: 0.8rem;
@@ -73,7 +73,6 @@ body[data-page="profile"] .page-section {
   gap: 0.55rem;
 }
 
-/* 전공 추가 폼 */
 .profile-major-builder {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
@@ -95,7 +94,6 @@ body[data-page="profile"] .page-section {
   filter: brightness(0) invert(1);
 }
 
-/* 전공 목록 */
 .profile-empty {
   margin: 0;
   color: var(--color-text-muted);
@@ -165,8 +163,135 @@ body[data-page="profile"] .page-section {
   opacity: 0.7;
 }
 
-/* 페이지 하단 버튼 영역 */
-/* 반응형 보정 */
+.profile-danger-card {
+  gap: 1.1rem;
+  border-color: #ffc9c9;
+}
+
+.profile-danger-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.profile-danger-card__icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.75rem;
+  display: inline-grid;
+  place-items: center;
+  background: #ffe7e7;
+  flex-shrink: 0;
+}
+
+.profile-danger-card__icon img {
+  width: 1.1rem;
+  height: 1.1rem;
+  filter: invert(19%) sepia(95%) saturate(6481%) hue-rotate(354deg) brightness(100%) contrast(116%);
+}
+
+.profile-danger-card__copy {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.profile-danger-card__description {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.profile-danger-card__actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.profile-danger-card__button {
+  border-color: #f00;
+  background: #f00;
+  color: #fff;
+}
+
+.profile-danger-card__button:hover {
+  background: #d40000;
+}
+
+.profile-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(17, 24, 39, 0.35);
+  backdrop-filter: blur(4px);
+}
+
+.profile-modal.is-open {
+  display: flex;
+}
+
+.profile-modal__dialog {
+  width: min(28rem, 100%);
+  border-radius: 1rem;
+  background: var(--color-surface);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.22);
+  padding: 1.5rem;
+  display: grid;
+  gap: 1.2rem;
+}
+
+.profile-modal__header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.profile-modal__icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.85rem;
+  background: #ffe7e7;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.profile-modal__icon img {
+  width: 1.2rem;
+  height: 1.2rem;
+  filter: invert(19%) sepia(95%) saturate(6481%) hue-rotate(354deg) brightness(100%) contrast(116%);
+}
+
+.profile-modal__title {
+  margin: 0;
+  font-size: 1.8rem;
+  letter-spacing: -0.02em;
+}
+
+.profile-modal__description {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.profile-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.profile-modal__delete {
+  border-color: #f00;
+  background: #f00;
+  color: #fff;
+}
+
+.profile-modal__delete:hover {
+  background: #d40000;
+}
+
 @media (max-width: 900px) {
   .profile-major-builder {
     grid-template-columns: 1fr;
@@ -196,5 +321,13 @@ body[data-page="profile"] .page-section {
 
   .profile-major-chip--name {
     grid-column: 2 / 3;
+  }
+
+  .profile-modal {
+    padding: 1rem;
+  }
+
+  .profile-modal__dialog {
+    padding: 1.2rem;
   }
 }

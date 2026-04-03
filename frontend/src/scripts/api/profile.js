@@ -1,8 +1,13 @@
-﻿import { del, get, post, put } from "./client.js";
+import { del, get, post, put } from "./client.js";
 
 // 내 프로필 정보를 조회
 export function getProfile() {
   return get("/api/v1/profile");
+}
+
+// 사용자 이름을 변경
+export function updateName(name) {
+  return put("/api/v1/profile/name", { name });
 }
 
 // 소속 학과를 변경
@@ -24,4 +29,3 @@ export function addMajor({ majorId, majorType }) {
 export function deleteMajor(userMajorId) {
   return del(`/api/v1/profile/major/${userMajorId}`);
 }
-

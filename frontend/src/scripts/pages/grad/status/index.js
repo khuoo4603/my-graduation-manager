@@ -468,6 +468,7 @@ async function initStatusPage() {
   renderHeader("[data-header-root]", {
     currentPath: PAGE_PATHS.GRAD_STATUS,
     userName: resolveViewerName(authResult.profile),
+    profile: authResult.profile,
   });
 
   const pageRoot = qs("[data-page-root]");

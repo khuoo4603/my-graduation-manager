@@ -243,6 +243,7 @@ export async function initGradPage() {
   renderHeader("[data-header-root]", {
     currentPath: PAGE_PATHS.GRAD,
     userName: resolveGradViewerName(authResult?.profile),
+    profile: authResult?.profile,
   });
 
   const pageRoot = qs("[data-page-root]");

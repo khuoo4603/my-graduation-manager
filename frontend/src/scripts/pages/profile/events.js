@@ -1,14 +1,27 @@
-import { addMajor, deleteMajor, updateDepartment, updateTemplate } from "/src/scripts/api/profile.js";
-import { UI_MESSAGES } from "/src/scripts/utils/constants.js";
+import { deleteAccount } from "/src/scripts/api/auth.js";
+import { addMajor, deleteMajor, updateDepartment, updateName, updateTemplate } from "/src/scripts/api/profile.js";
+import { PAGE_PATHS, UI_MESSAGES } from "/src/scripts/utils/constants.js";
 import { resolveErrorInfo } from "/src/scripts/utils/error.js";
 
-import { renderBaseSettings, renderMajorForm, renderMajorList, renderPendingState, renderProfilePage } from "./render.js";
+import {
+  renderAccountDeleteModal,
+  renderBaseSettings,
+  renderMajorForm,
+  renderMajorList,
+  renderPendingState,
+  renderUserInformation,
+} from "./render.js";
 
+const MAX_NAME_LENGTH = 50;
+
+const USER_NAME_REQUIRED_ALERT_MESSAGE = "이름을 입력해 주세요.";
+const USER_NAME_LENGTH_ALERT_MESSAGE = "이름은 50자 이하로 입력해 주세요.";
+const USER_INFO_EMPTY_ALERT_MESSAGE = "저장할 사용자 정보 변경 사항이 없습니다.";
 const DEPARTMENT_CHANGE_ALERT_MESSAGE =
-  "학부를 변경하면 졸업 예정 결과가 달라질 수 있으므로 템플릿과 전공 설정을 다시 확인해야 합니다.";
+  "학부를 변경하면 졸업 판정 결과가 달라질 수 있으므로 템플릿과 전공 설정을 다시 확인해야 합니다.";
 const DEPARTMENT_REQUIRED_ALERT_MESSAGE = "학부를 선택해 주세요.";
-const TEMPLATE_REQUIRED_ALERT_MESSAGE = "템플릿을 선택해 주세요.";
-const TEMPLATE_INVALID_ALERT_MESSAGE = "선택한 템플릿을 다시 확인해 주세요.";
+const TEMPLATE_REQUIRED_ALERT_MESSAGE = "졸업 템플릿을 선택해 주세요.";
+const TEMPLATE_INVALID_ALERT_MESSAGE = "선택한 졸업 템플릿을 다시 확인해 주세요.";
 const BASE_SETTINGS_EMPTY_ALERT_MESSAGE = "저장할 기본 설정 변경 사항이 없습니다.";
 const MAJOR_REQUIRED_ALERT_MESSAGE = "전공을 선택해 주세요.";
 const MAJOR_INVALID_ALERT_MESSAGE = "선택한 전공을 다시 확인해 주세요.";
@@ -17,68 +30,108 @@ const MAJORS_EMPTY_ALERT_MESSAGE = "저장할 전공 변경 사항이 없습니�
 
 // Profile 페이지 이벤트 바인딩
 export function bindProfileEvents(page) {
-  // 기본 설정 카드의 학부 선택 change 이벤트
+  // 이름 입력 필드 input 이벤트
+  page.elements.profileNameInput?.addEventListener("input", (event) => {
+    const target = event.currentTarget;
+    page.draft.userName = target instanceof HTMLInputElement ? target.value : "";
+    renderPendingState(page);
+  });
+
+  // 이름 취소 버튼 click 이벤트
+  page.elements.profileNameCancelButton?.addEventListener("click", () => {
+    handleUserInformationCancel(page);
+  });
+
+  // 이름 저장 버튼 click 이벤트
+  page.elements.profileNameSaveButton?.addEventListener("click", async () => {
+    await handleUserInformationSave(page);
+  });
+
+  // 학부 선택 select change 이벤트
   page.elements.departmentSelect?.addEventListener("change", (event) => {
     handleDepartmentChange(event, page);
   });
 
-  // 기본 설정 카드의 템플릿 선택 change 이벤트
+  // 템플릿 선택 select change 이벤트
   page.elements.templateSelect?.addEventListener("change", (event) => {
     const target = event.currentTarget;
     page.draft.templateId = target instanceof HTMLSelectElement ? target.value : "";
   });
 
-  // 기본 설정 카드의 Cancel 버튼 click 이벤트
+  // 기본 설정 취소 버튼 click 이벤트
   page.elements.baseSettingsCancelButton?.addEventListener("click", () => {
     handleBaseSettingsCancel(page);
   });
 
-  // 기본 설정 카드의 Save 버튼 click 이벤트
+  // 기본 설정 저장 버튼 click 이벤트
   page.elements.baseSettingsSaveButton?.addEventListener("click", async () => {
     await handleBaseSettingsSave(page);
   });
 
-  // 전공 추가 폼의 학부 필터 change 이벤트
+  // 전공 추가용 학부 필터 select change 이벤트
   page.elements.majorDepartmentSelect?.addEventListener("change", (event) => {
     handleMajorDepartmentChange(event, page);
   });
 
-  // 전공 추가 폼의 전공 선택 change 이벤트
+  // 전공 선택 select change 이벤트
   page.elements.majorSelect?.addEventListener("change", (event) => {
     const target = event.currentTarget;
     page.draft.majorFormMajorId = target instanceof HTMLSelectElement ? target.value : "";
   });
 
-  // 전공 추가 폼의 major type 선택 change 이벤트
+  // 전공 구분 select change 이벤트
   page.elements.majorTypeSelect?.addEventListener("change", (event) => {
     const target = event.currentTarget;
     page.draft.majorFormMajorType = target instanceof HTMLSelectElement ? target.value : page.defaultMajorType;
   });
 
-  // 전공 추가 폼의 Add Major 버튼 click 이벤트
+  // 전공 추가 버튼 click 이벤트
   page.elements.majorAddButton?.addEventListener("click", () => {
     handleMajorAdd(page);
   });
 
-  // 전공 목록의 삭제 버튼 click 이벤트 위임
+  // 전공 목록 내부 삭제 버튼 click 이벤트 위임
   page.elements.majorList?.addEventListener("click", (event) => {
     const target = event.target;
     if (!(target instanceof Element)) return;
 
+    // data-major-delete가 달린 삭제 버튼 클릭만 전공 삭제로 처리
     const deleteButton = target.closest("[data-major-delete]");
     if (!(deleteButton instanceof HTMLButtonElement)) return;
 
     handleMajorDelete(deleteButton.dataset.majorDraftId || "", page);
   });
 
-  // 전공 관리 카드의 Cancel 버튼 click 이벤트
+  // 전공 취소 버튼 click 이벤트
   page.elements.majorCancelButton?.addEventListener("click", () => {
     handleMajorsCancel(page);
   });
 
-  // 전공 관리 카드의 Save 버튼 click 이벤트
+  // 전공 저장 버튼 click 이벤트
   page.elements.majorSaveButton?.addEventListener("click", async () => {
     await handleMajorsSave(page);
+  });
+
+  // 계정 삭제 카드 버튼 click 이벤트
+  page.elements.accountDeleteOpenButton?.addEventListener("click", () => {
+    handleAccountDeleteModalOpen(page);
+  });
+
+  // 계정 삭제 모달 취소 버튼 click 이벤트
+  page.elements.accountDeleteCancelButton?.addEventListener("click", () => {
+    handleAccountDeleteModalClose(page);
+  });
+
+  // 계정 삭제 모달 확인 버튼 click 이벤트
+  page.elements.accountDeleteConfirmButton?.addEventListener("click", async () => {
+    await handleAccountDeleteConfirm(page);
+  });
+
+  // 계정 삭제 모달 오버레이 click 이벤트
+  page.elements.accountDeleteModal?.addEventListener("click", (event) => {
+    // 오버레이 자체를 클릭했을 때만 삭제 확인 모달 닫기
+    if (event.target !== page.elements.accountDeleteModal) return;
+    handleAccountDeleteModalClose(page);
   });
 }
 
@@ -91,6 +144,72 @@ function handleDepartmentChange(event, page) {
 
   window.alert(DEPARTMENT_CHANGE_ALERT_MESSAGE);
   page.draft.departmentId = nextDepartmentId;
+}
+
+// 사용자 정보 카드의 이름 입력값 복원
+function handleUserInformationCancel(page) {
+  page.draft.userName = page.profile.user.name || "";
+  renderUserInformation(page);
+  renderPendingState(page);
+}
+
+// 이름 저장 직전 입력값 검증
+function validateUserInformation(page) {
+  if (page.draft.userName === (page.profile.user.name || "")) {
+    window.alert(USER_INFO_EMPTY_ALERT_MESSAGE);
+    return null;
+  }
+
+  const normalizedName = String(page.draft.userName || "").trim();
+  if (!normalizedName) {
+    window.alert(USER_NAME_REQUIRED_ALERT_MESSAGE);
+    page.elements.profileNameInput?.focus();
+    return null;
+  }
+
+  if (normalizedName.length > MAX_NAME_LENGTH) {
+    window.alert(USER_NAME_LENGTH_ALERT_MESSAGE);
+    page.elements.profileNameInput?.focus();
+    return null;
+  }
+
+  return normalizedName;
+}
+
+// 사용자 정보 카드의 이름 저장 처리
+async function handleUserInformationSave(page) {
+  if (page.pending.isUserSaving) return;
+
+  const normalizedName = validateUserInformation(page);
+  if (!normalizedName) return;
+
+  page.pending.isUserSaving = true;
+  renderPendingState(page);
+
+  let hasMutation = false;
+
+  try {
+    await updateName(normalizedName);
+    hasMutation = true;
+
+    await page.loadProfile();
+    page.render();
+  } catch (error) {
+    if (hasMutation) {
+      try {
+        await page.loadProfile();
+        page.render();
+      } catch {
+        // 최신 상태 복구 시도 실패
+      }
+    }
+
+    const errorInfo = resolveErrorInfo(error, UI_MESSAGES.COMMON_ERROR);
+    window.alert(errorInfo.message);
+  } finally {
+    page.pending.isUserSaving = false;
+    renderPendingState(page);
+  }
 }
 
 // 기본 설정 draft 복원
@@ -158,14 +277,14 @@ async function handleBaseSettingsSave(page) {
     }
 
     await page.loadProfile();
-    renderProfilePage(page);
+    page.render();
   } catch (error) {
     if (hasMutation) {
       try {
         await page.loadProfile();
-        renderProfilePage(page);
+        page.render();
       } catch {
-        // 부분 반영 후 서버 기준 복구 시도
+        // 최신 상태 복구 시도 실패
       }
     }
 
@@ -196,6 +315,7 @@ function validateMajorAdd(page) {
 
   const selectedMajor = page.catalogs.majors.find(
     (major) =>
+      // 선택한 학부 id와 전공 id가 모두 일치하는 항목만 추가 대상으로 인정
       major.departmentId === page.draft.majorFormDepartmentId && major.id === page.draft.majorFormMajorId,
   );
 
@@ -267,12 +387,14 @@ function handleMajorsCancel(page) {
 function buildMajorMutationPlan(page) {
   const addedMajors = page.draft.majors.filter((draftMajor) => {
     return !page.profile.majors.some((profileMajor) => {
+      // 전공 id와 전공 구분이 모두 같으면 이미 저장된 전공으로 본다
       return profileMajor.id === draftMajor.id && profileMajor.majorType === draftMajor.majorType;
     });
   });
 
   const removedMajors = page.profile.majors.filter((profileMajor) => {
     return !page.draft.majors.some((draftMajor) => {
+      // 서버 기준 전공 id / 전공 구분이 draft에 없으면 삭제 대상으로 본다
       return draftMajor.id === profileMajor.id && draftMajor.majorType === profileMajor.majorType;
     });
   });
@@ -310,14 +432,14 @@ async function handleMajorsSave(page) {
     }
 
     await page.loadProfile();
-    renderProfilePage(page);
+    page.render();
   } catch (error) {
     if (hasMutation) {
       try {
         await page.loadProfile();
-        renderProfilePage(page);
+        page.render();
       } catch {
-        // 부분 반영 후 서버 기준 복구 시도
+        // 최신 상태 복구 시도 실패
       }
     }
 
@@ -325,6 +447,43 @@ async function handleMajorsSave(page) {
     window.alert(errorInfo.message);
   } finally {
     page.pending.isMajorsSaving = false;
+    renderPendingState(page);
+  }
+}
+
+// 삭제 확인 모달 열기
+function handleAccountDeleteModalOpen(page) {
+  if (page.pending.isAccountDeleting) return;
+
+  page.ui.isDeleteModalOpen = true;
+  renderAccountDeleteModal(page);
+  renderPendingState(page);
+}
+
+// 삭제 확인 모달 닫기
+function handleAccountDeleteModalClose(page) {
+  if (page.pending.isAccountDeleting) return;
+
+  page.ui.isDeleteModalOpen = false;
+  renderAccountDeleteModal(page);
+  renderPendingState(page);
+}
+
+// 계정 삭제 API 호출 처리
+async function handleAccountDeleteConfirm(page) {
+  if (page.pending.isAccountDeleting) return;
+
+  page.pending.isAccountDeleting = true;
+  renderPendingState(page);
+
+  try {
+    await deleteAccount();
+    window.location.href = PAGE_PATHS.HOME;
+  } catch (error) {
+    const errorInfo = resolveErrorInfo(error, UI_MESSAGES.COMMON_ERROR);
+    window.alert(errorInfo.message);
+  } finally {
+    page.pending.isAccountDeleting = false;
     renderPendingState(page);
   }
 }

@@ -240,6 +240,7 @@ export async function initCoursesPage() {
   renderHeader("[data-header-root]", {
     currentPath: PAGE_PATHS.GRAD_COURSES,
     userName: authResult.profile?.user?.name || "unknown",
+    profile: authResult.profile,
   });
 
   const pageRoot = qs("[data-page-root]");

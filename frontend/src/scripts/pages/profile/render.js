@@ -11,9 +11,12 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-// 사용자 정보 렌더링
-export function renderProfileSummary(page) {
-  setText(page.elements.profileName, page.profile.user.name || "해당 없음");
+// 사용자 정보 카드 렌더링
+export function renderUserInformation(page) {
+  if (page.elements.profileNameInput) {
+    page.elements.profileNameInput.value = page.draft.userName || "";
+  }
+
   setText(page.elements.profileEmail, page.profile.user.email || "해당 없음");
 }
 
@@ -21,10 +24,9 @@ export function renderProfileSummary(page) {
 export function renderBaseSettings(page) {
   const { departmentSelect, templateSelect } = page.elements;
 
-  // 학부 select가 있으면 서버 기준 학부 option 목록 렌더링
   if (departmentSelect) {
     departmentSelect.innerHTML = `
-      <option value="" ${page.draft.departmentId ? "" : "selected"} disabled>학부를 선택하세요.</option>
+      <option value="" ${page.draft.departmentId ? "" : "selected"} disabled>학부를 선택해 주세요.</option>
       ${page.catalogs.departments
         .map((department) => {
           return `
@@ -38,10 +40,9 @@ export function renderBaseSettings(page) {
     departmentSelect.value = page.draft.departmentId;
   }
 
-  // 템플릿 select가 있으면 서버 기준 템플릿 option 목록 렌더링
   if (templateSelect) {
     templateSelect.innerHTML = `
-      <option value="" ${page.draft.templateId ? "" : "selected"} disabled>졸업 템플릿을 선택하세요.</option>
+      <option value="" ${page.draft.templateId ? "" : "selected"} disabled>졸업 템플릿을 선택해 주세요.</option>
       ${page.catalogs.templates
         .map((template) => {
           const label = template.applicableYear ? `${template.name} (${template.applicableYear})` : template.name || "";
@@ -65,13 +66,13 @@ export function renderMajorForm(page) {
     : [];
 
   if (!filteredMajors.some((major) => major.id === page.draft.majorFormMajorId)) {
+    // 현재 학부 필터에 없는 전공 id는 선택값에서 제거
     page.draft.majorFormMajorId = "";
   }
 
-  // 전공 추가 폼의 학부 select option 목록 렌더링
   if (majorDepartmentSelect) {
     majorDepartmentSelect.innerHTML = `
-      <option value="" ${page.draft.majorFormDepartmentId ? "" : "selected"} disabled>학부를 선택하세요.</option>
+      <option value="" ${page.draft.majorFormDepartmentId ? "" : "selected"} disabled>학부를 선택해 주세요.</option>
       ${page.catalogs.departments
         .map((department) => {
           return `
@@ -85,10 +86,9 @@ export function renderMajorForm(page) {
     majorDepartmentSelect.value = page.draft.majorFormDepartmentId;
   }
 
-  // 선택한 학부에 속한 전공만 전공 select option으로 렌더링
   if (majorSelect) {
     majorSelect.innerHTML = `
-      <option value="" ${page.draft.majorFormMajorId ? "" : "selected"} disabled>전공을 선택하세요.</option>
+      <option value="" ${page.draft.majorFormMajorId ? "" : "selected"} disabled>전공을 선택해 주세요.</option>
       ${filteredMajors
         .map((major) => {
           return `
@@ -102,7 +102,6 @@ export function renderMajorForm(page) {
     majorSelect.value = page.draft.majorFormMajorId;
   }
 
-  // 전공 유형 select는 현재 draft 값을 그대로 반영
   if (majorTypeSelect) {
     majorTypeSelect.value = page.draft.majorFormMajorType || page.defaultMajorType;
   }
@@ -113,14 +112,13 @@ export function renderMajorList(page) {
   const { majorList, majorEmpty } = page.elements;
   if (!majorList || !majorEmpty) return;
 
-  // 담아둔 전공이 없으면 목록을 비우고 empty 문구 노출
   if (page.draft.majors.length === 0) {
+    // 담아둔 전공이 없으면 목록을 비우고 empty 문구 노출
     clearChildren(majorList);
     majorEmpty.hidden = false;
     return;
   }
 
-  // draft에 담긴 전공이 있으면 카드형 목록으로 렌더링
   majorList.innerHTML = page.draft.majors
     .map((major) => {
       return `
@@ -133,7 +131,7 @@ export function renderMajorList(page) {
           <button
             type="button"
             class="btn btn--ghost btn--icon profile-major-item__remove"
-            aria-label="Remove major"
+            aria-label="전공 삭제"
             data-major-delete
             data-major-draft-id="${escapeHtml(major.draftId)}"
           >
@@ -147,9 +145,29 @@ export function renderMajorList(page) {
   majorEmpty.hidden = true;
 }
 
+// 계정 삭제 확인 모달 open 상태 렌더링
+export function renderAccountDeleteModal(page) {
+  const { accountDeleteModal } = page.elements;
+  if (!accountDeleteModal) return;
+
+  const isOpen = Boolean(page.ui.isDeleteModalOpen);
+  accountDeleteModal.hidden = !isOpen;
+  accountDeleteModal.classList.toggle("is-open", isOpen);
+  document.body.classList.toggle("is-modal-open", isOpen);
+}
+
 // 저장 중 상태 반영
 export function renderPendingState(page) {
   const { elements, pending, draft } = page;
+  const isUserNameDirty = draft.userName !== (page.profile.user.name || "");
+
+  if (elements.profileNameInput) elements.profileNameInput.disabled = pending.isUserSaving;
+  if (elements.profileNameCancelButton) {
+    elements.profileNameCancelButton.disabled = pending.isUserSaving || !isUserNameDirty;
+  }
+  if (elements.profileNameSaveButton) {
+    elements.profileNameSaveButton.disabled = pending.isUserSaving || !isUserNameDirty;
+  }
 
   if (elements.departmentSelect) elements.departmentSelect.disabled = pending.isBaseSaving;
   if (elements.templateSelect) elements.templateSelect.disabled = pending.isBaseSaving;
@@ -166,13 +184,18 @@ export function renderPendingState(page) {
   Array.from(elements.majorList?.querySelectorAll("[data-major-delete]") || []).forEach((button) => {
     button.disabled = pending.isMajorsSaving;
   });
+
+  if (elements.accountDeleteOpenButton) elements.accountDeleteOpenButton.disabled = pending.isAccountDeleting;
+  if (elements.accountDeleteCancelButton) elements.accountDeleteCancelButton.disabled = pending.isAccountDeleting;
+  if (elements.accountDeleteConfirmButton) elements.accountDeleteConfirmButton.disabled = pending.isAccountDeleting;
 }
 
 // Profile 페이지 전체 갱신
 export function renderProfilePage(page) {
-  renderProfileSummary(page);
+  renderUserInformation(page);
   renderBaseSettings(page);
   renderMajorForm(page);
   renderMajorList(page);
+  renderAccountDeleteModal(page);
   renderPendingState(page);
 }
