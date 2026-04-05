@@ -537,6 +537,23 @@ function createTutorialController(options = {}) {
     if (!step) return;
 
     if (step.blockAdvance) {
+      if (typeof step.onBlockedAction === "function") {
+        step.onBlockedAction({
+          controller,
+          context: getContext(),
+          step,
+        });
+      }
+
+      if (step.pauseMessage) {
+        window.alert(step.pauseMessage);
+      }
+
+      if (step.pauseOnBlock) {
+        deactivate({ clearSession: false });
+        return;
+      }
+
       controller.refresh({ skipScroll: true });
       return;
     }

@@ -11,8 +11,11 @@ import { bindProfileEvents } from "./events.js";
 import { renderProfilePage } from "./render.js";
 
 const DEFAULT_MAJOR_TYPE = "복수전공";
+const PROFILE_ONBOARDING_SAVE_STEP_INDEX = 3;
+const PROFILE_SETUP_TUTORIAL_NOTICE =
+  "튜토리얼이 잠시 종료되고 학부/템플릿을 설정한 후 저장을 누르면 다음 튜토리얼로 이어갑니다.";
 
-function createProfileOnboardingSteps() {
+function createProfileOnboardingSteps(page) {
   return [
     {
       target: '[data-tutorial="profile-title"]',
@@ -57,6 +60,12 @@ function createProfileOnboardingSteps() {
           actionType: "next",
           actionLabel: "학부/템플릿 설정하기",
           blockAdvance: true,
+          pauseOnBlock: true,
+          pauseMessage: PROFILE_SETUP_TUTORIAL_NOTICE,
+          onBlockedAction: () => {
+            page.ui.resumeOnboardingAfterBaseSettingsSave = true;
+            page.ui.resumeOnboardingStepIndex = PROFILE_ONBOARDING_SAVE_STEP_INDEX;
+          },
         };
       },
     },
@@ -174,6 +183,8 @@ function createProfilePage(elements, authResult) {
       userNameFeedbackMessage: consumeUserNameSaveFeedbackMessage(),
       baseSettingsFeedbackMessage: "",
       majorFeedbackMessage: "",
+      resumeOnboardingAfterBaseSettingsSave: false,
+      resumeOnboardingStepIndex: PROFILE_ONBOARDING_SAVE_STEP_INDEX,
     },
     defaultMajorType: DEFAULT_MAJOR_TYPE,
     majorDraftSequence: 0,
@@ -353,7 +364,7 @@ export async function initProfilePage() {
   bindProfileEvents(page);
   page.tutorial = initTutorial({
     pageKey: "profile",
-    onboardingSteps: createProfileOnboardingSteps(),
+    onboardingSteps: createProfileOnboardingSteps(page),
     pageSteps: createProfilePageTutorialSteps(),
     getContext: () => ({
       profile: page.profile,
