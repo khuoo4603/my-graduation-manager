@@ -12,12 +12,21 @@
         <div class="container page-section">
           <section class="status-page" data-page-root>
             <header class="page-header status-page__header">
-              <h1 class="page-title">졸업 현황</h1>
-              <p class="page-subtitle status-page__subtitle">상세 졸업 판정 결과를 확인할 수 있습니다.</p>
+              <div class="tutorial-entry" data-tutorial="status-title">
+                <h1 class="page-title">졸업 현황</h1>
+              </div>
+              <div class="tutorial-entry__subrow">
+                <p class="page-subtitle status-page__subtitle tutorial-entry__subtitle">
+                  상세 졸업 판정 결과를 확인할 수 있습니다.
+                </p>
+                <button class="btn btn--ghost tutorial-entry__button" type="button" data-tutorial-trigger="status">
+                  튜토리얼 보기
+                </button>
+              </div>
             </header>
 
             <div class="status-primary-stack" data-status-primary-shell>
-              <section class="card status-summary-card">
+              <section class="card status-summary-card" data-tutorial="status-overall-card">
                 <div class="status-summary-card__top">
                   <div class="status-summary-card__left">
                     <h2 class="status-summary-card__title">전체 현황</h2>

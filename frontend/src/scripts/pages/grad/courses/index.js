@@ -2,6 +2,7 @@ import { getCourseMasters, getCourses } from "/src/scripts/api/course.js";
 import { getProfile } from "/src/scripts/api/profile.js";
 import { getDepartments } from "/src/scripts/api/reference.js";
 import { renderHeader } from "/src/scripts/components/header.js";
+import { initTutorial } from "/src/scripts/components/tutorial.js";
 import { ensureProtectedPageAccess } from "/src/scripts/utils/auth.js";
 import { PAGE_PATHS, UI_MESSAGES } from "/src/scripts/utils/constants.js";
 import { qs } from "/src/scripts/utils/dom.js";
@@ -9,6 +10,87 @@ import { resolveErrorInfo } from "/src/scripts/utils/error.js";
 
 import { bindCoursesPageEvents } from "./events.js";
 import { renderEditModal, renderMajorModal, renderSearchResults, renderTakenCourses } from "./render.js";
+
+function createCoursesOnboardingSteps() {
+  return [
+    {
+      target: '[data-tutorial="courses-title"]',
+      title: "수강내역 안내",
+      description: [
+        "수강 내역을 등록해야 졸업 판정과 대시보드 기능을 제대로 사용할 수 있습니다.",
+        "이 페이지에서는 과목을 검색하고 실제 수강내역으로 등록하는 흐름을 관리합니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="courses-search-card"]',
+      title: "과목 검색 카드",
+      description: [
+        "연도와 학기로 과목을 검색해서 등록합니다.",
+        "미래 학기의 수강신청 계획도 같은 방식으로 미리 등록할 수 있습니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="courses-search-form"]',
+      title: "세부 검색 조건",
+      description: [
+        "세부구분, 학기, 과목명을 조합해서 원하는 과목을 빠르게 찾을 수 있습니다.",
+        "원하는 과목이 없으면 비슷한 과목을 등록한 뒤 수정해서 사용할 수도 있습니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="courses-taken-card"]',
+      title: "수강 내역 목록",
+      description: [
+        "등록된 과목은 표에서 다시 확인합니다.",
+        "행을 클릭해 수정하고, 우측 액션으로 삭제할 수 있습니다.",
+      ],
+      actionType: "navigate",
+      actionLabel: "졸업 현황으로 이동",
+      actionHref: PAGE_PATHS.GRAD_STATUS,
+      nextOnboardingPageKey: "status",
+      nextOnboardingStepIndex: 0,
+    },
+  ];
+}
+
+function createCoursesPageTutorialSteps() {
+  return [
+    {
+      target: '[data-tutorial="courses-search-card"]',
+      title: "과목 검색 카드",
+      description: [
+        "수강할 과목을 연도와 학기로 검색해서 추가하는 영역입니다.",
+        "세부구분과 과목명까지 함께 사용하면 더 빠르게 찾을 수 있습니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="courses-taken-filter"]',
+      title: "수강 내역 필터",
+      description: [
+        "이미 등록한 수강내역은 연도와 학기 기준으로 다시 좁혀서 볼 수 있습니다.",
+        "필터를 비우면 전체 학기 목록을 다시 확인합니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="courses-taken-card"]',
+      title: "수강 테이블",
+      description: [
+        "등록된 과목의 학점, 성적, 학기 정보를 표로 확인합니다.",
+        "표가 비어 있어도 다음 온보딩 단계로는 계속 진행할 수 있습니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="courses-taken-card"]',
+      title: "수정과 삭제",
+      description: [
+        "행을 클릭하면 수정 모달이 열리고, 우측 버튼으로 삭제할 수 있습니다.",
+        "원하는 과목이 없을 때는 비슷한 과목을 추가한 뒤 수정해서 맞춰 쓰면 됩니다.",
+      ],
+      actionType: "close",
+      actionLabel: "튜토리얼 종료",
+    },
+  ];
+}
 
 // Courses 페이지 DOM 참조 수집
 function collectCoursesPageElements(pageRoot) {
@@ -82,6 +164,7 @@ function createCoursesPageState(elements, authResult) {
     },
     searchCourseMasters: null,
     refreshTakenCourses: null,
+    tutorial: null,
   };
 }
 
@@ -281,14 +364,24 @@ export async function initCoursesPage() {
   renderEditModal(page);
   renderMajorModal(page);
   bindCoursesPageEvents(page);
+  page.tutorial = initTutorial({
+    pageKey: "courses",
+    onboardingSteps: createCoursesOnboardingSteps(),
+    pageSteps: createCoursesPageTutorialSteps(),
+    getContext: () => ({
+      profile: page.profile,
+    }),
+  });
 
   try {
     await loadInitialCoursesPageData(page, authResult);
+    page.tutorial?.refresh({ skipScroll: true });
   } catch (error) {
     console.error("[Courses][InitialLoadFailed]", error);
     const errorInfo = resolveErrorInfo(error, UI_MESSAGES.COMMON_ERROR);
     page.takenStatus = "error";
     renderTakenCourses(page);
+    page.tutorial?.refresh({ skipScroll: true });
     window.alert(errorInfo.message);
   }
 }

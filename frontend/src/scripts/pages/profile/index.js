@@ -1,6 +1,7 @@
-import { getProfile } from "/src/scripts/api/profile.js";
+﻿import { getProfile } from "/src/scripts/api/profile.js";
 import { getDepartments, getMajors, getTemplates } from "/src/scripts/api/reference.js";
 import { renderHeader } from "/src/scripts/components/header.js";
+import { initTutorial } from "/src/scripts/components/tutorial.js";
 import { ensureProtectedPageAccess } from "/src/scripts/utils/auth.js";
 import { qs } from "/src/scripts/utils/dom.js";
 import { resolveErrorInfo } from "/src/scripts/utils/error.js";
@@ -10,6 +11,86 @@ import { bindProfileEvents } from "./events.js";
 import { renderProfilePage } from "./render.js";
 
 const DEFAULT_MAJOR_TYPE = "복수전공";
+
+function createProfileOnboardingSteps() {
+  return [
+    {
+      target: '[data-tutorial="profile-title"]',
+      title: "프로필 설정 시작",
+      description: [
+        "졸업 판정과 대시보드 기능이 정확하게 동작하려면 먼저 프로필 설정이 필요합니다.",
+        "학부와 졸업요건 템플릿부터 차례대로 확인해 주세요.",
+      ],
+    },
+    {
+      target: '[data-tutorial="profile-template-card"]',
+      title: "학부와 템플릿이 가장 중요합니다",
+      description: [
+        "먼저 학부와 졸업요건 템플릿을 설정해야 합니다.",
+        "이 정보가 있어야 졸업 판정과 대시보드 기능이 정확히 동작합니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="profile-major-card"]',
+      title: "전공은 선택 항목입니다",
+      description: [
+        "전공은 있으면 추가하고, 없으면 나중에 추가해도 됩니다.",
+        "초기 온보딩에서는 학부와 템플릿 완료가 우선입니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="profile-save-area"]',
+      title: "저장 후 다음 단계로 이동합니다",
+      description: [
+        "학부와 템플릿을 선택한 뒤 저장해 주세요.",
+        "저장이 끝나면 수강내역 페이지로 이동해 실제 과목 등록 흐름을 확인합니다.",
+      ],
+      actionType: "navigate",
+      actionLabel: "수강내역으로 이동",
+      actionHref: PAGE_PATHS.GRAD_COURSES,
+      nextOnboardingPageKey: "courses",
+      nextOnboardingStepIndex: 0,
+      guard: ({ context, mode }) => {
+        if (mode !== "onboarding" || context.profileComplete) return null;
+
+        return {
+          actionType: "next",
+          actionLabel: "학부/템플릿 설정하기",
+          blockAdvance: true,
+        };
+      },
+    },
+  ];
+}
+
+function createProfilePageTutorialSteps() {
+  return [
+    {
+      target: '[data-tutorial="profile-user-card"]',
+      title: "사용자 정보 카드",
+      description: [
+        "이름을 수정하고 현재 계정 정보를 확인할 수 있습니다.",
+        "이메일은 읽기 전용으로 표시됩니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="profile-template-card"]',
+      title: "학부 및 템플릿 카드",
+      description: [
+        "학부와 졸업요건 템플릿은 가장 중요한 기본 정보입니다.",
+        "이 정보가 졸업 판정과 대시보드 계산의 기준이 됩니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="profile-major-card"]',
+      title: "전공 카드",
+      description: [
+        "복수전공, 부전공 등 전공 정보를 추가로 관리할 수 있습니다.",
+        "초기 사용 시점에는 비어 있어도 괜찮습니다.",
+      ],
+    },
+  ];
+}
 
 function consumeUserNameSaveFeedbackMessage() {
   try {
@@ -100,6 +181,7 @@ function createProfilePage(elements, authResult) {
     renderHeader: null,
     loadProfile: null,
     loadCatalogs: null,
+    tutorial: null,
   };
 }
 
@@ -256,6 +338,7 @@ export async function initProfilePage() {
   page.render = () => {
     page.renderHeader();
     renderProfilePage(page);
+    page.tutorial?.refresh({ skipScroll: true });
   };
 
   page.loadCatalogs = async () => {
@@ -268,6 +351,14 @@ export async function initProfilePage() {
 
   page.render();
   bindProfileEvents(page);
+  page.tutorial = initTutorial({
+    pageKey: "profile",
+    onboardingSteps: createProfileOnboardingSteps(),
+    pageSteps: createProfilePageTutorialSteps(),
+    getContext: () => ({
+      profile: page.profile,
+    }),
+  });
 
   try {
     await loadInitialProfilePageData(page, authResult);

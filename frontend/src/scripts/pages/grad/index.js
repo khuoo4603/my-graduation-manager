@@ -1,5 +1,6 @@
-import { getGraduationStatus, getGradeSummary } from "/src/scripts/api/grad.js";
+﻿import { getGraduationStatus, getGradeSummary } from "/src/scripts/api/grad.js";
 import { renderHeader } from "/src/scripts/components/header.js";
+import { initTutorial } from "/src/scripts/components/tutorial.js";
 import { ensureProtectedPageAccess } from "/src/scripts/utils/auth.js";
 import { qs } from "/src/scripts/utils/dom.js";
 import { resolveErrorInfo } from "/src/scripts/utils/error.js";
@@ -12,6 +13,73 @@ import {
   renderGradDashboardLoading,
   renderGradeSummarySection,
 } from "./render.js";
+
+function createDashboardOnboardingSteps() {
+  return [
+    {
+      target: '[data-tutorial="dashboard-title"]',
+      title: "사용 시작 안내",
+      description: [
+        "이 사이트는 졸업 요건 확인, 수강내역 관리, 자료 관리를 위한 시스템입니다.",
+        "먼저 학부와 졸업요건 템플릿을 설정하러 프로필 페이지로 이동해 주세요.",
+      ],
+      actionType: "navigate",
+      actionLabel: "프로필 설정하러 가기",
+      actionHref: PAGE_PATHS.PROFILE,
+      nextOnboardingPageKey: "profile",
+      nextOnboardingStepIndex: 0,
+    },
+    {
+      target: '[data-tutorial="dashboard-status"]',
+      title: "온보딩 완료",
+      description: [
+        "기본 사용 흐름을 모두 확인했습니다.",
+        "이제 필요한 페이지로 이동해 계속 사용할 수 있습니다.",
+      ],
+      actionType: "close",
+      actionLabel: "튜토리얼 종료",
+    },
+  ];
+}
+
+function createDashboardPageTutorialSteps() {
+  return [
+    {
+      target: '[data-tutorial="dashboard-gpa-summary"]',
+      title: "평점 요약과 추이",
+      description: [
+        "전체 평점과 전공 평점을 한눈에 확인할 수 있습니다.",
+        "학기별 추이 차트로 최근 성적 흐름도 빠르게 볼 수 있습니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="dashboard-grade-distribution"]',
+      title: "성적 분포",
+      description: [
+        "반영된 과목들의 성적 분포를 등급별로 보여 줍니다.",
+        "어느 성적 구간에 과목이 몰려 있는지 빠르게 파악할 때 유용합니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="dashboard-policy"]',
+      title: "산출 기준",
+      description: [
+        "재수강, F/NP 제외, 전공 평점 반영 기준 같은 계산 규칙을 확인할 수 있습니다.",
+        "숫자가 어떻게 계산되는지 이해할 때 먼저 보면 좋습니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="dashboard-status"]',
+      title: "졸업 현황 카드",
+      description: [
+        "총학점, 교양, 전공, 전공탐색 진행률을 요약해서 보여 줍니다.",
+        "부족한 항목이 있으면 상세 졸업 현황 페이지에서 더 자세히 확인할 수 있습니다.",
+      ],
+      actionType: "close",
+      actionLabel: "튜토리얼 종료",
+    },
+  ];
+}
 
 // 성적 요약 실패 시 사용할 빈 응답 형태 생성
 function createEmptyGradeSummaryData() {
@@ -184,6 +252,8 @@ function createGradPage(pageRoot, authResult) {
   return {
     elements: collectGradElements(pageRoot),
     viewer: resolveGradViewer(authResult?.profile),
+    profile: authResult?.profile || null,
+    tutorial: null,
   };
 }
 
@@ -252,7 +322,17 @@ export async function initGradPage() {
   if (!pageRoot) return;
 
   const page = createGradPage(pageRoot, authResult);
+  page.tutorial = initTutorial({
+    pageKey: "dashboard",
+    onboardingSteps: createDashboardOnboardingSteps(),
+    pageSteps: createDashboardPageTutorialSteps(),
+    getContext: () => ({
+      profile: page.profile,
+    }),
+  });
+
   await loadDashboardData(page);
+  page.tutorial?.refresh({ skipScroll: true });
 }
 
 initGradPage();

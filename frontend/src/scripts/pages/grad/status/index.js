@@ -6,6 +6,7 @@ import "/src/styles/pages/status.css";
 import { getGraduationStatus } from "/src/scripts/api/grad.js";
 import { getProfile } from "/src/scripts/api/profile.js";
 import { renderHeader } from "/src/scripts/components/header.js";
+import { initTutorial } from "/src/scripts/components/tutorial.js";
 import { ensureProtectedPageAccess } from "/src/scripts/utils/auth.js";
 import { isLocalEnv, PAGE_PATHS, UI_MESSAGES } from "/src/scripts/utils/constants.js";
 import { qs } from "/src/scripts/utils/dom.js";
@@ -96,7 +97,82 @@ function createStatusPage(pageRoot) {
   return {
     root: pageRoot,
     elements: collectStatusElements(pageRoot),
+    profile: null,
+    tutorial: null,
   };
+}
+
+function createStatusOnboardingSteps() {
+  return [
+    {
+      target: '[data-tutorial="status-title"]',
+      title: "졸업 현황 페이지",
+      description: [
+        "이 페이지는 입력보다 확인에 가까운 화면입니다.",
+        "현재 졸업 진행 상황과 부족한 항목을 빠르게 점검할 수 있습니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="status-overall-card"]',
+      title: "전체 현황 카드",
+      description: [
+        "전체 취득 학점과 적용 중인 학부, 템플릿, 전공 정보를 함께 보여 줍니다.",
+        "먼저 이 카드에서 현재 기준이 무엇인지 확인하면 좋습니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="status-rule-section"]',
+      title: "영역별 판정 카드",
+      description: [
+        "교양, SEED, 전공, 전공탐색 영역별 진행 상태를 확인하는 구역입니다.",
+        "어느 영역이 부족한지 먼저 파악한 뒤 이후 수강 계획에 반영하면 됩니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="status-missing-section"]',
+      title: "부족 항목 확인",
+      description: [
+        "부족한 항목은 이 영역에서 다시 한 번 정리해서 보여 줍니다.",
+        "다음으로 자료함을 확인하면서 관련 파일 관리 흐름도 함께 익혀 보겠습니다.",
+      ],
+      actionType: "navigate",
+      actionLabel: "자료함으로 이동",
+      actionHref: PAGE_PATHS.STORAGE,
+      nextOnboardingPageKey: "storage",
+      nextOnboardingStepIndex: 0,
+    },
+  ];
+}
+
+function createStatusPageTutorialSteps() {
+  return [
+    {
+      target: '[data-tutorial="status-overall-card"]',
+      title: "전체 현황",
+      description: [
+        "전체 취득 학점과 적용 중인 기준 정보를 한 번에 보여 줍니다.",
+        "현재 어떤 학부와 템플릿으로 계산 중인지 여기서 먼저 확인합니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="status-rule-section"]',
+      title: "영역별 카드",
+      description: [
+        "교양, SEED, 전공, 전공탐색 영역의 충족 여부를 비교할 수 있습니다.",
+        "각 카드의 부족 학점을 기준으로 이후 수강 계획을 세우면 됩니다.",
+      ],
+    },
+    {
+      target: '[data-tutorial="status-missing-section"]',
+      title: "부족 항목",
+      description: [
+        "부족한 항목을 모아 보여 주는 영역입니다.",
+        "우선순위를 정할 때 가장 먼저 확인하면 좋은 요약입니다.",
+      ],
+      actionType: "close",
+      actionLabel: "튜토리얼 종료",
+    },
+  ];
 }
 
 // 상단 요약 카드 view model 생성
@@ -448,6 +524,7 @@ async function loadStatusPage(page, authResult) {
 
   const status = statusResult.value;
   const profile = profileResult.status === "fulfilled" ? profileResult.value : authResult.profile || null;
+  page.profile = profile;
 
   if (status?.isEvaluable === false) {
     // 판정 불가면 안내 카드만 렌더링
@@ -476,6 +553,15 @@ async function initStatusPage() {
 
   const page = createStatusPage(pageRoot);
   await loadStatusPage(page, authResult);
+  page.tutorial = initTutorial({
+    pageKey: "status",
+    onboardingSteps: createStatusOnboardingSteps(),
+    pageSteps: createStatusPageTutorialSteps(),
+    getContext: () => ({
+      profile: page.profile,
+    }),
+  });
+  page.tutorial?.refresh({ skipScroll: true });
 }
 
 initStatusPage();

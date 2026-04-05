@@ -134,7 +134,7 @@ function buildMissingHtml(missing) {
         `;
 
   return `
-    <section class="card status-missing-card">
+    <section class="card status-missing-card" data-tutorial="status-missing-card">
       <div class="status-missing-card__header">
         <span class="status-missing-card__icon" aria-hidden="true">!</span>
         <div>
@@ -153,7 +153,8 @@ function buildMissingHtml(missing) {
 // loading body HTML 생성
 function buildLoadingHtml() {
   return `
-    <section class="card status-panel">
+    <div class="status-detail-section" data-tutorial="status-rule-section">
+      <section class="card status-panel" data-tutorial="status-missing-section">
       <div class="loading-state" aria-live="polite">
         <span class="loading-state__spinner" aria-hidden="true"></span>
         <div class="status-panel__copy">
@@ -161,7 +162,8 @@ function buildLoadingHtml() {
           <p class="status-panel__description">화면 구성을 준비하고 있습니다.</p>
         </div>
       </div>
-    </section>
+      </section>
+    </div>
   `;
 }
 
@@ -180,25 +182,31 @@ function buildUnevaluableHtml(panel) {
     : "";
 
   return `
-    <section class="card status-unevaluable-card">
+    <div class="status-detail-section" data-tutorial="status-rule-section">
+      <section class="card status-unevaluable-card" data-tutorial="status-missing-section">
       <h2 class="status-unevaluable-card__title">${escapeHtml(panel?.title || "판정 불가")}</h2>
       <p class="status-unevaluable-card__description">${escapeHtml(panel?.description || "")}</p>
       ${messageHtml}
       ${actionHtml}
-    </section>
+      </section>
+    </div>
   `;
 }
 
 // success body HTML 생성
 function buildSuccessHtml(cards, missing) {
   return `
-    <div class="status-detail-grid">
+    <div class="status-detail-section" data-tutorial="status-rule-section">
+      <div class="status-detail-grid" data-tutorial="status-rule-cards">
       ${buildEvalCardHtml("교양 학점", cards?.culture)}
       ${buildEvalCardHtml("SEED 요건", cards?.seed)}
       ${buildMajorCardsHtml(cards?.major)}
       ${buildEvalCardHtml("전공탐색", cards?.majorExploration)}
+      </div>
     </div>
-    ${buildMissingHtml(missing)}
+    <div class="status-detail-section" data-tutorial="status-missing-section">
+      ${buildMissingHtml(missing)}
+    </div>
   `;
 }
 

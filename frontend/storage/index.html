@@ -16,18 +16,30 @@
         <div class="container page-section">
           <section class="storage-page" data-page-root>
             <header class="storage-page__header">
-              <h1 class="page-title storage-page__title">자료함</h1>
-              <p class="page-subtitle storage-page__subtitle">졸업 관련 자료를 관리하세요</p>
+              <div class="tutorial-entry" data-tutorial="storage-title">
+                <h1 class="page-title storage-page__title">자료함</h1>
+              </div>
+              <div class="tutorial-entry__subrow">
+                <p class="page-subtitle storage-page__subtitle tutorial-entry__subtitle">졸업 관련 자료를 관리하세요</p>
+                <button class="btn btn--ghost tutorial-entry__button" type="button" data-tutorial-trigger="storage">
+                  튜토리얼 보기
+                </button>
+              </div>
             </header>
 
-            <section class="card storage-usage-card">
+            <section class="card storage-usage-card" data-tutorial="storage-usage-card">
               <div class="storage-usage-card__header">
                 <div class="storage-usage-card__summary">
                   <p class="storage-usage-card__label">저장 용량</p>
                   <p class="storage-usage-card__value" data-storage-usage-value>0 MB / 1 GB 사용 중</p>
                 </div>
 
-                <button class="btn btn--primary storage-usage-card__button" type="button" data-open-upload-modal>
+                <button
+                  class="btn btn--primary storage-usage-card__button"
+                  type="button"
+                  data-open-upload-modal
+                  data-tutorial="storage-upload-button"
+                >
                   <img
                     class="btn__icon-image storage-usage-card__button-icon"
                     src="/src/assets/icons/fluent/add_24_regular.svg"
@@ -46,7 +58,7 @@
               </div>
             </section>
 
-            <section class="storage-tabs" aria-label="파일 카테고리">
+            <section class="storage-tabs" data-tutorial="storage-tabs" aria-label="파일 카테고리">
               <button class="storage-tabs__button is-active" type="button" data-storage-category="all" aria-pressed="true">
                 전체
               </button>
@@ -72,7 +84,7 @@
               </button>
             </section>
 
-            <section class="card storage-list-card">
+            <section class="card storage-list-card" data-tutorial="storage-file-list">
               <div class="storage-list-card__header">
                 <h2 class="storage-list-card__title">파일 (<span data-storage-file-count>0</span>)</h2>
               </div>
@@ -104,7 +116,7 @@
               </div>
             </section>
 
-            <section class="alert alert--info storage-guide">
+            <section class="alert alert--info storage-guide" data-tutorial="storage-guide-card">
               <h2 class="storage-guide__title">업로드 안내</h2>
               <ul class="key-list storage-guide__list">
                 <li class="key-list__item">

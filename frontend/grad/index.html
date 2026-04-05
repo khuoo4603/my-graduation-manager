@@ -16,8 +16,17 @@
         <div class="container page-section">
           <section class="grad-page" data-page-root>
             <header class="page-header grad-greeting">
-              <h1 class="page-title grad-greeting__title" data-grad-user-greeting>대시보드</h1>
-              <p class="page-subtitle grad-greeting__subtitle" data-grad-subtitle>졸업요건의 요약 내용입니다.</p>
+              <div class="tutorial-entry" data-tutorial="dashboard-title">
+                <h1 class="page-title grad-greeting__title" data-grad-user-greeting>대시보드</h1>
+              </div>
+              <div class="tutorial-entry__subrow">
+                <p class="page-subtitle grad-greeting__subtitle tutorial-entry__subtitle" data-grad-subtitle>
+                  졸업요건의 요약 내용입니다.
+                </p>
+                <button class="btn btn--ghost tutorial-entry__button" type="button" data-tutorial-trigger="dashboard">
+                  튜토리얼 보기
+                </button>
+              </div>
             </header>
 
             <section
@@ -47,7 +56,7 @@
               </section>
 
               <div class="grad-grade-summary__success" data-grade-summary-panel="success">
-                <section class="card grad-grade-summary__hero">
+                <section class="card grad-grade-summary__hero" data-tutorial="dashboard-gpa-summary">
                   <div class="grad-grade-summary__hero-header">
                     <div class="grad-grade-summary__hero-copy">
                       <h3 class="grad-grade-summary__title" id="semester-gpa-title">평점 요약</h3>
@@ -145,7 +154,7 @@
                 </section>
 
                 <div class="grad-grade-summary__grid">
-                  <section class="card grad-grade-summary__distribution">
+                  <section class="card grad-grade-summary__distribution" data-tutorial="dashboard-grade-distribution">
                     <header class="grad-grade-summary__subcard-header">
                       <h3 class="grad-grade-summary__subcard-title">성적 분포</h3>
                     </header>
@@ -176,7 +185,7 @@
                     </div>
                   </section>
 
-                  <section class="card grad-grade-summary__policy">
+                  <section class="card grad-grade-summary__policy" data-tutorial="dashboard-policy">
                     <header class="grad-grade-summary__subcard-header">
                       <h3 class="grad-grade-summary__subcard-title">요약 및 산출 기준</h3>
                     </header>
@@ -225,7 +234,7 @@
 
             <section class="grad-dashboard-shell" data-grad-dashboard-shell aria-busy="false">
               <div class="grad-dashboard-shell__content">
-                <section class="card grad-status-card">
+                <section class="card grad-status-card" data-tutorial="dashboard-status">
                   <header class="grad-status-card__header">
                     <h2 class="grad-status-card__title">졸업 현황</h2>
                     <span
