@@ -10,12 +10,12 @@ import { getErrorPageState } from "/src/scripts/utils/error.js";
 
 // 에러 코드별 제목 결정
 function resolveErrorTitle(code) {
-  if (code === "401") return "Unauthorized";
-  if (code === "403") return "Forbidden";
-  if (code === "404") return "Page Not Found";
-  if (code === "500") return "Server Error";
-  if (code === "NETWORK") return "Network Error";
-  return "Something Went Wrong";
+  if (code === "401") return "로그인이 필요합니다";
+  if (code === "403") return "접근 권한이 없습니다";
+  if (code === "404") return "페이지를 찾을 수 없습니다";
+  if (code === "500") return "서버 오류가 발생했습니다";
+  if (code === "NETWORK") return "네트워크 오류가 발생했습니다";
+  return "문제가 발생했습니다";
 }
 
 // 에러 코드별 메시지 결정
@@ -23,7 +23,7 @@ function resolveErrorMessage(code, message) {
   if (message) return message;
   if (code === "401") return UI_MESSAGES.NOT_AUTHENTICATED;
   if (code === "404") {
-    return "Sorry, we couldn't find the page you're looking for. The page might have been moved or doesn't exist.";
+    return "요청하신 페이지를 찾을 수 없습니다. 페이지가 이동되었거나 더 이상 존재하지 않을 수 있습니다.";
   }
   if (code === "NETWORK") return UI_MESSAGES.NETWORK_ERROR;
   return UI_MESSAGES.COMMON_ERROR;
@@ -40,7 +40,7 @@ function buildErrorPageData() {
     title: resolveErrorTitle(resolvedCode),
     message: resolveErrorMessage(code, message),
     isUnauthorized,
-    primaryLabel: isUnauthorized ? "Go to Login" : "Go to Dashboard",
+    primaryLabel: isUnauthorized ? "로그인으로 이동" : "대시보드로 이동",
     primaryIconPath: getFluentIconPath(isUnauthorized ? "person" : "home"),
   };
 }
@@ -64,7 +64,7 @@ function renderErrorPage(pageRoot, errorPageData) {
           ${
             errorPageData.isUnauthorized
               ? ""
-              : '<button class="btn btn--secondary" type="button" data-error-secondary>Go Back</button>'
+              : '<button class="btn btn--secondary" type="button" data-error-secondary>돌아가기</button>'
           }
         </div>
       </article>

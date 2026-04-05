@@ -69,7 +69,7 @@ function resolveProgressPercent(earned, required) {
 
 // 헤더 사용자명 정리
 function resolveViewerName(profile) {
-  return String(profile?.user?.name || "").trim() || "unknown";
+  return String(profile?.user?.name || "").trim();
 }
 
 // 상태 페이지 DOM 참조 수집

@@ -1,6 +1,6 @@
 import { deleteAccount } from "/src/scripts/api/auth.js";
 import { addMajor, deleteMajor, updateDepartment, updateName, updateTemplate } from "/src/scripts/api/profile.js";
-import { PAGE_PATHS, UI_MESSAGES } from "/src/scripts/utils/constants.js";
+import { PAGE_PATHS, SESSION_STORAGE_KEYS, UI_MESSAGES } from "/src/scripts/utils/constants.js";
 import { resolveErrorInfo } from "/src/scripts/utils/error.js";
 
 import {
@@ -10,6 +10,7 @@ import {
   renderMajorList,
   renderPendingState,
   renderUserInformation,
+  renderUserInformationFeedback,
 } from "./render.js";
 
 const MAX_NAME_LENGTH = 50;
@@ -17,6 +18,7 @@ const MAX_NAME_LENGTH = 50;
 const USER_NAME_REQUIRED_ALERT_MESSAGE = "이름을 입력해 주세요.";
 const USER_NAME_LENGTH_ALERT_MESSAGE = "이름은 50자 이하로 입력해 주세요.";
 const USER_INFO_EMPTY_ALERT_MESSAGE = "저장할 사용자 정보 변경 사항이 없습니다.";
+const USER_INFO_SAVED_MESSAGE = "변경사항이 저장되었습니다.";
 const DEPARTMENT_CHANGE_ALERT_MESSAGE =
   "학부를 변경하면 졸업 판정 결과가 달라질 수 있으므로 템플릿과 전공 설정을 다시 확인해야 합니다.";
 const DEPARTMENT_REQUIRED_ALERT_MESSAGE = "학부를 선택해 주세요.";
@@ -28,12 +30,28 @@ const MAJOR_INVALID_ALERT_MESSAGE = "선택한 전공을 다시 확인해 주세
 const MAJOR_DUPLICATE_ALERT_MESSAGE = "같은 전공은 중복으로 추가할 수 없습니다.";
 const MAJORS_EMPTY_ALERT_MESSAGE = "저장할 전공 변경 사항이 없습니다.";
 
+function clearUserNameFeedback(page) {
+  if (!page.ui.userNameFeedbackMessage) return;
+
+  page.ui.userNameFeedbackMessage = "";
+  renderUserInformationFeedback(page);
+}
+
+function persistUserNameSavedMessage() {
+  try {
+    sessionStorage.setItem(SESSION_STORAGE_KEYS.PROFILE_NAME_SAVE_SUCCESS, USER_INFO_SAVED_MESSAGE);
+  } catch {
+    // 세션 스토리지를 쓸 수 없는 환경에서는 새로고침만 진행
+  }
+}
+
 // Profile 페이지 이벤트 바인딩
 export function bindProfileEvents(page) {
   // 이름 입력 필드 input 이벤트
   page.elements.profileNameInput?.addEventListener("input", (event) => {
     const target = event.currentTarget;
     page.draft.userName = target instanceof HTMLInputElement ? target.value : "";
+    clearUserNameFeedback(page);
     renderPendingState(page);
   });
 
@@ -149,18 +167,21 @@ function handleDepartmentChange(event, page) {
 // 사용자 정보 카드의 이름 입력값 복원
 function handleUserInformationCancel(page) {
   page.draft.userName = page.profile.user.name || "";
+  clearUserNameFeedback(page);
   renderUserInformation(page);
   renderPendingState(page);
 }
 
 // 이름 저장 직전 입력값 검증
 function validateUserInformation(page) {
-  if (page.draft.userName === (page.profile.user.name || "")) {
+  const normalizedName = String(page.draft.userName || "").trim();
+  const currentName = String(page.profile.user.name || "").trim();
+
+  if (normalizedName === currentName) {
     window.alert(USER_INFO_EMPTY_ALERT_MESSAGE);
     return null;
   }
 
-  const normalizedName = String(page.draft.userName || "").trim();
   if (!normalizedName) {
     window.alert(USER_NAME_REQUIRED_ALERT_MESSAGE);
     page.elements.profileNameInput?.focus();
@@ -186,24 +207,11 @@ async function handleUserInformationSave(page) {
   page.pending.isUserSaving = true;
   renderPendingState(page);
 
-  let hasMutation = false;
-
   try {
     await updateName(normalizedName);
-    hasMutation = true;
-
-    await page.loadProfile();
-    page.render();
+    persistUserNameSavedMessage();
+    window.location.reload();
   } catch (error) {
-    if (hasMutation) {
-      try {
-        await page.loadProfile();
-        page.render();
-      } catch {
-        // 최신 상태 복구 시도 실패
-      }
-    }
-
     const errorInfo = resolveErrorInfo(error, UI_MESSAGES.COMMON_ERROR);
     window.alert(errorInfo.message);
   } finally {

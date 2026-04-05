@@ -169,7 +169,7 @@ function collectGradElements(pageRoot) {
 function resolveGradViewerName(profile) {
   const rawName = String(profile?.user?.name || profile?.name || "").trim();
 
-  if (!rawName || rawName.toLowerCase() === "unknown") return "unknown";
+  if (!rawName || rawName.toLowerCase() === "unknown") return "";
   return rawName;
 }
 

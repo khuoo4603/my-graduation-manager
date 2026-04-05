@@ -4,18 +4,33 @@ import { renderHeader } from "/src/scripts/components/header.js";
 import { ensureProtectedPageAccess } from "/src/scripts/utils/auth.js";
 import { qs } from "/src/scripts/utils/dom.js";
 import { resolveErrorInfo } from "/src/scripts/utils/error.js";
-import { PAGE_PATHS, UI_MESSAGES } from "/src/scripts/utils/constants.js";
+import { PAGE_PATHS, SESSION_STORAGE_KEYS, UI_MESSAGES } from "/src/scripts/utils/constants.js";
 
 import { bindProfileEvents } from "./events.js";
 import { renderProfilePage } from "./render.js";
 
 const DEFAULT_MAJOR_TYPE = "복수전공";
 
+function consumeUserNameSaveFeedbackMessage() {
+  try {
+    const message = sessionStorage.getItem(SESSION_STORAGE_KEYS.PROFILE_NAME_SAVE_SUCCESS) || "";
+
+    if (message) {
+      sessionStorage.removeItem(SESSION_STORAGE_KEYS.PROFILE_NAME_SAVE_SUCCESS);
+    }
+
+    return message;
+  } catch {
+    return "";
+  }
+}
+
 // Profile 페이지 DOM 수집
 function collectProfileElements(pageRoot) {
   return {
     profileNameInput: qs("[data-profile-name-input]", pageRoot),
     profileEmail: qs("[data-profile-email]", pageRoot),
+    profileNameFeedback: qs("[data-profile-name-feedback]", pageRoot),
     profileNameCancelButton: qs("[data-profile-name-cancel]", pageRoot),
     profileNameSaveButton: qs("[data-profile-name-save]", pageRoot),
     departmentSelect: qs("[data-department-select]", pageRoot),
@@ -44,8 +59,8 @@ function createProfilePage(elements, authResult) {
     profile: {
       user: {
         id: "",
-        name: authResult.profile?.user?.name || "해당 없음",
-        email: authResult.profile?.user?.email || "해당 없음",
+        name: authResult.profile?.user?.name || "",
+        email: authResult.profile?.user?.email || "",
       },
       department: null,
       template: null,
@@ -73,6 +88,7 @@ function createProfilePage(elements, authResult) {
     },
     ui: {
       isDeleteModalOpen: false,
+      userNameFeedbackMessage: consumeUserNameSaveFeedbackMessage(),
     },
     defaultMajorType: DEFAULT_MAJOR_TYPE,
     majorDraftSequence: 0,
@@ -118,8 +134,8 @@ function applyProfileResponse(page, response) {
   page.profile = {
     user: {
       id: user.id == null ? "" : String(user.id),
-      name: user.name || "해당 없음",
-      email: user.email || "해당 없음",
+      name: user.name || "",
+      email: user.email || "",
     },
     department:
       department && department.id != null
@@ -228,7 +244,7 @@ export async function initProfilePage() {
   page.renderHeader = () => {
     renderHeader("[data-header-root]", {
       currentPath: PAGE_PATHS.PROFILE,
-      userName: page.profile.user.name || "unknown",
+      userName: page.profile.user.name || "",
       profile: page.profile,
     });
   };

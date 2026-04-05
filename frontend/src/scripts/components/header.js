@@ -3,6 +3,9 @@ import { PAGE_PATHS, SERVICE_NAME } from "../utils/constants.js";
 import { redirectToErrorPageByError } from "../utils/error.js";
 import { getFluentIconPath } from "./icon-map.js";
 
+const DEFAULT_USER_NAME = "사용자";
+const DEFAULT_USER_EMAIL = "이메일 미설정";
+
 // 헤더 사용자명 출력용 특수문자 이스케이프
 function escapeHtml(value) {
   return String(value ?? "")
@@ -54,8 +57,8 @@ function formatMajorSummary(majors) {
 // 헤더 우측 프로필 요약 카드에 들어갈 사용자 정보를 정리
 function resolveHeaderProfileSummary(profile, fallbackUserName) {
   return {
-    name: String(profile?.user?.name || fallbackUserName || "unknown").trim() || "unknown",
-    email: String(profile?.user?.email || "").trim() || "unknown",
+    name: String(profile?.user?.name || fallbackUserName || DEFAULT_USER_NAME).trim() || DEFAULT_USER_NAME,
+    email: String(profile?.user?.email || "").trim() || DEFAULT_USER_EMAIL,
     department: String(profile?.department?.name || "").trim() || "미설정",
     template: formatTemplateLabel(profile?.template),
     majorSummary: formatMajorSummary(profile?.majors),
@@ -156,7 +159,7 @@ export function renderHeader(target, options = {}) {
   if (!host) return null;
 
   const currentPath = options.currentPath || window.location.pathname;
-  const userName = options.userName || "unknown";
+  const userName = options.userName || DEFAULT_USER_NAME;
   const profileSummary = resolveHeaderProfileSummary(options.profile, userName);
   const dashboardActive = isActivePath(currentPath, PAGE_PATHS.GRAD) ? " is-active" : "";
   const coursesActive = isActivePath(currentPath, PAGE_PATHS.GRAD_COURSES) ? " is-active" : "";
@@ -173,30 +176,30 @@ export function renderHeader(target, options = {}) {
           <span class="app-brand__text">${SERVICE_NAME}</span>
         </a>
 
-        <nav class="app-nav" aria-label="Primary">
+        <nav class="app-nav" aria-label="주요 메뉴">
           <ul class="app-nav__list">
             <li class="app-nav__item">
               <a class="app-nav__link${dashboardActive}" href="${PAGE_PATHS.GRAD}">
                 <img class="app-nav__icon" src="${getFluentIconPath("apps")}" alt="" aria-hidden="true" />
-                <span>Dashboard</span>
+                <span>대시보드</span>
               </a>
             </li>
             <li class="app-nav__item">
               <a class="app-nav__link${coursesActive}" href="${PAGE_PATHS.GRAD_COURSES}">
                 <img class="app-nav__icon" src="${getFluentIconPath("book")}" alt="" aria-hidden="true" />
-                <span>Courses</span>
+                <span>수강내역</span>
               </a>
             </li>
             <li class="app-nav__item">
               <a class="app-nav__link${statusActive}" href="${PAGE_PATHS.GRAD_STATUS}">
                 <img class="app-nav__icon" src="${getFluentIconPath("clipboardTask")}" alt="" aria-hidden="true" />
-                <span>Graduation Status</span>
+                <span>졸업 현황</span>
               </a>
             </li>
             <li class="app-nav__item">
               <a class="app-nav__link${storageActive}" href="${PAGE_PATHS.STORAGE}">
                 <img class="app-nav__icon" src="${getFluentIconPath("folder")}" alt="" aria-hidden="true" />
-                <span>Storage</span>
+                <span>자료함</span>
               </a>
             </li>
           </ul>
@@ -255,7 +258,7 @@ export function renderHeader(target, options = {}) {
             </div>
           </div>
 
-          <button class="app-user__logout" type="button" aria-label="Logout" data-logout-action>
+          <button class="app-user__logout" type="button" aria-label="로그아웃" data-logout-action>
             <img class="app-user__icon" src="${getFluentIconPath("signOut")}" alt="" aria-hidden="true" />
           </button>
         </div>

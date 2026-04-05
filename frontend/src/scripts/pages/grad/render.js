@@ -23,6 +23,8 @@ const STATUS_PRESETS = {
   },
 };
 
+const DASHBOARD_PAGE_TITLE = "대시보드";
+
 const DEFAULT_NON_EVALUABLE_TITLE = "졸업 판정을 진행할 수 없어요.";
 const DEFAULT_NON_EVALUABLE_MESSAGE = "프로필 기준 정보가 설정되지 않아 졸업 판정을 진행할 수 없습니다.";
 const DEFAULT_STATUS_ERROR_TITLE = "졸업 현황을 불러오지 못했어요.";
@@ -75,11 +77,6 @@ function formatGpa(value) {
 // 개수 표시용 문자열 포맷
 function formatCount(value) {
   return String(toSafeNumber(value));
-}
-
-function formatViewerGreeting(name) {
-  const resolvedName = String(name || "").trim() || "unknown";
-  return `안녕하세요, ${resolvedName}님`;
 }
 
 // 진행률 바 너비 계산
@@ -276,9 +273,9 @@ function createEmptyProgressState() {
 
 // 졸업 현황 로딩 상태 렌더링
 export function renderGradDashboardLoading(page) {
-  const { elements, viewer } = page;
+  const { elements } = page;
 
-  setText(elements.userGreeting, formatViewerGreeting(viewer.name));
+  setText(elements.userGreeting, DASHBOARD_PAGE_TITLE);
   elements.pageRoot.dataset.gradState = "loading";
   elements.dashboardShell?.setAttribute("aria-busy", "true");
 
@@ -296,11 +293,11 @@ export function renderGradDashboardLoading(page) {
 
 // 졸업 현황 성공 상태 렌더링
 export function renderGradDashboard(page, dashboard) {
-  const { elements, viewer } = page;
+  const { elements } = page;
   const viewModel = buildDashboardViewModel(dashboard);
   const status = STATUS_PRESETS[viewModel.statusKey] || STATUS_PRESETS.incomplete;
 
-  setText(elements.userGreeting, formatViewerGreeting(viewer.name));
+  setText(elements.userGreeting, DASHBOARD_PAGE_TITLE);
   elements.pageRoot.dataset.gradState = viewModel.isBlocked ? "blocked" : "ready";
   elements.dashboardShell?.setAttribute("aria-busy", "false");
 
@@ -340,9 +337,9 @@ export function renderGradDashboard(page, dashboard) {
 
 // 졸업 현황 실패 상태 렌더링
 export function renderGradDashboardError(page, payload = {}) {
-  const { elements, viewer } = page;
+  const { elements } = page;
 
-  setText(elements.userGreeting, formatViewerGreeting(viewer.name));
+  setText(elements.userGreeting, DASHBOARD_PAGE_TITLE);
   elements.pageRoot.dataset.gradState = "error";
   elements.dashboardShell?.setAttribute("aria-busy", "false");
 

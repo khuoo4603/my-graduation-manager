@@ -36,6 +36,10 @@ export const PAGE_PATHS = {
   ERROR: "/error/",
 };
 
+export const SESSION_STORAGE_KEYS = {
+  PROFILE_NAME_SAVE_SUCCESS: "profile-name-save-success",
+};
+
 export const UI_MESSAGES = {
   READY_TITLE: "페이지 구조 준비 완료",
   READY_DESCRIPTION: "아직 준비 중인 페이지입니다.",

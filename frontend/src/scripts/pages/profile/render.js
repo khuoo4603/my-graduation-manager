@@ -18,6 +18,16 @@ export function renderUserInformation(page) {
   }
 
   setText(page.elements.profileEmail, page.profile.user.email || "해당 없음");
+  renderUserInformationFeedback(page);
+}
+
+export function renderUserInformationFeedback(page) {
+  const { profileNameFeedback } = page.elements;
+  if (!profileNameFeedback) return;
+
+  const message = String(page.ui.userNameFeedbackMessage || "").trim();
+  profileNameFeedback.hidden = !message;
+  setText(profileNameFeedback, message);
 }
 
 // 기본 설정 카드 렌더링
@@ -159,7 +169,7 @@ export function renderAccountDeleteModal(page) {
 // 저장 중 상태 반영
 export function renderPendingState(page) {
   const { elements, pending, draft } = page;
-  const isUserNameDirty = draft.userName !== (page.profile.user.name || "");
+  const isUserNameDirty = String(draft.userName || "").trim() !== String(page.profile.user.name || "").trim();
 
   if (elements.profileNameInput) elements.profileNameInput.disabled = pending.isUserSaving;
   if (elements.profileNameCancelButton) {

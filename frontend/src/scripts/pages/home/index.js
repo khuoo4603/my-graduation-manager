@@ -46,13 +46,13 @@ function renderHomePage(pageRoot) {
 
       <article class="login-card card card--elevated">
         <header class="login-card__header">
-          <h2 class="login-card__title">Sign In</h2>
+          <h2 class="login-card__title">로그인</h2>
           <p class="login-card__subtitle">Google 계정으로 시작하세요</p>
         </header>
 
         <button type="button" class="btn btn--google" data-login-action>
           <img src="${getFluentIconPath("person")}" alt="" />
-          <span>Sign in</span>
+          <span>Google로 로그인</span>
         </button>
 
         <p class="login-card__footer">로그인하면 서비스 이용약관 및 개인정보 처리방침에 동의한 것으로 간주됩니다.</p>
