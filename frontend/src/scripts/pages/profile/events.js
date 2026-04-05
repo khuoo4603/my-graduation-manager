@@ -6,6 +6,8 @@ import { resolveErrorInfo } from "/src/scripts/utils/error.js";
 import {
   renderAccountDeleteModal,
   renderBaseSettings,
+  renderBaseSettingsFeedback,
+  renderMajorFeedback,
   renderMajorForm,
   renderMajorList,
   renderPendingState,
@@ -25,16 +27,34 @@ const DEPARTMENT_REQUIRED_ALERT_MESSAGE = "학부를 선택해 주세요.";
 const TEMPLATE_REQUIRED_ALERT_MESSAGE = "졸업 템플릿을 선택해 주세요.";
 const TEMPLATE_INVALID_ALERT_MESSAGE = "선택한 졸업 템플릿을 다시 확인해 주세요.";
 const BASE_SETTINGS_EMPTY_ALERT_MESSAGE = "저장할 기본 설정 변경 사항이 없습니다.";
+const BASE_SETTINGS_SAVED_MESSAGE = "저장 완료했습니다.";
 const MAJOR_REQUIRED_ALERT_MESSAGE = "전공을 선택해 주세요.";
 const MAJOR_INVALID_ALERT_MESSAGE = "선택한 전공을 다시 확인해 주세요.";
 const MAJOR_DUPLICATE_ALERT_MESSAGE = "같은 전공은 중복으로 추가할 수 없습니다.";
 const MAJORS_EMPTY_ALERT_MESSAGE = "저장할 전공 변경 사항이 없습니다.";
+const MAJOR_DELETE_CONFIRM_MESSAGE = "정말로 삭제하시겠습니까?";
+const MAJOR_DELETED_MESSAGE = "삭제 완료했습니다.";
+const MAJORS_SAVED_MESSAGE = "저장 완료했습니다.";
 
 function clearUserNameFeedback(page) {
   if (!page.ui.userNameFeedbackMessage) return;
 
   page.ui.userNameFeedbackMessage = "";
   renderUserInformationFeedback(page);
+}
+
+function clearBaseSettingsFeedback(page) {
+  if (!page.ui.baseSettingsFeedbackMessage) return;
+
+  page.ui.baseSettingsFeedbackMessage = "";
+  renderBaseSettingsFeedback(page);
+}
+
+function clearMajorFeedback(page) {
+  if (!page.ui.majorFeedbackMessage) return;
+
+  page.ui.majorFeedbackMessage = "";
+  renderMajorFeedback(page);
 }
 
 function persistUserNameSavedMessage() {
@@ -67,13 +87,17 @@ export function bindProfileEvents(page) {
 
   // 학부 선택 select change 이벤트
   page.elements.departmentSelect?.addEventListener("change", (event) => {
+    clearBaseSettingsFeedback(page);
     handleDepartmentChange(event, page);
+    renderPendingState(page);
   });
 
   // 템플릿 선택 select change 이벤트
   page.elements.templateSelect?.addEventListener("change", (event) => {
     const target = event.currentTarget;
     page.draft.templateId = target instanceof HTMLSelectElement ? target.value : "";
+    clearBaseSettingsFeedback(page);
+    renderPendingState(page);
   });
 
   // 기본 설정 취소 버튼 click 이벤트
@@ -88,6 +112,7 @@ export function bindProfileEvents(page) {
 
   // 전공 추가용 학부 필터 select change 이벤트
   page.elements.majorDepartmentSelect?.addEventListener("change", (event) => {
+    clearMajorFeedback(page);
     handleMajorDepartmentChange(event, page);
   });
 
@@ -95,12 +120,14 @@ export function bindProfileEvents(page) {
   page.elements.majorSelect?.addEventListener("change", (event) => {
     const target = event.currentTarget;
     page.draft.majorFormMajorId = target instanceof HTMLSelectElement ? target.value : "";
+    clearMajorFeedback(page);
   });
 
   // 전공 구분 select change 이벤트
   page.elements.majorTypeSelect?.addEventListener("change", (event) => {
     const target = event.currentTarget;
     page.draft.majorFormMajorType = target instanceof HTMLSelectElement ? target.value : page.defaultMajorType;
+    clearMajorFeedback(page);
   });
 
   // 전공 추가 버튼 click 이벤트
@@ -224,6 +251,7 @@ async function handleUserInformationSave(page) {
 function handleBaseSettingsCancel(page) {
   page.draft.departmentId = page.profile.department?.id || "";
   page.draft.templateId = page.profile.template?.id || "";
+  clearBaseSettingsFeedback(page);
   renderBaseSettings(page);
   renderPendingState(page);
 }
@@ -285,6 +313,7 @@ async function handleBaseSettingsSave(page) {
     }
 
     await page.loadProfile();
+    page.ui.baseSettingsFeedbackMessage = BASE_SETTINGS_SAVED_MESSAGE;
     page.render();
   } catch (error) {
     if (hasMutation) {
@@ -349,6 +378,7 @@ function handleMajorAdd(page) {
   const selectedMajor = validateMajorAdd(page);
   if (!selectedMajor) return;
 
+  clearMajorFeedback(page);
   page.majorDraftSequence += 1;
   page.draft.majors.push({
     draftId: `draft-${page.majorDraftSequence}`,
@@ -368,9 +398,13 @@ function handleMajorAdd(page) {
 // 전공 draft 삭제
 function handleMajorDelete(draftId, page) {
   if (page.pending.isMajorsSaving) return;
+  if (!window.confirm(MAJOR_DELETE_CONFIRM_MESSAGE)) return;
 
+  clearMajorFeedback(page);
   page.draft.majors = page.draft.majors.filter((major) => major.draftId !== draftId);
+  page.ui.majorFeedbackMessage = MAJOR_DELETED_MESSAGE;
   renderMajorList(page);
+  renderMajorFeedback(page);
   renderPendingState(page);
 }
 
@@ -386,6 +420,7 @@ function handleMajorsCancel(page) {
   page.draft.majorFormDepartmentId = "";
   page.draft.majorFormMajorId = "";
   page.draft.majorFormMajorType = page.defaultMajorType;
+  clearMajorFeedback(page);
   renderMajorForm(page);
   renderMajorList(page);
   renderPendingState(page);
@@ -440,6 +475,7 @@ async function handleMajorsSave(page) {
     }
 
     await page.loadProfile();
+    page.ui.majorFeedbackMessage = MAJORS_SAVED_MESSAGE;
     page.render();
   } catch (error) {
     if (hasMutation) {

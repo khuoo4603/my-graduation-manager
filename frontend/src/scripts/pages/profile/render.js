@@ -30,6 +30,41 @@ export function renderUserInformationFeedback(page) {
   setText(profileNameFeedback, message);
 }
 
+function renderSectionFeedback(element, message) {
+  if (!element) return;
+
+  const resolvedMessage = String(message || "").trim();
+  element.hidden = !resolvedMessage;
+  setText(element, resolvedMessage);
+}
+
+export function renderBaseSettingsFeedback(page) {
+  renderSectionFeedback(page.elements.baseSettingsFeedback, page.ui.baseSettingsFeedbackMessage);
+}
+
+export function renderMajorFeedback(page) {
+  renderSectionFeedback(page.elements.majorFeedback, page.ui.majorFeedbackMessage);
+}
+
+function isBaseSettingsDirty(page) {
+  return (
+    String(page.draft.departmentId || "") !== String(page.profile.department?.id || "") ||
+    String(page.draft.templateId || "") !== String(page.profile.template?.id || "")
+  );
+}
+
+function buildMajorDraftSignature(majors = []) {
+  return majors
+    .map((major) => `${String(major.id || "").trim()}::${String(major.majorType || "").trim()}`)
+    .filter(Boolean)
+    .sort()
+    .join("|");
+}
+
+function isMajorDirty(page) {
+  return buildMajorDraftSignature(page.draft.majors) !== buildMajorDraftSignature(page.profile.majors);
+}
+
 // 기본 설정 카드 렌더링
 export function renderBaseSettings(page) {
   const { departmentSelect, templateSelect } = page.elements;
@@ -170,6 +205,8 @@ export function renderAccountDeleteModal(page) {
 export function renderPendingState(page) {
   const { elements, pending, draft } = page;
   const isUserNameDirty = String(draft.userName || "").trim() !== String(page.profile.user.name || "").trim();
+  const isBaseDirty = isBaseSettingsDirty(page);
+  const isMajorSectionDirty = isMajorDirty(page);
 
   if (elements.profileNameInput) elements.profileNameInput.disabled = pending.isUserSaving;
   if (elements.profileNameCancelButton) {
@@ -181,15 +218,15 @@ export function renderPendingState(page) {
 
   if (elements.departmentSelect) elements.departmentSelect.disabled = pending.isBaseSaving;
   if (elements.templateSelect) elements.templateSelect.disabled = pending.isBaseSaving;
-  if (elements.baseSettingsCancelButton) elements.baseSettingsCancelButton.disabled = pending.isBaseSaving;
-  if (elements.baseSettingsSaveButton) elements.baseSettingsSaveButton.disabled = pending.isBaseSaving;
+  if (elements.baseSettingsCancelButton) elements.baseSettingsCancelButton.disabled = pending.isBaseSaving || !isBaseDirty;
+  if (elements.baseSettingsSaveButton) elements.baseSettingsSaveButton.disabled = pending.isBaseSaving || !isBaseDirty;
 
   if (elements.majorDepartmentSelect) elements.majorDepartmentSelect.disabled = pending.isMajorsSaving;
   if (elements.majorSelect) elements.majorSelect.disabled = pending.isMajorsSaving || !draft.majorFormDepartmentId;
   if (elements.majorTypeSelect) elements.majorTypeSelect.disabled = pending.isMajorsSaving;
   if (elements.majorAddButton) elements.majorAddButton.disabled = pending.isMajorsSaving;
-  if (elements.majorCancelButton) elements.majorCancelButton.disabled = pending.isMajorsSaving;
-  if (elements.majorSaveButton) elements.majorSaveButton.disabled = pending.isMajorsSaving;
+  if (elements.majorCancelButton) elements.majorCancelButton.disabled = pending.isMajorsSaving || !isMajorSectionDirty;
+  if (elements.majorSaveButton) elements.majorSaveButton.disabled = pending.isMajorsSaving || !isMajorSectionDirty;
 
   Array.from(elements.majorList?.querySelectorAll("[data-major-delete]") || []).forEach((button) => {
     button.disabled = pending.isMajorsSaving;
@@ -204,8 +241,10 @@ export function renderPendingState(page) {
 export function renderProfilePage(page) {
   renderUserInformation(page);
   renderBaseSettings(page);
+  renderBaseSettingsFeedback(page);
   renderMajorForm(page);
   renderMajorList(page);
+  renderMajorFeedback(page);
   renderAccountDeleteModal(page);
   renderPendingState(page);
 }
