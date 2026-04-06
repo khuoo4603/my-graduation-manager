@@ -243,7 +243,7 @@ public class MicromajorService {
                     microMajor.microMajorName(),
                     microMajor.microMajorCategory(),
                     microMajor.operatingUnitNames(),
-                    isCompleted ? "이수완료" : hasMatchedCourse ? "이수중" : "이수대상아님",
+                    isCompleted ? "이수완료" : hasMatchedCourse ? "이수중" : "이수가능",
                     microMajor.requiredCourseCount(),
                     earnedCourseCount,
                     remainingCourseCount,
