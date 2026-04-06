@@ -20,172 +20,70 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-// Search Courses 결과 렌더링
-export function renderSearchResults(page) {
-  const { searchStatePanel, searchTableWrap, searchCourseRows } = page.elements;
-  const hasSearchResults = page.searchStatus === "results" && page.searchResults.length > 0;
-
-  clearChildren(searchCourseRows);
-
-  searchStatePanel.hidden = hasSearchResults;
-  searchStatePanel.setAttribute("aria-hidden", String(hasSearchResults));
-  searchTableWrap.hidden = !hasSearchResults;
-  searchTableWrap.setAttribute("aria-hidden", String(!hasSearchResults));
-
-  // 검색 결과가 있으면 상태 패널 대신 결과 테이블 행 렌더링
-  if (hasSearchResults) {
-    searchStatePanel.innerHTML = "";
-    searchCourseRows.innerHTML = page.searchResults
-      .map((course) => {
-        return `
-          <tr>
-            <td class="courses-table__code">${escapeHtml(course.code)}</td>
-            <td class="courses-table__name">${escapeHtml(course.name)}</td>
-            <td class="courses-table__number">${escapeHtml(String(course.credits ?? ""))}</td>
-            <td>${escapeHtml(course.category)}</td>
-            <td>${escapeHtml(course.subcategory)}</td>
-            <td class="courses-table__action">
-              <button
-                type="button"
-                class="btn btn--secondary courses-action-button courses-action-button--add"
-                title="과목 추가"
-                data-search-add-course="${escapeHtml(String(course.courseMasterId || ""))}"
-              >
-                <img
-                  class="courses-action-button__icon"
-                  src="${getFluentIconPath("add")}"
-                  alt=""
-                  aria-hidden="true"
-                />
-                <span>추가</span>
-              </button>
-            </td>
-          </tr>
-        `;
-      })
-      .join("");
-    return;
-  }
-
-  searchTableWrap.hidden = true;
-  searchTableWrap.setAttribute("aria-hidden", "true");
-  searchStatePanel.hidden = false;
-  searchStatePanel.setAttribute("aria-hidden", "false");
-
-  // 검색 중에는 스피너가 있는 로딩 패널 렌더링
-  if (page.searchStatus === "loading") {
-    searchStatePanel.innerHTML = `
-      <div class="courses-state-panel__content">
-        <div class="loading-state courses-state-panel__loading">
-          <span class="loading-state__spinner" aria-hidden="true"></span>
-          <span>과목 목록을 검색하고 있습니다.</span>
-        </div>
-      </div>
-    `;
-    return;
-  }
-
-  // 검색은 완료됐지만 결과가 없으면 empty 패널 렌더링
-  if (page.searchStatus === "empty") {
-    searchStatePanel.innerHTML = `
-      <div class="courses-state-panel__content">
-        <p class="courses-state-panel__title">조건에 맞는 과목이 없습니다.</p>
-        <p class="courses-state-panel__description">연도, 학기, 세부 구분 또는 과목명을 다시 확인해주세요.</p>
-      </div>
-    `;
-    return;
-  }
-
-  // API 실패나 예외가 나면 에러 패널 렌더링
-  if (page.searchStatus === "error") {
-    searchStatePanel.innerHTML = `
-      <div class="courses-state-panel__content">
-        <p class="courses-state-panel__title">과목 목록을 불러오지 못했습니다.</p>
-        <p class="courses-state-panel__description">잠시 후 다시 시도해주세요.</p>
-      </div>
-    `;
-    return;
-  }
-
-  // 아직 검색 전이면 기본 안내 패널 렌더링
-  searchStatePanel.innerHTML = `
-    <div class="courses-state-panel__content">
-      <p class="courses-state-panel__description">검색 조건을 입력한 뒤 검색 버튼을 눌러주세요.</p>
-    </div>
-  `;
+function renderSearchCourseTableRows(courses) {
+  return courses
+    .map((course) => {
+      return `
+        <tr>
+          <td class="courses-table__code">${escapeHtml(course.code)}</td>
+          <td class="courses-table__name">${escapeHtml(course.name)}</td>
+          <td class="courses-table__number">${escapeHtml(String(course.credits ?? ""))}</td>
+          <td>${escapeHtml(course.category)}</td>
+          <td>${escapeHtml(course.subcategory)}</td>
+          <td class="courses-table__action">
+            <button
+              type="button"
+              class="btn btn--secondary courses-action-button courses-action-button--add"
+              title="과목 추가"
+              data-search-add-course="${escapeHtml(String(course.courseMasterId || ""))}"
+            >
+              <img
+                class="courses-action-button__icon"
+                src="${getFluentIconPath("add")}"
+                alt=""
+                aria-hidden="true"
+              />
+              <span>추가</span>
+            </button>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
 }
 
-// Taken Courses 목록 렌더링
-export function renderTakenCourses(page) {
-  const { totalCreditsText, takenEmptyPanel, takenTableWrap, takenCourseRows } = page.elements;
-  const totalCredits = page.takenCourses.reduce(
-    (creditSum, course) => creditSum + Number(course.earnedCredits || 0),
-    0,
-  );
-  const hasTakenResults = page.takenStatus === "results" && page.takenCourses.length > 0;
+function renderSearchCourseMobileCards(courses) {
+  return courses
+    .map((course) => {
+      return `
+        <article class="courses-mobile-card">
+          <div class="courses-mobile-card__eyebrow">
+            <span class="courses-mobile-card__code">${escapeHtml(course.code)}</span>
+            <span class="badge badge--blue">${escapeHtml(String(course.credits ?? ""))}학점</span>
+          </div>
+          <h3 class="courses-mobile-card__title">${escapeHtml(course.name)}</h3>
+          <div class="courses-mobile-card__labels">
+            <span class="courses-mobile-card__label">${escapeHtml(course.category || "미분류")}</span>
+            <span class="courses-mobile-card__label">${escapeHtml(course.subcategory || "세부구분 없음")}</span>
+          </div>
+          <div class="courses-mobile-card__actions">
+            <button
+              type="button"
+              class="btn btn--primary courses-mobile-card__action"
+              data-search-add-course="${escapeHtml(String(course.courseMasterId || ""))}"
+            >
+              <img class="courses-action-button__icon" src="${getFluentIconPath("add")}" alt="" aria-hidden="true" />
+              <span>수강내역에 추가</span>
+            </button>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
 
-  setText(totalCreditsText, String(totalCredits));
-  clearChildren(takenCourseRows);
-
-  takenEmptyPanel.hidden = hasTakenResults;
-  takenEmptyPanel.setAttribute("aria-hidden", String(hasTakenResults));
-  takenTableWrap.hidden = !hasTakenResults;
-  takenTableWrap.setAttribute("aria-hidden", String(!hasTakenResults));
-
-  // 초기 조회 또는 재조회 중에는 로딩 패널 렌더링
-  if (page.takenStatus === "loading") {
-    takenEmptyPanel.hidden = false;
-    takenEmptyPanel.setAttribute("aria-hidden", "false");
-    takenTableWrap.hidden = true;
-    takenTableWrap.setAttribute("aria-hidden", "true");
-    takenEmptyPanel.innerHTML = `
-      <div class="courses-state-panel__content">
-        <div class="loading-state courses-state-panel__loading">
-          <span class="loading-state__spinner" aria-hidden="true"></span>
-          <span>수강 과목 목록을 불러오고 있습니다.</span>
-        </div>
-      </div>
-    `;
-    return;
-  }
-
-  // 수강 목록 조회 실패 시 에러 패널 렌더링
-  if (page.takenStatus === "error") {
-    takenEmptyPanel.hidden = false;
-    takenEmptyPanel.setAttribute("aria-hidden", "false");
-    takenTableWrap.hidden = true;
-    takenTableWrap.setAttribute("aria-hidden", "true");
-    takenEmptyPanel.innerHTML = `
-      <div class="courses-state-panel__content">
-        <p class="courses-state-panel__title">수강 과목 목록을 불러오지 못했습니다.</p>
-        <p class="courses-state-panel__description">잠시 후 다시 시도해주세요.</p>
-      </div>
-    `;
-    return;
-  }
-
-  // 수강 이력이 비어 있으면 empty 패널 렌더링
-  if (page.takenStatus === "empty") {
-    takenEmptyPanel.hidden = false;
-    takenEmptyPanel.setAttribute("aria-hidden", "false");
-    takenTableWrap.hidden = true;
-    takenTableWrap.setAttribute("aria-hidden", "true");
-    takenEmptyPanel.innerHTML = `
-      <div class="courses-state-panel__content">
-        <p class="courses-state-panel__title">등록된 수강 과목이 없습니다.</p>
-      </div>
-    `;
-    return;
-  }
-
-  takenEmptyPanel.hidden = true;
-  takenEmptyPanel.setAttribute("aria-hidden", "true");
-  takenEmptyPanel.innerHTML = "";
-  takenTableWrap.hidden = false;
-  takenTableWrap.setAttribute("aria-hidden", "false");
-
-  // 조회 결과가 있으면 수강 목록 테이블 행 렌더링
-  takenCourseRows.innerHTML = page.takenCourses
+function renderTakenCourseTableRows(courses) {
+  return courses
     .map((course) => {
       const termLabel = termLabelMap[course.takenTerm] || String(course.takenTerm || "");
 
@@ -222,6 +120,224 @@ export function renderTakenCourses(page) {
       `;
     })
     .join("");
+}
+
+function renderTakenCourseMobileCards(courses) {
+  return courses
+    .map((course) => {
+      const courseId = escapeHtml(String(course.courseId || ""));
+      const termLabel = termLabelMap[course.takenTerm] || String(course.takenTerm || "");
+      const semesterLabel = `${escapeHtml(course.takenYear)} ${escapeHtml(termLabel)}`.trim();
+      const retakeBadge = course.isRetake ? '<span class="badge badge--amber">재수강</span>' : "";
+
+      return `
+        <article class="courses-mobile-card courses-mobile-card--taken">
+          <div class="courses-mobile-card__top">
+            <div class="courses-mobile-card__heading">
+              <div class="courses-mobile-card__eyebrow">
+                <span class="courses-mobile-card__code">${escapeHtml(course.code)}</span>
+                ${retakeBadge}
+              </div>
+              <h3 class="courses-mobile-card__title">${escapeHtml(course.name)}</h3>
+            </div>
+            <span class="courses-mobile-card__grade">${escapeHtml(course.grade || "-")}</span>
+          </div>
+
+          <dl class="courses-mobile-card__stats">
+            <div class="courses-mobile-card__stat">
+              <dt>학기</dt>
+              <dd>${semesterLabel || "-"}</dd>
+            </div>
+            <div class="courses-mobile-card__stat">
+              <dt>학점</dt>
+              <dd>${escapeHtml(String(course.earnedCredits ?? ""))}학점</dd>
+            </div>
+            <div class="courses-mobile-card__stat">
+              <dt>세부구분</dt>
+              <dd>${escapeHtml(course.courseSubcategory || "-")}</dd>
+            </div>
+          </dl>
+
+          <div class="courses-mobile-card__actions">
+            <button
+              type="button"
+              class="btn btn--secondary courses-mobile-card__action"
+              data-edit-taken-course="${courseId}"
+            >
+              <img class="courses-mobile-card__button-icon" src="${getFluentIconPath("edit")}" alt="" aria-hidden="true" />
+              <span>수정</span>
+            </button>
+            <button
+              type="button"
+              class="btn btn--ghost courses-mobile-card__action courses-mobile-card__action--danger"
+              aria-label="${escapeHtml(course.name || "과목")} 삭제"
+              data-delete-taken-course="${courseId}"
+            >
+              <img class="courses-mobile-card__button-icon" src="${getFluentIconPath("delete")}" alt="" aria-hidden="true" />
+              <span>삭제</span>
+            </button>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+// Search Courses 결과 렌더링
+export function renderSearchResults(page) {
+  const { searchStatePanel, searchTableWrap, searchCourseRows, searchMobileList } = page.elements;
+  const hasSearchResults = page.searchStatus === "results" && page.searchResults.length > 0;
+
+  clearChildren(searchCourseRows);
+  clearChildren(searchMobileList);
+
+  searchStatePanel.hidden = hasSearchResults;
+  searchStatePanel.setAttribute("aria-hidden", String(hasSearchResults));
+  searchTableWrap.hidden = !hasSearchResults;
+  searchTableWrap.setAttribute("aria-hidden", String(!hasSearchResults));
+  searchMobileList.hidden = !hasSearchResults;
+  searchMobileList.setAttribute("aria-hidden", String(!hasSearchResults));
+
+  // 검색 결과가 있으면 상태 패널 대신 결과 테이블 행 렌더링
+  if (hasSearchResults) {
+    searchStatePanel.innerHTML = "";
+    searchCourseRows.innerHTML = renderSearchCourseTableRows(page.searchResults);
+    searchMobileList.innerHTML = renderSearchCourseMobileCards(page.searchResults);
+    return;
+  }
+
+  searchTableWrap.hidden = true;
+  searchTableWrap.setAttribute("aria-hidden", "true");
+  searchMobileList.hidden = true;
+  searchMobileList.setAttribute("aria-hidden", "true");
+  searchStatePanel.hidden = false;
+  searchStatePanel.setAttribute("aria-hidden", "false");
+
+  // 검색 중에는 스피너가 있는 로딩 패널 렌더링
+  if (page.searchStatus === "loading") {
+    searchStatePanel.innerHTML = `
+      <div class="courses-state-panel__content">
+        <div class="loading-state courses-state-panel__loading">
+          <span class="loading-state__spinner" aria-hidden="true"></span>
+          <span>과목 목록을 검색하고 있습니다.</span>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // 검색은 완료됐지만 결과가 없으면 empty 패널 렌더링
+  if (page.searchStatus === "empty") {
+    searchStatePanel.innerHTML = `
+      <div class="courses-state-panel__content">
+        <p class="courses-state-panel__title">조건에 맞는 과목이 없습니다.</p>
+        <p class="courses-state-panel__description">연도, 학기, 세부구분, 과목명을 다시 확인해 주세요.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // API 실패나 예외가 나면 에러 패널 렌더링
+  if (page.searchStatus === "error") {
+    searchStatePanel.innerHTML = `
+      <div class="courses-state-panel__content">
+        <p class="courses-state-panel__title">과목 목록을 불러오지 못했습니다.</p>
+        <p class="courses-state-panel__description">잠시 후 다시 시도해주세요.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // 아직 검색 전이면 기본 안내 패널 렌더링
+  searchStatePanel.innerHTML = `
+    <div class="courses-state-panel__content">
+      <p class="courses-state-panel__description">검색 조건을 입력한 뒤 검색 버튼을 눌러주세요.</p>
+    </div>
+  `;
+}
+
+// Taken Courses 목록 렌더링
+export function renderTakenCourses(page) {
+  const { totalCreditsText, takenEmptyPanel, takenTableWrap, takenCourseRows, takenMobileList } = page.elements;
+  const totalCredits = page.takenCourses.reduce(
+    (creditSum, course) => creditSum + Number(course.earnedCredits || 0),
+    0,
+  );
+  const hasTakenResults = page.takenStatus === "results" && page.takenCourses.length > 0;
+
+  setText(totalCreditsText, String(totalCredits));
+  clearChildren(takenCourseRows);
+  clearChildren(takenMobileList);
+
+  takenEmptyPanel.hidden = hasTakenResults;
+  takenEmptyPanel.setAttribute("aria-hidden", String(hasTakenResults));
+  takenTableWrap.hidden = !hasTakenResults;
+  takenTableWrap.setAttribute("aria-hidden", String(!hasTakenResults));
+  takenMobileList.hidden = !hasTakenResults;
+  takenMobileList.setAttribute("aria-hidden", String(!hasTakenResults));
+
+  // 초기 조회 또는 재조회 중에는 로딩 패널 렌더링
+  if (page.takenStatus === "loading") {
+    takenEmptyPanel.hidden = false;
+    takenEmptyPanel.setAttribute("aria-hidden", "false");
+    takenTableWrap.hidden = true;
+    takenTableWrap.setAttribute("aria-hidden", "true");
+    takenMobileList.hidden = true;
+    takenMobileList.setAttribute("aria-hidden", "true");
+    takenEmptyPanel.innerHTML = `
+      <div class="courses-state-panel__content">
+        <div class="loading-state courses-state-panel__loading">
+          <span class="loading-state__spinner" aria-hidden="true"></span>
+          <span>수강 과목 목록을 불러오고 있습니다.</span>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // 수강 목록 조회 실패 시 에러 패널 렌더링
+  if (page.takenStatus === "error") {
+    takenEmptyPanel.hidden = false;
+    takenEmptyPanel.setAttribute("aria-hidden", "false");
+    takenTableWrap.hidden = true;
+    takenTableWrap.setAttribute("aria-hidden", "true");
+    takenMobileList.hidden = true;
+    takenMobileList.setAttribute("aria-hidden", "true");
+    takenEmptyPanel.innerHTML = `
+      <div class="courses-state-panel__content">
+        <p class="courses-state-panel__title">수강 과목 목록을 불러오지 못했습니다.</p>
+        <p class="courses-state-panel__description">잠시 뒤 다시 시도해 주세요.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // 수강 이력이 비어 있으면 empty 패널 렌더링
+  if (page.takenStatus === "empty") {
+    takenEmptyPanel.hidden = false;
+    takenEmptyPanel.setAttribute("aria-hidden", "false");
+    takenTableWrap.hidden = true;
+    takenTableWrap.setAttribute("aria-hidden", "true");
+    takenMobileList.hidden = true;
+    takenMobileList.setAttribute("aria-hidden", "true");
+    takenEmptyPanel.innerHTML = `
+      <div class="courses-state-panel__content">
+        <p class="courses-state-panel__title">등록된 수강 과목이 없습니다.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // 조회 결과가 있으면 수강 목록 테이블 행 렌더링
+  takenEmptyPanel.hidden = true;
+  takenEmptyPanel.setAttribute("aria-hidden", "true");
+  takenEmptyPanel.innerHTML = "";
+  takenTableWrap.hidden = false;
+  takenTableWrap.setAttribute("aria-hidden", "false");
+  takenMobileList.hidden = false;
+  takenMobileList.setAttribute("aria-hidden", "false");
+  takenCourseRows.innerHTML = renderTakenCourseTableRows(page.takenCourses);
+  takenMobileList.innerHTML = renderTakenCourseMobileCards(page.takenCourses);
 }
 
 // Edit Course 모달 렌더링
@@ -265,7 +381,6 @@ export function renderEditModal(page) {
   editCourseGradeSelect.value = page.editCourseDraft.grade || "";
   editCourseYearInput.value = page.editCourseDraft.year || "";
   editCourseTermSelect.value = page.editCourseDraft.term || "";
-
   editCourseSubcategorySelect.disabled = false;
   editCourseSubcategorySelect.value = page.editCourseDraft.subcategory || "";
 
@@ -376,7 +491,7 @@ export function renderMajorModal(page) {
     return;
   }
 
-  setText(majorCourseSummary, `${page.pendingMajorCourse.code || ""} · ${page.pendingMajorCourse.name || ""}`);
+  setText(majorCourseSummary, `${page.pendingMajorCourse.code || ""} / ${page.pendingMajorCourse.name || ""}`);
   // 전공 선택 대상 과목이 생기면 전공 option 목록 렌더링
   majorSelectInput.innerHTML = `
     <option value="">전공 선택</option>

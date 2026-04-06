@@ -12,11 +12,13 @@ function renderHomePage(pageRoot) {
   pageRoot.innerHTML = `
     <section class="login-layout">
       <article class="login-intro">
-        <span class="login-intro__brand" aria-hidden="true">
-          <img src="${getFluentIconPath("home")}" alt="" />
-        </span>
-        <div>
-          <h1 class="login-intro__title">My Graduation Manager</h1>
+        <div class="login-intro__hero">
+          <div class="login-intro__headline">
+            <span class="login-intro__brand" aria-hidden="true">
+              <img src="${getFluentIconPath("home")}" alt="" />
+            </span>
+            <h1 class="login-intro__title">My Graduation Manager</h1>
+          </div>
           <p class="login-intro__subtitle">졸업 요건을 빠르게 확인하고 관련된 학업 정보를 한곳에서 관리하세요.</p>
         </div>
         <ul class="login-intro__list">

@@ -24,37 +24,15 @@ export function bindCoursesPageEvents(page) {
   });
 
   // 검색 결과 Add 버튼 click 이벤트
-  page.elements.searchCourseRows?.addEventListener("click", (event) => {
-    const target = event.target;
-    // 버튼 내부 아이콘/텍스트 click까지 함께 처리하기 위한 Element 가드
-    if (!(target instanceof Element)) return;
-
-    const addButton = target.closest("[data-search-add-course]");
-    // 검색 결과 Add 버튼이 아닌 click 무시
-    if (!(addButton instanceof HTMLButtonElement)) return;
-
-    handleAddCourse(addButton.dataset.searchAddCourse || "", page);
-  });
+  bindSearchAddEvents(page.elements.searchCourseRows, page);
+  bindSearchAddEvents(page.elements.searchMobileList, page);
 
   // 수강 목록 행 click 이벤트와 삭제 버튼 click 이벤트
-  page.elements.takenCourseRows?.addEventListener("click", (event) => {
-    const target = event.target;
-    // 행 내부 다양한 자식 노드 click 대응용 Element 가드
-    if (!(target instanceof Element)) return;
-
-    const deleteButton = target.closest("[data-delete-taken-course]");
-    if (deleteButton instanceof HTMLButtonElement) {
-      // 삭제 버튼 click이 행 수정 click으로 이어지지 않게 차단
-      event.stopPropagation();
-      handleDeleteCourse(deleteButton.dataset.deleteTakenCourse || "", page);
-      return;
-    }
-
-    const row = target.closest("[data-taken-course-id]");
-    // 수강 목록 행 click일 때만 수정 모달 오픈
-    if (!(row instanceof HTMLTableRowElement)) return;
-
-    openEditModal(row.dataset.takenCourseId || "", page);
+  bindTakenCourseEvents(page.elements.takenCourseRows, page, {
+    rowSelector: "[data-taken-course-id]",
+  });
+  bindTakenCourseEvents(page.elements.takenMobileList, page, {
+    editSelector: "[data-edit-taken-course]",
   });
 
   // 수정 모달 input 이벤트
@@ -134,6 +112,48 @@ export function bindCoursesPageEvents(page) {
       // Edit 모달만 열린 상태면 수정 모달 닫기
       closeEditModal(page);
     }
+  });
+}
+
+function bindSearchAddEvents(container, page) {
+  container?.addEventListener("click", (event) => {
+    const target = event.target;
+    // 버튼 내부 아이콘/텍스트 click까지 함께 처리하기 위한 Element 가드
+    if (!(target instanceof Element)) return;
+
+    const addButton = target.closest("[data-search-add-course]");
+    // 검색 결과 Add 버튼이 아닌 click 무시
+    if (!(addButton instanceof HTMLButtonElement)) return;
+
+    handleAddCourse(addButton.dataset.searchAddCourse || "", page);
+  });
+}
+
+function bindTakenCourseEvents(container, page, options = {}) {
+  container?.addEventListener("click", (event) => {
+    const target = event.target;
+    // 행 내부 다양한 자식 노드 click 대응용 Element 가드
+    if (!(target instanceof Element)) return;
+
+    const deleteButton = target.closest("[data-delete-taken-course]");
+    if (deleteButton instanceof HTMLButtonElement) {
+      // 삭제 버튼 click이 행 수정 click으로 이어지지 않게 차단
+      event.stopPropagation();
+      handleDeleteCourse(deleteButton.dataset.deleteTakenCourse || "", page);
+      return;
+    }
+
+    const editButton = target.closest(options.editSelector || "[data-edit-taken-course]");
+    if (editButton instanceof HTMLButtonElement) {
+      openEditModal(editButton.dataset.editTakenCourse || "", page);
+      return;
+    }
+
+    const row = target.closest(options.rowSelector || "[data-taken-course-id]");
+    // 수강 목록 행 click일 때만 수정 모달 오픈
+    if (!(row instanceof HTMLElement)) return;
+
+    openEditModal(row.dataset.takenCourseId || "", page);
   });
 }
 
@@ -246,13 +266,13 @@ async function handleAddCourse(courseMasterId, page) {
 
   // 검색 폼의 year/term이 등록 year/term으로 그대로 사용되는 구조
   if (!takenYear || !takenTerm) {
-    window.alert("연도와 학기를 먼저 확인해주세요.");
+    window.alert("연도와 학기를 먼저 확인해 주세요.");
     return;
   }
 
-  // 전공필수/전공선택만 majorId 결정이 필요한 분기 대상
   const needsMajorChoice = selectedCourse.subcategory === "전공필수" || selectedCourse.subcategory === "전공선택";
 
+  // 전공필수/전공선택만 majorId 결정이 필요한 분기 대상
   if (!needsMajorChoice) {
     // 교양/전공탐색은 majorId 없이 바로 등록
     await submitAddCourse(
@@ -264,7 +284,7 @@ async function handleAddCourse(courseMasterId, page) {
         retakeCourseId: null,
       },
       page,
-      `${selectedCourse.name} 과목이 등록되었습니다.`,
+      `${selectedCourse.name} 과목을 등록했습니다.`,
     );
     return;
   }
@@ -321,7 +341,7 @@ async function handleDeleteCourse(courseId, page) {
 
   try {
     await deleteCourse(Number(courseId));
-    window.alert("과목이 삭제되었습니다.");
+    window.alert("과목을 삭제했습니다.");
     await page.refreshTakenCourses();
   } catch (error) {
     console.error("[Courses][DeleteCourseFailed]", error);
@@ -341,8 +361,8 @@ function handleEditCourseFieldChange(event, page) {
   page.editCourseDraft[target.name] = target.value;
 
   if (target.name === "subcategory") {
-    // 전공필수/전공선택은 학부 귀속을 함께 보내지 않도록 정리
     if (target.value === "전공필수" || target.value === "전공선택") {
+      // 전공필수/전공선택은 학부 귀속을 함께 보내지 않도록 정리
       page.editCourseDraft.attributedDepartmentId = "";
     } else if (target.value === "전공탐색") {
       // 전공탐색은 majorId를 함께 보내지 않도록 정리

@@ -318,8 +318,18 @@ body[data-page="profile"].is-modal-open {
     padding: 0.95rem;
   }
 
+  .profile-page__title,
+  .profile-page__subtitle {
+    padding-inline-start: var(--mobile-header-inset);
+  }
+
   .profile-page__title {
     font-size: 1.7rem;
+  }
+
+  .profile-card__title {
+    font-size: var(--mobile-card-title-size);
+    line-height: 1.3;
   }
 
   .profile-major-item {

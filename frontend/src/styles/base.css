@@ -45,6 +45,9 @@
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
   --container-width: 1200px;
+  --mobile-tabbar-height: 4.75rem;
+  --mobile-header-inset: 0.28rem;
+  --mobile-card-title-size: 1.08rem;
 }
 
 /* 모든 요소의 박스 모델을 border-box로 통일 */

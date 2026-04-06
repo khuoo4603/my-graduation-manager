@@ -979,10 +979,6 @@ body[data-page="grad"] .page-section {
 }
 
 @media (max-width: 980px) {
-  .grad-distribution {
-    grid-template-columns: 1fr;
-  }
-
   .grad-grade-summary__hero-header {
     flex-direction: column;
     align-items: stretch;
@@ -1015,6 +1011,16 @@ body[data-page="grad"] .page-section {
     padding: 1rem;
   }
 
+  .grad-status-card__title,
+  .grad-missing-box__title,
+  .grad-quick-link__title,
+  .grad-grade-summary__title,
+  .grad-grade-summary__section-title,
+  .grad-gpa-chart__title {
+    font-size: var(--mobile-card-title-size);
+    line-height: 1.3;
+  }
+
   .grad-grade-summary__gpa-metrics {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1031,9 +1037,75 @@ body[data-page="grad"] .page-section {
     font-size: 11px;
   }
 
-  .grad-distribution__legend,
-  .grad-policy__stats {
+  .grad-distribution {
+    grid-template-columns: minmax(8.8rem, 9.8rem) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .grad-distribution__chart-wrap {
+    width: min(100%, 10rem);
+    align-self: center;
+  }
+
+  .grad-distribution__total {
+    font-size: clamp(1.65rem, 6vw, 2rem);
+  }
+
+  .grad-distribution__caption {
+    font-size: 0.84rem;
+  }
+
+  .grad-distribution__empty {
+    min-height: 10rem;
+    padding: 0.85rem 0.8rem;
+  }
+
+  .grad-distribution__empty-text {
+    font-size: 0.84rem;
+    max-width: 10rem;
+  }
+
+  .grad-distribution__legend {
     grid-template-columns: 1fr;
+    align-content: start;
+    gap: 0.55rem;
+  }
+
+  .grad-distribution__legend-item {
+    padding: 0.5rem 0.58rem;
+    gap: 0.55rem;
+  }
+
+  .grad-distribution__legend-grade {
+    gap: 0.42rem;
+    font-size: 0.84rem;
+  }
+
+  .grad-distribution__legend-count {
+    font-size: 0.9rem;
+  }
+
+  .grad-policy__stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .grad-policy__stat {
+    padding: 0.68rem 0.55rem;
+  }
+
+  .grad-policy__stat-label {
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .grad-policy__stat-value {
+    font-size: clamp(1rem, 4.7vw, 1.25rem);
+  }
+
+  .grad-policy__stat-unit {
+    font-size: 0.76rem;
   }
 
   .grad-dashboard-overlay__action {

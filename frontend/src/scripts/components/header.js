@@ -161,10 +161,70 @@ export function renderHeader(target, options = {}) {
   const currentPath = options.currentPath || window.location.pathname;
   const userName = options.userName || DEFAULT_USER_NAME;
   const profileSummary = resolveHeaderProfileSummary(options.profile, userName);
-  const dashboardActive = isActivePath(currentPath, PAGE_PATHS.GRAD) ? " is-active" : "";
-  const coursesActive = isActivePath(currentPath, PAGE_PATHS.GRAD_COURSES) ? " is-active" : "";
-  const statusActive = isActivePath(currentPath, PAGE_PATHS.GRAD_STATUS) ? " is-active" : "";
-  const storageActive = isActivePath(currentPath, PAGE_PATHS.STORAGE) ? " is-active" : "";
+  const navigationItems = [
+    {
+      href: PAGE_PATHS.GRAD,
+      label: "대시보드",
+      icon: "apps",
+      isActive: isActivePath(currentPath, PAGE_PATHS.GRAD),
+    },
+    {
+      href: PAGE_PATHS.GRAD_COURSES,
+      label: "수강내역",
+      icon: "book",
+      isActive: isActivePath(currentPath, PAGE_PATHS.GRAD_COURSES),
+    },
+    {
+      href: PAGE_PATHS.GRAD_STATUS,
+      label: "졸업현황",
+      icon: "clipboardTask",
+      isActive: isActivePath(currentPath, PAGE_PATHS.GRAD_STATUS),
+    },
+    {
+      href: PAGE_PATHS.STORAGE,
+      label: "자료함",
+      icon: "folder",
+      isActive: isActivePath(currentPath, PAGE_PATHS.STORAGE),
+    },
+  ];
+
+  const appShell = host.closest("[data-app-shell]");
+  appShell?.setAttribute("data-mobile-nav", "true");
+
+  const desktopNavMarkup = navigationItems
+    .map((item) => {
+      const activeClass = item.isActive ? " is-active" : "";
+      const currentAttr = item.isActive ? ' aria-current="page"' : "";
+
+      return `
+        <li class="app-nav__item">
+          <a class="app-nav__link${activeClass}" href="${item.href}"${currentAttr}>
+            <img class="app-nav__icon" src="${getFluentIconPath(item.icon)}" alt="" aria-hidden="true" />
+            <span>${item.label}</span>
+          </a>
+        </li>
+      `;
+    })
+    .join("");
+
+  const mobileNavMarkup = navigationItems
+    .map((item) => {
+      const activeClass = item.isActive ? " is-active" : "";
+      const currentAttr = item.isActive ? ' aria-current="page"' : "";
+
+      return `
+        <a
+          class="app-bottom-nav__link${activeClass}"
+          href="${item.href}"
+          aria-label="${item.label}"
+          title="${item.label}"
+          ${currentAttr}
+        >
+          <img class="app-bottom-nav__icon" src="${getFluentIconPath(item.icon)}" alt="" aria-hidden="true" />
+        </a>
+      `;
+    })
+    .join("");
 
   host.innerHTML = `
     <header class="app-header">
@@ -178,30 +238,7 @@ export function renderHeader(target, options = {}) {
 
         <nav class="app-nav" aria-label="주요 메뉴">
           <ul class="app-nav__list">
-            <li class="app-nav__item">
-              <a class="app-nav__link${dashboardActive}" href="${PAGE_PATHS.GRAD}">
-                <img class="app-nav__icon" src="${getFluentIconPath("apps")}" alt="" aria-hidden="true" />
-                <span>대시보드</span>
-              </a>
-            </li>
-            <li class="app-nav__item">
-              <a class="app-nav__link${coursesActive}" href="${PAGE_PATHS.GRAD_COURSES}">
-                <img class="app-nav__icon" src="${getFluentIconPath("book")}" alt="" aria-hidden="true" />
-                <span>수강내역</span>
-              </a>
-            </li>
-            <li class="app-nav__item">
-              <a class="app-nav__link${statusActive}" href="${PAGE_PATHS.GRAD_STATUS}">
-                <img class="app-nav__icon" src="${getFluentIconPath("clipboardTask")}" alt="" aria-hidden="true" />
-                <span>졸업 현황</span>
-              </a>
-            </li>
-            <li class="app-nav__item">
-              <a class="app-nav__link${storageActive}" href="${PAGE_PATHS.STORAGE}">
-                <img class="app-nav__icon" src="${getFluentIconPath("folder")}" alt="" aria-hidden="true" />
-                <span>자료함</span>
-              </a>
-            </li>
+            ${desktopNavMarkup}
           </ul>
         </nav>
 
@@ -218,7 +255,14 @@ export function renderHeader(target, options = {}) {
           </button>
 
           <div class="app-user__profile" data-profile-summary-root>
-            <button class="app-user__badge" type="button" aria-haspopup="dialog" aria-expanded="false" data-profile-badge>
+            <button
+              class="app-user__badge"
+              type="button"
+              aria-haspopup="dialog"
+              aria-expanded="false"
+              aria-label="프로필 메뉴"
+              data-profile-badge
+            >
               <span class="app-user__avatar">
                 <img class="app-user__icon" src="${getFluentIconPath("person")}" alt="" aria-hidden="true" />
               </span>
@@ -253,7 +297,7 @@ export function renderHeader(target, options = {}) {
 
               <a class="btn btn--secondary app-user__summary-action" href="${PAGE_PATHS.PROFILE}">
                 <img class="app-user__icon" src="${getFluentIconPath("edit")}" alt="" aria-hidden="true" />
-                <span>수정하기</span>
+                <span>프로필 수정</span>
               </a>
             </div>
           </div>
@@ -264,6 +308,10 @@ export function renderHeader(target, options = {}) {
         </div>
       </div>
     </header>
+
+    <nav class="app-bottom-nav" aria-label="모바일 주요 메뉴">
+      ${mobileNavMarkup}
+    </nav>
   `;
 
   const elements = collectHeaderElements(host);

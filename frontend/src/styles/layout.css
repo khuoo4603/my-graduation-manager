@@ -14,7 +14,7 @@
 /* 메인 영역의 기본 패딩과 확장 영역 정의 */
 .page-main {
   flex: 1;
-  padding: 2rem 0 3rem;
+  padding: 2rem 0 calc(3rem + var(--app-mobile-tabbar-offset, 0px));
 }
 
 /* 페이지 섹션 내부 기본 간격 */
@@ -52,10 +52,28 @@
 /* 모바일 구간에서 여백을 축소 */
 @media (max-width: 760px) {
   .page-main {
-    padding: 1.35rem 0 2rem;
+    padding: 1rem 0 calc(1rem + var(--app-mobile-tabbar-offset, 0px));
   }
 
   .container {
-    width: min(100% - 1.25rem, var(--container-width));
+    width: min(100% - 1rem, var(--container-width));
+  }
+
+  .page-section {
+    gap: 1rem;
+  }
+
+  .page-title,
+  .page-subtitle {
+    padding-inline-start: var(--mobile-header-inset);
+  }
+
+  .page-title {
+    font-size: clamp(1.5rem, 6vw, 1.85rem);
+  }
+
+  .page-subtitle {
+    font-size: 0.92rem;
+    line-height: 1.6;
   }
 }

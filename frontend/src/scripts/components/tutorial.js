@@ -4,6 +4,7 @@ import { PAGE_PATHS } from "/src/scripts/utils/constants.js";
 
 const ONBOARDING_SESSION_KEY = "mgm-active-onboarding";
 const OVERLAY_ROOT_ID = "tutorial-overlay-root";
+const TUTORIAL_SPACER_ID = "tutorial-overlay-spacer";
 const TUTORIAL_ACTION_TYPES = new Set(["next", "navigate", "close"]);
 
 const PAGE_KEY_BY_PATH = {
@@ -143,9 +144,11 @@ function warnMissingTarget({ pageKey, mode, index, step, skipped = false }) {
 // 공통 오버레이 DOM을 재사용하거나 처음 한 번 생성
 function createOverlayRefs() {
   const existingRoot = document.getElementById(OVERLAY_ROOT_ID);
+  const existingSpacer = document.getElementById(TUTORIAL_SPACER_ID);
   if (existingRoot) {
     return {
       root: existingRoot,
+      spacer: existingSpacer,
       scrim: existingRoot.querySelector("[data-tutorial-scrim]"),
       highlight: existingRoot.querySelector("[data-tutorial-highlight]"),
       card: existingRoot.querySelector("[data-tutorial-card]"),
@@ -185,10 +188,16 @@ function createOverlayRefs() {
     </section>
   `;
 
-  document.body.append(root);
+  const spacer = document.createElement("div");
+  spacer.id = TUTORIAL_SPACER_ID;
+  spacer.hidden = true;
+  spacer.setAttribute("aria-hidden", "true");
+
+  document.body.append(root, spacer);
 
   return {
     root,
+    spacer,
     scrim: root.querySelector("[data-tutorial-scrim]"),
     highlight: root.querySelector("[data-tutorial-highlight]"),
     card: root.querySelector("[data-tutorial-card]"),
@@ -255,6 +264,8 @@ function createTutorialController(options = {}) {
     currentIndex: -1,
     currentStep: null,
     currentTarget: null,
+    currentPlacement: "center",
+    spacerHeight: 0,
     resizeHandler: null,
     scrollHandler: null,
     keydownHandler: null,
@@ -367,14 +378,99 @@ function createTutorialController(options = {}) {
     overlay.highlight.style.height = `${Math.min(height + padding * 2, window.innerHeight - 16)}px`;
   }
 
-  // 현재 강조 대상이 화면 중앙 근처에 오도록 스크롤
-  function scrollTargetIntoView(target) {
+  function getViewportMargin() {
+    return window.innerWidth <= 760 ? 12 : 16;
+  }
+
+  function clearCardPosition() {
+    overlay.card.style.removeProperty("top");
+    overlay.card.style.removeProperty("left");
+  }
+
+  function updateSpacerHeight(height) {
+    const spacer = overlay.spacer;
+    if (!spacer) return;
+
+    const nextHeight = Math.max(0, Math.ceil(height));
+    state.spacerHeight = nextHeight;
+    spacer.hidden = nextHeight === 0;
+    spacer.style.height = nextHeight > 0 ? `${nextHeight}px` : "0px";
+  }
+
+  function resolveCardPlacement(target, requestedPlacement = "bottom") {
+    if (!target || requestedPlacement === "center") {
+      return "center";
+    }
+
+    if (requestedPlacement === "left" || requestedPlacement === "right") {
+      return requestedPlacement;
+    }
+
+    const margin = getViewportMargin();
+    const cardRect = overlay.card.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const spaceAbove = targetRect.top - margin;
+    const spaceBelow = window.innerHeight - targetRect.bottom - margin;
+
+    if (requestedPlacement === "top") {
+      if (spaceAbove >= cardRect.height || spaceAbove >= spaceBelow) {
+        return "top";
+      }
+      return "bottom";
+    }
+
+    if (spaceBelow >= cardRect.height || spaceBelow >= spaceAbove) {
+      return "bottom";
+    }
+
+    return "top";
+  }
+
+  // 현재 강조 대상이 카드와 함께 보이도록 스크롤
+  function scrollTargetIntoView(target, placement = "bottom") {
     if (!(target instanceof HTMLElement)) return;
 
+    const block = placement === "bottom" ? "start" : placement === "top" ? "end" : "center";
     target.scrollIntoView({
       behavior: "auto",
-      block: "center",
+      block,
       inline: "nearest",
+    });
+  }
+
+  function ensureCardViewportSpace(target, placement, { allowScrollAdjust = false } = {}) {
+    if (!(target instanceof HTMLElement) || placement === "center") {
+      if (allowScrollAdjust) {
+        updateSpacerHeight(0);
+      }
+      return;
+    }
+
+    if (placement !== "bottom") {
+      if (allowScrollAdjust) {
+        updateSpacerHeight(0);
+      }
+      return;
+    }
+
+    const margin = getViewportMargin();
+    const cardRect = overlay.card.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const requiredBottom = targetRect.bottom + margin + cardRect.height + margin;
+    const overflow = Math.max(0, requiredBottom - window.innerHeight);
+
+    if (!allowScrollAdjust) return;
+
+    if (overflow <= 0) {
+      updateSpacerHeight(0);
+      return;
+    }
+
+    const availableScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight - window.scrollY, 0);
+    updateSpacerHeight(Math.max(overflow - availableScroll, 0));
+    window.scrollBy({
+      top: overflow,
+      behavior: "auto",
     });
   }
 
@@ -383,7 +479,7 @@ function createTutorialController(options = {}) {
     const card = overlay.card;
     if (!card) return;
 
-    const margin = 16;
+    const margin = getViewportMargin();
     const cardRect = card.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -400,15 +496,12 @@ function createTutorialController(options = {}) {
 
     if (placement === "top") {
       top = targetRect.top - cardRect.height - margin;
-      left = targetRect.left;
     } else if (placement === "right") {
       top = targetRect.top;
       left = targetRect.right + margin;
     } else if (placement === "left") {
       top = targetRect.top;
       left = targetRect.left - cardRect.width - margin;
-    } else {
-      left = targetRect.left;
     }
 
     if (placement === "bottom" || placement === "top") {
@@ -417,7 +510,6 @@ function createTutorialController(options = {}) {
 
     top = Math.max(margin, Math.min(top, viewportHeight - cardRect.height - margin));
     left = Math.max(margin, Math.min(left, viewportWidth - cardRect.width - margin));
-
     card.style.top = `${top}px`;
     card.style.left = `${left}px`;
   }
@@ -465,13 +557,19 @@ function createTutorialController(options = {}) {
     overlay.prevButton.hidden = state.currentIndex <= 0;
     overlay.primaryButton.textContent = resolvedStep.actionLabel || "다음";
 
+    const cardPlacement = resolveCardPlacement(target, resolvedStep.placement);
+    state.currentPlacement = cardPlacement;
+
     if (!skipScroll) {
-      scrollTargetIntoView(target);
+      scrollTargetIntoView(target, cardPlacement);
     }
-    highlightTarget(target);
 
     requestAnimationFrame(() => {
-      positionCard(target, resolvedStep.placement);
+      ensureCardViewportSpace(target, cardPlacement, {
+        allowScrollAdjust: !skipScroll,
+      });
+      highlightTarget(target);
+      positionCard(target, cardPlacement);
     });
 
     syncOnboardingSession();
@@ -518,6 +616,8 @@ function createTutorialController(options = {}) {
     overlay.root.hidden = true;
     overlay.root.classList.remove("is-active");
     hideHighlight();
+    clearCardPosition();
+    updateSpacerHeight(0);
 
     state.active = false;
     state.mode = "";
@@ -525,6 +625,7 @@ function createTutorialController(options = {}) {
     state.currentIndex = -1;
     state.currentStep = null;
     state.currentTarget = null;
+    state.currentPlacement = "center";
 
     if (clearSession) {
       clearOnboardingSession();
@@ -709,10 +810,6 @@ function createTutorialController(options = {}) {
 
       const target = resolveTargetElement(state.currentStep.target);
       state.currentTarget = target;
-
-      if (!skipScroll) {
-        scrollTargetIntoView(target);
-      }
 
       renderCurrentStep({ skipScroll });
       return controller;

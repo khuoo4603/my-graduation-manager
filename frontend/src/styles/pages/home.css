@@ -32,6 +32,19 @@ body[data-page="home"] .page-section {
 .login-intro {
   display: grid;
   gap: 1.25rem;
+  max-width: 34rem;
+}
+
+.login-intro__hero {
+  display: grid;
+  gap: 0.7rem;
+  justify-items: start;
+}
+
+.login-intro__headline {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
 }
 
 /* 서비스 아이콘 배지 */
@@ -65,8 +78,9 @@ body[data-page="home"] .page-section {
 .login-intro__subtitle {
   margin: 0;
   color: var(--color-text-subtle);
-  font-size: 1.03rem;
-  max-width: 35ch;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  max-width: 31ch;
 }
 
 /* 기능 소개 목록 */
@@ -93,7 +107,8 @@ body[data-page="home"] .page-section {
 .login-intro__item p {
   margin: 0.25rem 0 0;
   color: var(--color-text-muted);
-  font-size: 0.88rem;
+  font-size: 0.84rem;
+  line-height: 1.6;
 }
 
 /* 우측 로그인 카드 */
@@ -106,7 +121,7 @@ body[data-page="home"] .page-section {
 
 .login-card__header {
   text-align: center;
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.15rem;
 }
 
 .login-card__title {
@@ -118,6 +133,7 @@ body[data-page="home"] .page-section {
 .login-card__subtitle {
   margin: 0.4rem 0 0;
   color: var(--color-text-muted);
+  font-size: 0.9rem;
 }
 
 /* 구글 로그인 버튼 */
@@ -126,8 +142,10 @@ body[data-page="home"] .page-section {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-subtle);
-  min-height: 3rem;
-  font-size: 0.95rem;
+  min-height: 3.15rem;
+  font-size: 0.96rem;
+  font-weight: 700;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
 }
 
 .btn--google img {
@@ -148,7 +166,8 @@ body[data-page="home"] .page-section {
 /* 로그인 하단 약관 안내 문구 */
 .login-card__footer {
   margin: 1rem 0 0;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
+  line-height: 1.55;
   color: var(--color-text-muted);
   text-align: center;
 }
@@ -158,11 +177,123 @@ body[data-page="home"] .page-section {
   .login-layout {
     grid-template-columns: 1fr;
     align-items: start;
+    gap: 1.25rem;
   }
 
   .login-card {
     justify-self: stretch;
     max-width: none;
     order: -1;
+  }
+}
+
+@media (max-width: 760px) {
+  body[data-page="home"] .page-section {
+    padding-block: 1.25rem 1rem;
+    width: min(100% - 2rem, 30rem);
+  }
+
+  .login-layout {
+    gap: 4rem;
+    justify-items: center;
+    width: 100%;
+  }
+
+  .login-card {
+    order: 1;
+  }
+
+  .login-card {
+    padding: 1.15rem 1rem;
+    justify-self: center;
+  }
+
+  .login-card__header,
+  .login-card__footer {
+    text-align: center;
+  }
+
+  .login-card__title {
+    font-size: 1.45rem;
+  }
+
+  .login-card__subtitle {
+    font-size: 0.86rem;
+  }
+
+  .login-intro {
+    gap: 2rem;
+    max-width: 29rem;
+    width: 100%;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .login-intro__hero {
+    width: 100%;
+    justify-items: center;
+  }
+
+  .login-intro__headline {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+    gap: 0.65rem;
+  }
+
+  .login-intro__brand {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.8rem;
+    flex: none;
+  }
+
+  .login-intro__brand img {
+    width: 1.28rem;
+    height: 1.28rem;
+  }
+
+  .login-intro__title {
+    font-size: clamp(1.35rem, 6.8vw, 1.9rem);
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  .login-intro__title,
+  .login-intro__subtitle,
+  .login-card__title,
+  .login-card__subtitle {
+    padding-inline-start: 0;
+  }
+
+  .login-intro__subtitle {
+    font-size: 0.9rem;
+    max-width: 28ch;
+    margin-inline: auto;
+  }
+
+  .login-intro__list {
+    gap: 0.85rem;
+    width: 100%;
+    justify-items: stretch;
+  }
+
+  .login-intro__item {
+    gap: 0.7rem;
+    text-align: left;
+    justify-self: stretch;
+  }
+
+  .login-intro__item > div {
+    text-align: left;
+  }
+
+  .login-intro__item h3 {
+    font-size: 0.92rem;
+  }
+
+  .login-intro__item p {
+    font-size: 0.8rem;
   }
 }
