@@ -297,8 +297,21 @@ function buildMicroMajorCardHtml(card) {
 // 마이크로전공 섹션 보조 안내 문구 HTML 생성
 function buildMicroMajorStateHtml(sectionViewModel) {
   const notice = sectionViewModel?.notice;
-  if (!notice?.text) {
+  if (!notice?.title && !notice?.text) {
     return "";
+  }
+
+  if (notice?.title) {
+    const descriptionHtml = notice?.description
+      ? `<p class="status-micro-major-state-card__description">${escapeHtml(notice.description)}</p>`
+      : "";
+
+    return `
+      <section class="card status-micro-major-state-card" aria-live="polite">
+        <h3 class="status-micro-major-state-card__title">${escapeHtml(notice.title)}</h3>
+        ${descriptionHtml}
+      </section>
+    `;
   }
 
   const variantClass =

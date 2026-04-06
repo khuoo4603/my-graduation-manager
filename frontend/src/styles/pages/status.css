@@ -335,7 +335,7 @@ body[data-page="grad-status"] .page-section {
 
 .status-micro-major-section {
   display: grid;
-  gap: 0.9rem;
+  gap: 1rem;
 }
 
 .status-section-heading__copy {
@@ -356,8 +356,40 @@ body[data-page="grad-status"] .page-section {
   line-height: 1.5;
 }
 
+.status-section-heading__warning {
+  margin: 0;
+  color: #c24141;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.status-micro-major-section {
+  margin-top: 1.75rem;
+}
+
 .status-micro-major-state {
   display: grid;
+}
+
+.status-micro-major-state-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem 1.05rem;
+  border-color: var(--color-border);
+  background: #fbfcfe;
+}
+
+.status-micro-major-state-card__title {
+  margin: 0;
+  font-size: 1.02rem;
+  letter-spacing: -0.02em;
+}
+
+.status-micro-major-state-card__description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
 }
 
 .status-micro-major-grid {

@@ -12,7 +12,7 @@ import { isLocalEnv, PAGE_PATHS, UI_MESSAGES } from "/src/scripts/utils/constant
 import { qs } from "/src/scripts/utils/dom.js";
 import { redirectToErrorPage, resolveErrorInfo } from "/src/scripts/utils/error.js";
 
-import { MICRO_MAJOR_ERROR_NOTICE, MICRO_MAJOR_PREVIEW_SECTION, buildMicroMajorSectionModel } from "./micro-major.js";
+import { MICRO_MAJOR_ERROR_NOTICE, buildMicroMajorSectionModel } from "./micro-major.js";
 import { renderMicroMajorSection, renderStatusPage } from "./render.js";
 
 const DEFAULT_PAGE_DESCRIPTION = "상세 졸업 판정 결과를 확인할 수 있습니다.";
@@ -403,19 +403,21 @@ function buildMissingViewModel(missing, options = {}) {
   };
 }
 
-// 마이크로전공 섹션은 preview를 먼저 그리고 성공 시 실제 데이터로 교체
+// 마이크로전공 섹션은 실제 API 응답 기준으로 독립 렌더링
 async function loadMicroMajorSection(page, microMajorPromise) {
-  const previewSection = MICRO_MAJOR_PREVIEW_SECTION;
-  renderMicroMajorSection(page, previewSection);
+  renderMicroMajorSection(page, {
+    items: [],
+    notice: null,
+  });
 
   try {
     const response = await microMajorPromise;
     // API 성공 시 실제 응답으로 카드 목록 갱신
     renderMicroMajorSection(page, buildMicroMajorSectionModel(response));
   } catch {
-    // API 실패 시에는 preview 카드를 유지하고 소형 안내만 표시
+    // API 실패 시에는 마이크로전공 섹션 내부에서만 오류 패널 표시
     renderMicroMajorSection(page, {
-      ...previewSection,
+      items: [],
       notice: MICRO_MAJOR_ERROR_NOTICE,
     });
   }

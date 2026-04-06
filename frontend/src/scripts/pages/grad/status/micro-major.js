@@ -1,221 +1,13 @@
 const MICRO_MAJOR_EMPTY_NOTICE = {
   variant: "empty",
-  text: "표시할 마이크로전공 이수 현황이 없습니다.",
+  title: "표시할 마이크로전공 이수 현황이 없습니다.",
+  description: "",
 };
 
 export const MICRO_MAJOR_ERROR_NOTICE = {
   variant: "error",
-  text: "마이크로전공 이수 현황을 불러오지 못했습니다.",
-};
-
-const MICRO_MAJOR_PREVIEW_RESPONSE = {
-  microMajors: [
-    {
-      id: 101,
-      name: "백엔드개발",
-      category: "전공",
-      operatingUnitNames: "IT융합대학",
-      status: "이수중",
-      requiredCourseCount: 4,
-      earnedCourseCount: 1,
-      remainingCourseCount: 3,
-      groups: [
-        {
-          groupNo: 1,
-          groupName: "인정 과목",
-          requiredCourseCount: 4,
-          earnedCourseCount: 1,
-          remainingCourseCount: 3,
-          isSatisfied: false,
-        },
-      ],
-      recognizedCourses: [{ courseId: 1001, courseCode: "BE101", courseName: "웹개발입문", earnedCredits: 3 }],
-      missingCourses: [
-        { courseCode: "BE201", courseName: "데이터베이스" },
-        { courseCode: "BE301", courseName: "서버구축및형상관리" },
-        { courseCode: "BE401", courseName: "백엔드프로그래밍" },
-      ],
-    },
-    {
-      id: 102,
-      name: "프론트엔드개발",
-      category: "전공",
-      operatingUnitNames: "IT융합대학",
-      status: "이수가능",
-      requiredCourseCount: 4,
-      earnedCourseCount: 0,
-      remainingCourseCount: 4,
-      groups: [
-        {
-          groupNo: 1,
-          groupName: "인정 과목",
-          requiredCourseCount: 4,
-          earnedCourseCount: 0,
-          remainingCourseCount: 4,
-          isSatisfied: false,
-        },
-      ],
-      recognizedCourses: [],
-      missingCourses: [
-        { courseCode: "FE101", courseName: "웹프로그래밍" },
-        { courseCode: "FE201", courseName: "UI/UX디자인" },
-        { courseCode: "FE301", courseName: "리액트프로그래밍" },
-        { courseCode: "FE401", courseName: "모바일웹개발" },
-      ],
-    },
-    {
-      id: 103,
-      name: "정보보호",
-      category: "전공",
-      operatingUnitNames: "정보보호학과",
-      status: "이수완료",
-      requiredCourseCount: 4,
-      earnedCourseCount: 4,
-      remainingCourseCount: 0,
-      groups: [
-        {
-          groupNo: 1,
-          groupName: "인정 과목",
-          requiredCourseCount: 4,
-          earnedCourseCount: 4,
-          remainingCourseCount: 0,
-          isSatisfied: true,
-        },
-      ],
-      recognizedCourses: [
-        { courseId: 1002, courseCode: "IS101", courseName: "정보보호개론", earnedCredits: 3 },
-        { courseId: 1003, courseCode: "IS201", courseName: "암호학", earnedCredits: 3 },
-        { courseId: 1004, courseCode: "IS301", courseName: "네트워크보안", earnedCredits: 3 },
-        { courseId: 1005, courseCode: "IS401", courseName: "시스템보안", earnedCredits: 3 },
-      ],
-      missingCourses: [],
-    },
-    {
-      id: 104,
-      name: "기후생태",
-      category: "교양",
-      operatingUnitNames: "열림교양대학",
-      status: "이수중",
-      requiredCourseCount: 4,
-      earnedCourseCount: 1,
-      remainingCourseCount: 3,
-      groups: [
-        {
-          groupNo: 1,
-          groupName: "열림교양대학",
-          requiredCourseCount: 1,
-          earnedCourseCount: 1,
-          remainingCourseCount: 0,
-          isSatisfied: true,
-        },
-        {
-          groupNo: 2,
-          groupName: "열림교양대학",
-          requiredCourseCount: 2,
-          earnedCourseCount: 0,
-          remainingCourseCount: 2,
-          isSatisfied: false,
-        },
-        {
-          groupNo: 3,
-          groupName: "열림교양대학",
-          requiredCourseCount: 1,
-          earnedCourseCount: 0,
-          remainingCourseCount: 1,
-          isSatisfied: false,
-        },
-      ],
-      recognizedCourses: [
-        { groupNo: 1, courseId: 1006, courseCode: "CL101", courseName: "과학기술과 에콜로지", earnedCredits: 2 },
-      ],
-      missingCourses: [
-        { groupNo: 2, courseCode: "CL201", courseName: "20세기환경사" },
-        { groupNo: 2, courseCode: "CL202", courseName: "인류생존프로젝트" },
-        { groupNo: 2, courseCode: "CL203", courseName: "자연과생명" },
-        { groupNo: 2, courseCode: "CL204", courseName: "기후위기와지속가능한농업" },
-        { groupNo: 3, courseCode: "CL301", courseName: "에너지의미래" },
-        { groupNo: 3, courseCode: "CL302", courseName: "동물복지:인간과동물" },
-        { groupNo: 3, courseCode: "CL303", courseName: "몸과윤리" },
-        { groupNo: 3, courseCode: "CL304", courseName: "기후위기의이해" },
-      ],
-    },
-    {
-      id: 105,
-      name: "글로벌사회복지",
-      category: "융합",
-      operatingUnitNames: "사회복지학+정치외교학",
-      status: "이수중",
-      requiredCourseCount: 5,
-      earnedCourseCount: 3,
-      remainingCourseCount: 2,
-      groups: [
-        {
-          groupNo: 1,
-          groupName: "정치외교학전공",
-          requiredCourseCount: 3,
-          earnedCourseCount: 2,
-          remainingCourseCount: 1,
-          isSatisfied: false,
-        },
-        {
-          groupNo: 2,
-          groupName: "사회복지학전공",
-          requiredCourseCount: 2,
-          earnedCourseCount: 1,
-          remainingCourseCount: 1,
-          isSatisfied: false,
-        },
-      ],
-      recognizedCourses: [
-        { groupNo: 1, courseId: 1008, courseCode: "GS101", courseName: "국제정치론", earnedCredits: 3 },
-        { groupNo: 1, courseId: 1009, courseCode: "GS102", courseName: "국제개발협력", earnedCredits: 3 },
-        { groupNo: 2, courseId: 1010, courseCode: "GS201", courseName: "지역사회복지론", earnedCredits: 3 },
-      ],
-      missingCourses: [
-        { groupNo: 1, courseCode: "GS103", courseName: "개발협력의정치경제" },
-        { groupNo: 1, courseCode: "GS104", courseName: "국제기구론" },
-        { groupNo: 2, courseCode: "GS202", courseName: "사회복지실천론" },
-        { groupNo: 2, courseCode: "GS203", courseName: "사회복지와문화다양성" },
-      ],
-    },
-    {
-      id: 106,
-      name: "글로벌지속가능경영",
-      category: "융합",
-      operatingUnitNames: "경영학+환경과학",
-      status: "이수가능",
-      requiredCourseCount: 5,
-      earnedCourseCount: 0,
-      remainingCourseCount: 5,
-      groups: [
-        {
-          groupNo: 1,
-          groupName: "경영학전공",
-          requiredCourseCount: 3,
-          earnedCourseCount: 0,
-          remainingCourseCount: 3,
-          isSatisfied: false,
-        },
-        {
-          groupNo: 2,
-          groupName: "환경과학전공",
-          requiredCourseCount: 2,
-          earnedCourseCount: 0,
-          remainingCourseCount: 2,
-          isSatisfied: false,
-        },
-      ],
-      recognizedCourses: [],
-      missingCourses: [
-        { groupNo: 1, courseCode: "GM101", courseName: "지속가능경영론" },
-        { groupNo: 1, courseCode: "GM102", courseName: "글로벌경영전략" },
-        { groupNo: 1, courseCode: "GM103", courseName: "ESG경영" },
-        { groupNo: 2, courseCode: "GM201", courseName: "환경정책론" },
-        { groupNo: 2, courseCode: "GM202", courseName: "기후변화와적응" },
-        { groupNo: 2, courseCode: "GM203", courseName: "지속가능발전과녹색성장" },
-      ],
-    },
-  ],
+  title: "마이크로전공 이수 현황을 불러오지 못했습니다.",
+  description: "네트워크 연결을 확인해 주세요",
 };
 
 // 마이크로전공 응답 수치를 안전한 number로 정리
@@ -399,15 +191,6 @@ function buildMicroMajorCardViewModel(microMajor) {
   };
 }
 
-const MICRO_MAJOR_PREVIEW_ITEMS = Array.isArray(MICRO_MAJOR_PREVIEW_RESPONSE?.microMajors)
-  ? MICRO_MAJOR_PREVIEW_RESPONSE.microMajors.map(buildMicroMajorCardViewModel).filter(Boolean)
-  : [];
-
-export const MICRO_MAJOR_PREVIEW_SECTION = {
-  items: MICRO_MAJOR_PREVIEW_ITEMS,
-  notice: null,
-};
-
 // 실제 응답을 마이크로전공 섹션 렌더링 데이터로 변환
 export function buildMicroMajorSectionModel(response) {
   const items = Array.isArray(response?.microMajors)
@@ -421,9 +204,9 @@ export function buildMicroMajorSectionModel(response) {
     };
   }
 
-  // 실제 응답이 비어 있으면 preview 카드를 유지하고 소형 안내만 노출
+  // 실제 응답이 비어 있으면 preview 대신 실제 빈 상태를 우선 렌더링
   return {
-    items: MICRO_MAJOR_PREVIEW_ITEMS,
+    items: [],
     notice: MICRO_MAJOR_EMPTY_NOTICE,
   };
 }
