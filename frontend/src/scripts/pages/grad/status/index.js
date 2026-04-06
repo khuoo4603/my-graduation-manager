@@ -3,7 +3,7 @@ import "/src/styles/layout.css";
 import "/src/styles/components.css";
 import "/src/styles/pages/status.css";
 
-import { getGraduationStatus } from "/src/scripts/api/grad.js";
+import { getGraduationStatus, getMicroMajorStatus } from "/src/scripts/api/grad.js";
 import { getProfile } from "/src/scripts/api/profile.js";
 import { renderHeader } from "/src/scripts/components/header.js";
 import { initTutorial } from "/src/scripts/components/tutorial.js";
@@ -12,7 +12,8 @@ import { isLocalEnv, PAGE_PATHS, UI_MESSAGES } from "/src/scripts/utils/constant
 import { qs } from "/src/scripts/utils/dom.js";
 import { redirectToErrorPage, resolveErrorInfo } from "/src/scripts/utils/error.js";
 
-import { renderStatusPage } from "./render.js";
+import { MICRO_MAJOR_ERROR_NOTICE, MICRO_MAJOR_PREVIEW_SECTION, buildMicroMajorSectionModel } from "./micro-major.js";
+import { renderMicroMajorSection, renderStatusPage } from "./render.js";
 
 const DEFAULT_PAGE_DESCRIPTION = "상세 졸업 판정 결과를 확인할 수 있습니다.";
 const NETWORK_PAGE_DESCRIPTION = "네트워크 연결을 확인해 주세요";
@@ -88,6 +89,11 @@ function collectStatusElements(pageRoot) {
       department: qs("[data-status-department-badge]", pageRoot),
       template: qs("[data-status-template-badge]", pageRoot),
       majors: qs("[data-status-major-type-badges]", pageRoot),
+    },
+    microMajor: {
+      section: qs("[data-micro-major-section]", pageRoot),
+      state: qs("[data-micro-major-state]", pageRoot),
+      grid: qs("[data-micro-major-grid]", pageRoot),
     },
   };
 }
@@ -397,7 +403,24 @@ function buildMissingViewModel(missing, options = {}) {
   };
 }
 
-// success 상태 view model 생성
+// 마이크로전공 섹션은 preview를 먼저 그리고 성공 시 실제 데이터로 교체
+async function loadMicroMajorSection(page, microMajorPromise) {
+  const previewSection = MICRO_MAJOR_PREVIEW_SECTION;
+  renderMicroMajorSection(page, previewSection);
+
+  try {
+    const response = await microMajorPromise;
+    // API 성공 시 실제 응답으로 카드 목록 갱신
+    renderMicroMajorSection(page, buildMicroMajorSectionModel(response));
+  } catch {
+    // API 실패 시에는 preview 카드를 유지하고 소형 안내만 표시
+    renderMicroMajorSection(page, {
+      ...previewSection,
+      notice: MICRO_MAJOR_ERROR_NOTICE,
+    });
+  }
+}
+
 function buildSuccessViewModel(status, profile) {
   return {
     state: "success",
@@ -488,6 +511,9 @@ async function loadStatusPage(page, authResult) {
     state: "loading",
     pageDescription: DEFAULT_PAGE_DESCRIPTION,
   });
+
+  const microMajorPromise = getMicroMajorStatus();
+  void loadMicroMajorSection(page, microMajorPromise);
 
   const profilePromise = authResult.profile ? Promise.resolve(authResult.profile) : getProfile();
   const [statusResult, profileResult] = await Promise.allSettled([getGraduationStatus(), profilePromise]);
