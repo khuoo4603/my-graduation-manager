@@ -189,6 +189,7 @@ public class MicromajorService {
                     // 미이수 슬롯이면 대표 과목 1건을 missingCourses에 추가
                     if (candidates.isEmpty()) {
                         missingCourses.add(new MicromajorStatusResponse.MissingCourse(
+                                group.groupNo(),
                                 representativeCourse.recognizedCourseCode(),
                                 representativeCourse.recognizedCourseName()
                         ));
@@ -204,6 +205,7 @@ public class MicromajorService {
 
                     // recognizedCourses에는 실제 이수 과목 정보 추가
                     recognizedCourses.add(new MicromajorStatusResponse.RecognizedCourse(
+                            group.groupNo(),
                             bestCandidate.userCourse().courseId(),
                             bestCandidate.userCourse().courseCodeSnapshot(),
                             bestCandidate.userCourse().courseNameSnapshot(),

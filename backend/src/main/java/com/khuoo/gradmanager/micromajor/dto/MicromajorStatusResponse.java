@@ -35,6 +35,7 @@ public record MicromajorStatusResponse(
 
     // 실제로 인정된 이수 과목
     public record RecognizedCourse(
+            int groupNo,            // 소속 그룹 번호
             long courseId,          // 수강 내역 PK
             String courseCode,      // 실제 이수한 과목 코드
             String courseName,      // 실제 이수한 과목명
@@ -43,6 +44,7 @@ public record MicromajorStatusResponse(
 
     // 아직 남아 있는 슬롯의 대표 과목
     public record MissingCourse(
+            int groupNo,            // 소속 그룹 번호
             String courseCode,      // 대표 과목 코드(NULL 가능)
             String courseName       // 대표 과목명
     ) {}
