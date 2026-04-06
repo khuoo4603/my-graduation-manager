@@ -25,4 +25,4 @@ patches:
 images:
 - name: ghcr.io/khuoo4603/my-graduation-manager-frontend
   newName: ghcr.io/khuoo4603/my-graduation-manager-frontend
-  newTag: sha-c47a941
+  newTag: sha-3219041
