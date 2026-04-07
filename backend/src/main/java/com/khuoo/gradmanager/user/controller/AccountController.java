@@ -22,24 +22,26 @@ public class AccountController {
     private final CurrentUser currentUser;
     private final AuthCookieProperties authCookieProperties;
 
-    // 현재 로그인 사용자 계정 삭제
     @DeleteMapping("/account")
     public ResponseEntity<Void> deleteAccount() {
         long userId = currentUser.userId();
         accountService.deleteAccount(userId);
 
         // 계정 삭제 성공 시 기존 인증 쿠키도 즉시 만료시켜 로그아웃 상태로 전환
-        ResponseCookie cookie = ResponseCookie.from(authCookieProperties.getCookieName(), "")
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(authCookieProperties.getCookieName(), "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(authCookieProperties.isCookieSecure())
                 .sameSite("Lax")
                 .path("/")
-                .maxAge(Duration.ZERO)
-                .domain(authCookieProperties.getCookieDomain())
-                .build();
+                .maxAge(Duration.ZERO);
+
+        String cookieDomain = authCookieProperties.getCookieDomain();
+        if (cookieDomain != null && !cookieDomain.isBlank()) {
+            builder.domain(cookieDomain);
+        }
 
         return ResponseEntity.noContent()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .header(HttpHeaders.SET_COOKIE, builder.build().toString())
                 .build();
     }
 }

@@ -73,7 +73,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         ResponseCookie.ResponseCookieBuilder builder = ResponseCookie
                 .from(authCookieProperties.getCookieName(), token)
                 .httpOnly(true)
-                .secure(true)
+                .secure(authCookieProperties.isCookieSecure())
                 .sameSite("Lax")
                 .path("/")
                 .maxAge(Duration.ofSeconds(authCookieProperties.getCookieMaxAgeSeconds()));

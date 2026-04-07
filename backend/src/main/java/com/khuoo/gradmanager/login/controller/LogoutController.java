@@ -19,17 +19,19 @@ public class LogoutController {
     @PostMapping("/api/v1/auth/logout")
     public void logout(HttpServletResponse response) {
         // 로그아웃은 쿠키를 만료시키는 시스템으로 구현
-        ResponseCookie cookie = ResponseCookie.from(authCookieProperties.getCookieName(), "")
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(authCookieProperties.getCookieName(), "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(authCookieProperties.isCookieSecure())
                 .sameSite("Lax")
                 .path("/")
-                .maxAge(Duration.ZERO) // 쿠키 삭제는 Max-Age=0으로 즉시 만료
-                .domain(authCookieProperties.getCookieDomain())
-                .build();
+                .maxAge(Duration.ZERO);
 
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        String cookieDomain = authCookieProperties.getCookieDomain();
+        if (cookieDomain != null && !cookieDomain.isBlank()) {
+            builder.domain(cookieDomain);
+        }
 
+        response.addHeader(HttpHeaders.SET_COOKIE, builder.build().toString());
         response.setStatus(204);
     }
 }

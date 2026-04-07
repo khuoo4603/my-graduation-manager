@@ -19,8 +19,9 @@ app:
     secret: "kK0PP8dHYQ30llX7KnFS58DvIcmIN4kVSMxsJdD32gY="
     exp-seconds: 604800  # 7일
   auth:
+    cookie-secure: false
     cookie-domain: ""
-    redirect-url: https://dev-grad.khuoo.synology.me/grad/
+    redirect-url: http://localhost:5173/grad/
   swagger:
     server-url: http://localhost:8080
 

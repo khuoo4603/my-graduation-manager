@@ -21,6 +21,8 @@ public class SecurityBeansConfig {
         CorsConfiguration apiCors = new CorsConfiguration();
         apiCors.setAllowCredentials(true);
         apiCors.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
                 "https://grad.khuoo.synology.me",
                 "https://dev-grad.khuoo.synology.me",
                 "https://dev-api.khuoo.synology.me"
