@@ -1,4 +1,4 @@
-export const SERVICE_NAME = "My Graduation Manager";
+export const SERVICE_NAME = "SKHU Track";
 
 const ENV_APP_ENV = typeof import.meta !== "undefined" ? import.meta.env?.VITE_APP_ENV : "";
 const ENV_MODE = typeof import.meta !== "undefined" ? import.meta.env?.MODE : "";

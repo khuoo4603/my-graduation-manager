@@ -17,7 +17,7 @@ function renderHomePage(pageRoot) {
             <span class="login-intro__brand" aria-hidden="true">
               <img src="${getFluentIconPath("home")}" alt="" />
             </span>
-            <h1 class="login-intro__title">My Graduation Manager</h1>
+            <h1 class="login-intro__title">SKHU Track</h1>
           </div>
           <p class="login-intro__subtitle">졸업 요건을 빠르게 확인하고 관련된 학업 정보를 한곳에서 관리하세요.</p>
         </div>
