@@ -17,7 +17,7 @@ jobs:
     environment: prod
     env:
       IMAGE_NAME: ghcr.io/khuoo4603/my-graduation-manager-frontend
-      VITE_API_BASE_URL: https://api.khuoo.synology.me
+      VITE_API_BASE_URL: https://api.skhutrack.com
       VITE_APP_ENV: prod
 
     steps:
