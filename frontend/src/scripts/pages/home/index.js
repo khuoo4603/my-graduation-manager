@@ -4,8 +4,10 @@ import "/src/styles/components.css";
 import "/src/styles/pages/home.css";
 
 import brandLogoPath from "/src/assets/logos/skhu_track_logo.png";
+import { ApiError } from "/src/scripts/api/client.js";
+import { getProfile } from "/src/scripts/api/profile.js";
 import { getFluentIconPath } from "/src/scripts/components/icon-map.js";
-import { API_BASE_URL } from "/src/scripts/utils/constants.js";
+import { API_BASE_URL, PAGE_PATHS } from "/src/scripts/utils/constants.js";
 import { qs } from "/src/scripts/utils/dom.js";
 
 // 홈 로그인 페이지 레이아웃 렌더링
@@ -82,8 +84,24 @@ function bindHomePageEvents(elements) {
   });
 }
 
+// 홈화면 접속 시 프로필 요청 후 정상 응답하면 대시보드 페이지로 리다이랙션
+async function ensureAuthenticatedRedirect() {
+  try {
+    await getProfile();
+    window.location.href = PAGE_PATHS.GRAD;
+    return true;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      return false;
+    }
+
+    // 홈은 공개 페이지이므로 인증 확인 실패가 나도 현재 화면을 유지
+    return false;
+  }
+}
+
 // 홈 페이지 초기 진입 처리
-export function initHomePage() {
+export async function initHomePage() {
   const headerRoot = qs("[data-header-root]");
   headerRoot?.replaceChildren();
 
@@ -94,6 +112,7 @@ export function initHomePage() {
 
   const elements = collectHomeElements(pageRoot);
   bindHomePageEvents(elements);
+  await ensureAuthenticatedRedirect();
 }
 
 initHomePage();
