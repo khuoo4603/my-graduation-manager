@@ -3,6 +3,7 @@ export const SERVICE_NAME = "SKHU Track";
 const ENV_APP_ENV = typeof import.meta !== "undefined" ? import.meta.env?.VITE_APP_ENV : "";
 const ENV_MODE = typeof import.meta !== "undefined" ? import.meta.env?.MODE : "";
 const ENV_API_BASE_URL = typeof import.meta !== "undefined" ? import.meta.env?.VITE_API_BASE_URL : "";
+const PROD_API_BASE_URL = "https://api.skhutrack.com";
 
 // 실행 환경 값 정규화
 function resolveAppEnv() {
@@ -24,7 +25,12 @@ export const isLocalEnv = APP_ENV === "local";
 export const isDevEnv = APP_ENV === "dev";
 export const isProdEnv = APP_ENV === "prod";
 
-export const API_BASE_URL = (ENV_API_BASE_URL || "").replace(/\/+$/, "");
+function resolveApiBaseUrl() {
+  const normalized = (ENV_API_BASE_URL || "").replace(/\/+$/, "");
+  return isProdEnv ? PROD_API_BASE_URL : normalized;
+}
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 export const PAGE_PATHS = {
   HOME: "/",
