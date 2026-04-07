@@ -1,4 +1,5 @@
 import { logout } from "../api/auth.js";
+import brandLogoPath from "/src/assets/logos/skhu_track_logo.png";
 import { PAGE_PATHS, SERVICE_NAME } from "../utils/constants.js";
 import { redirectToErrorPageByError } from "../utils/error.js";
 import { getFluentIconPath } from "./icon-map.js";
@@ -231,7 +232,7 @@ export function renderHeader(target, options = {}) {
       <div class="container app-header__inner">
         <a class="app-brand" href="${PAGE_PATHS.GRAD}">
           <span class="app-brand__mark">
-            <img class="app-brand__icon" src="${getFluentIconPath("homeFilled")}" alt="" aria-hidden="true" />
+            <img class="app-brand__icon" src="${brandLogoPath}" alt="" aria-hidden="true" />
           </span>
           <span class="app-brand__text">${SERVICE_NAME}</span>
         </a>

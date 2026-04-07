@@ -3,6 +3,7 @@ import "/src/styles/layout.css";
 import "/src/styles/components.css";
 import "/src/styles/pages/home.css";
 
+import brandLogoPath from "/src/assets/logos/skhu_track_logo.png";
 import { getFluentIconPath } from "/src/scripts/components/icon-map.js";
 import { API_BASE_URL } from "/src/scripts/utils/constants.js";
 import { qs } from "/src/scripts/utils/dom.js";
@@ -15,7 +16,7 @@ function renderHomePage(pageRoot) {
         <div class="login-intro__hero">
           <div class="login-intro__headline">
             <span class="login-intro__brand" aria-hidden="true">
-              <img src="${getFluentIconPath("home")}" alt="" />
+              <img src="${brandLogoPath}" alt="" />
             </span>
             <h1 class="login-intro__title">SKHU Track</h1>
           </div>
