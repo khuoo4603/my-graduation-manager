@@ -8,7 +8,7 @@ spring:
       client:
         registration:
           google:
-            redirect-uri: "https://api.khuoo.synology.me/login/oauth2/code/google"
+            redirect-uri: "https://api.skhutrack.com/login/oauth2/code/google"
 
 management:
   endpoint:
@@ -24,7 +24,9 @@ app:
     secret: "${JWT_SECRET}"
     exp-seconds: 604800 # 7일
   auth:
-    cookie-domain: .khuoo.synology.me
-    redirect-url: "https://grad.khuoo.synology.me/grad/"
+    cookie-domain: .skhutrack.com
+    redirect-url: "https://skhutrack.com/grad/"
+    allowed-origins:
+      - https://skhutrack.com
   swagger:
-    server-url: https://api.khuoo.synology.me
+    server-url: https://api.skhutrack.com

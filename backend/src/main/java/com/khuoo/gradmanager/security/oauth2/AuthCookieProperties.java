@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "app.auth")
@@ -13,4 +15,5 @@ public class AuthCookieProperties {
     private boolean cookieSecure = true;// https만 허용
     private long cookieMaxAgeSeconds;   // 만료 7일 고정
     private String redirectUrl;         // OAuth2 성공 후 이동 위치
+    private List<String> allowedOrigins = List.of();
 }

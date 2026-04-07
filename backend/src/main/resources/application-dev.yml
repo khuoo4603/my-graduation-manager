@@ -20,6 +20,8 @@ app:
     cookie-name: dev_access_token
     cookie-domain: ""
     redirect-url: "https://dev-grad.khuoo.synology.me/grad/"
+    allowed-origins:
+      - https://dev-grad.khuoo.synology.me
   dev-token:
     enabled: false
   storage:
