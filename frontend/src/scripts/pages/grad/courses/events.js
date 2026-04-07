@@ -32,7 +32,7 @@ export function bindCoursesPageEvents(page) {
     rowSelector: "[data-taken-course-id]",
   });
   bindTakenCourseEvents(page.elements.takenMobileList, page, {
-    editSelector: "[data-edit-taken-course]",
+    rowSelector: "[data-taken-course-id]",
   });
 
   // 수정 모달 input 이벤트
@@ -153,6 +153,20 @@ function bindTakenCourseEvents(container, page, options = {}) {
     // 수강 목록 행 click일 때만 수정 모달 오픈
     if (!(row instanceof HTMLElement)) return;
 
+    openEditModal(row.dataset.takenCourseId || "", page);
+  });
+
+  container?.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest("[data-delete-taken-course]")) return;
+
+    const row = target.closest(options.rowSelector || "[data-taken-course-id]");
+    if (!(row instanceof HTMLElement)) return;
+
+    event.preventDefault();
     openEditModal(row.dataset.takenCourseId || "", page);
   });
 }

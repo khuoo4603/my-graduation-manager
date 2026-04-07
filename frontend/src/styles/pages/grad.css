@@ -523,9 +523,22 @@ body[data-page="grad"] .page-section {
 
 .grad-gpa-chart__plot {
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.grad-gpa-chart__plot--scrollable {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.grad-gpa-chart__plot-inner {
+  position: relative;
+  width: 100%;
+  min-width: 100%;
   aspect-ratio: 1000 / 320;
-  overflow-x: visible;
-  overflow-y: visible;
 }
 
 .grad-gpa-chart__svg {
@@ -608,20 +621,25 @@ body[data-page="grad"] .page-section {
 .grad-gpa-chart__point {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 1rem;
-  height: 1rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  display: grid;
+  place-items: center;
   padding: 0;
   border: 0;
+  border-radius: 999px;
   background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
   cursor: pointer;
   z-index: 2;
 }
 
 .grad-gpa-chart__point-core {
-  width: 0.72rem;
-  height: 0.72rem;
+  width: 0.84rem;
+  height: 0.84rem;
   margin: auto;
-  border: 2px solid #ffffff;
+  border: 2.5px solid #ffffff;
   border-radius: 999px;
   box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
 }
@@ -1033,8 +1051,100 @@ body[data-page="grad"] .page-section {
     justify-content: center;
   }
 
+  .grad-grade-summary__chart-wrap {
+    margin-inline: -0.22rem;
+    padding-top: 0.72rem;
+  }
+
+  .grad-gpa-chart {
+    gap: 0.78rem;
+  }
+
+  .grad-gpa-chart__header {
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .grad-gpa-chart__legend {
+    margin-left: auto;
+    justify-content: flex-end;
+    gap: 0.42rem 0.72rem;
+  }
+
+  .grad-gpa-chart__legend-item {
+    gap: 0.34rem;
+    font-size: 0.98rem;
+    font-weight: 700;
+  }
+
+  .grad-gpa-chart__legend-swatch {
+    width: 1.42rem;
+    height: 0.26rem;
+  }
+
+  .grad-gpa-chart__legend-swatch::after {
+    width: 0.62rem;
+    height: 0.62rem;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95);
+  }
+
+  .grad-gpa-chart__plot {
+    margin-inline: 0;
+  }
+
+  .grad-gpa-chart__plot-inner {
+    aspect-ratio: 1000 / 620;
+    width: var(--grad-gpa-chart-plot-inner-width, 100%);
+  }
+
+  .grad-gpa-chart__grid-line {
+    stroke-width: 2.2;
+    stroke-dasharray: 11 8;
+  }
+
+  .grad-gpa-chart__axis-line {
+    stroke-width: 3;
+  }
+
   .grad-gpa-chart__axis-label {
-    font-size: 11px;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .grad-gpa-chart__axis-label--x {
+    font-size: 28px;
+  }
+
+  .grad-gpa-chart__line {
+    stroke-width: 10;
+  }
+
+  .grad-gpa-chart__point {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 999px;
+  }
+
+  .grad-gpa-chart__point-core {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-width: 2px;
+    border-radius: 999px;
+    box-shadow: 0 4px 9px rgba(15, 23, 42, 0.12);
+  }
+
+  .grad-gpa-chart__tooltip-shell {
+    min-width: 8.25rem;
+    padding: 0.65rem 0.72rem;
+  }
+
+  .grad-gpa-chart__tooltip-title {
+    font-size: 0.9rem;
+  }
+
+  .grad-gpa-chart__tooltip-row {
+    font-size: 0.78rem;
   }
 
   .grad-distribution {

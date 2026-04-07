@@ -3,6 +3,8 @@
 import { getFluentIconPath } from "/src/scripts/components/icon-map.js";
 import { clearChildren, setText } from "/src/scripts/utils/dom.js";
 
+const MOBILE_LIST_SCROLL_THRESHOLD = 10;
+
 const termLabelMap = {
   1: "1학기",
   SUMMER: "여름 계절학기",
@@ -20,6 +22,54 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+function renderMobileMetaItems(items) {
+  return items
+    .filter((item) => String(item || "").trim())
+    .map((item) => `<span class="courses-mobile-card__meta-item">${escapeHtml(item)}</span>`)
+    .join("");
+}
+
+function formatTakenSemesterLabel(year, term) {
+  const termLabel = termLabelMap[term] || String(term || "").trim();
+  if (!year || !termLabel) return "";
+  return `${year}.${termLabel}`;
+}
+
+function syncMobileListScrollState(list, itemCount) {
+  if (!list) return;
+
+  list.classList.remove("courses-mobile-list--scrollable");
+  list.style.removeProperty("--courses-mobile-list-max-height");
+
+  if (window.innerWidth > 760 || itemCount <= MOBILE_LIST_SCROLL_THRESHOLD) {
+    return;
+  }
+
+  const cards = Array.from(list.querySelectorAll(".courses-mobile-card"));
+  if (cards.length <= MOBILE_LIST_SCROLL_THRESHOLD) {
+    return;
+  }
+
+  const firstCard = cards[0];
+  const thresholdCard = cards[MOBILE_LIST_SCROLL_THRESHOLD - 1];
+  if (!firstCard || !thresholdCard) {
+    return;
+  }
+
+  const maxHeight = Math.ceil(thresholdCard.offsetTop - firstCard.offsetTop + thresholdCard.offsetHeight);
+  if (maxHeight <= 0) {
+    return;
+  }
+
+  list.style.setProperty("--courses-mobile-list-max-height", `${maxHeight}px`);
+  list.classList.add("courses-mobile-list--scrollable");
+}
+
+export function syncCoursesMobileListScroll(page) {
+  syncMobileListScrollState(page.elements.searchMobileList, page.searchResults.length);
+  syncMobileListScrollState(page.elements.takenMobileList, page.takenCourses.length);
+}
+
 function renderSearchCourseTableRows(courses) {
   return courses
     .map((course) => {
@@ -28,7 +78,6 @@ function renderSearchCourseTableRows(courses) {
           <td class="courses-table__code">${escapeHtml(course.code)}</td>
           <td class="courses-table__name">${escapeHtml(course.name)}</td>
           <td class="courses-table__number">${escapeHtml(String(course.credits ?? ""))}</td>
-          <td>${escapeHtml(course.category)}</td>
           <td>${escapeHtml(course.subcategory)}</td>
           <td class="courses-table__action">
             <button
@@ -55,25 +104,25 @@ function renderSearchCourseTableRows(courses) {
 function renderSearchCourseMobileCards(courses) {
   return courses
     .map((course) => {
+      const metaHtml = renderMobileMetaItems([
+        course.code,
+        `${String(course.credits ?? "")}학점`,
+        course.subcategory || "세부구분 없음",
+      ]);
+
       return `
         <article class="courses-mobile-card">
-          <div class="courses-mobile-card__eyebrow">
-            <span class="courses-mobile-card__code">${escapeHtml(course.code)}</span>
-            <span class="badge badge--blue">${escapeHtml(String(course.credits ?? ""))}학점</span>
+          <div class="courses-mobile-card__top">
+            <h3 class="courses-mobile-card__title">${escapeHtml(course.name)}</h3>
           </div>
-          <h3 class="courses-mobile-card__title">${escapeHtml(course.name)}</h3>
-          <div class="courses-mobile-card__labels">
-            <span class="courses-mobile-card__label">${escapeHtml(course.category || "미분류")}</span>
-            <span class="courses-mobile-card__label">${escapeHtml(course.subcategory || "세부구분 없음")}</span>
-          </div>
-          <div class="courses-mobile-card__actions">
+          <div class="courses-mobile-card__bottom">
+            <div class="courses-mobile-card__meta">${metaHtml}</div>
             <button
               type="button"
-              class="btn btn--primary courses-mobile-card__action"
+              class="courses-mobile-card__text-action"
               data-search-add-course="${escapeHtml(String(course.courseMasterId || ""))}"
             >
-              <img class="courses-action-button__icon" src="${getFluentIconPath("add")}" alt="" aria-hidden="true" />
-              <span>수강내역에 추가</span>
+              <span>+ 추가</span>
             </button>
           </div>
         </article>
@@ -126,57 +175,39 @@ function renderTakenCourseMobileCards(courses) {
   return courses
     .map((course) => {
       const courseId = escapeHtml(String(course.courseId || ""));
-      const termLabel = termLabelMap[course.takenTerm] || String(course.takenTerm || "");
-      const semesterLabel = `${escapeHtml(course.takenYear)} ${escapeHtml(termLabel)}`.trim();
-      const retakeBadge = course.isRetake ? '<span class="badge badge--amber">재수강</span>' : "";
+      const metaHtml = renderMobileMetaItems([
+        course.code,
+        formatTakenSemesterLabel(course.takenYear, course.takenTerm),
+        `${String(course.earnedCredits ?? "")}학점`,
+        course.courseSubcategory || "-",
+        course.isRetake ? "재수강" : "",
+      ]);
 
       return `
-        <article class="courses-mobile-card courses-mobile-card--taken">
+        <article
+          class="courses-mobile-card courses-mobile-card--taken courses-mobile-card--clickable"
+          data-taken-course-id="${courseId}"
+          role="button"
+          tabindex="0"
+          aria-label="${escapeHtml(course.name || "과목")} 수정 열기"
+        >
           <div class="courses-mobile-card__top">
             <div class="courses-mobile-card__heading">
-              <div class="courses-mobile-card__eyebrow">
-                <span class="courses-mobile-card__code">${escapeHtml(course.code)}</span>
-                ${retakeBadge}
-              </div>
               <h3 class="courses-mobile-card__title">${escapeHtml(course.name)}</h3>
             </div>
-            <span class="courses-mobile-card__grade">${escapeHtml(course.grade || "-")}</span>
+            <div class="courses-mobile-card__tools">
+              <span class="courses-mobile-card__badge badge badge--blue">${escapeHtml(course.grade || "-")}</span>
+              <button
+                type="button"
+                class="btn btn--ghost btn--icon courses-mobile-card__icon-action courses-mobile-card__icon-action--danger"
+                aria-label="${escapeHtml(course.name || "과목")} 삭제"
+                data-delete-taken-course="${courseId}"
+              >
+                <img src="${getFluentIconPath("delete")}" alt="" aria-hidden="true" />
+              </button>
+            </div>
           </div>
-
-          <dl class="courses-mobile-card__stats">
-            <div class="courses-mobile-card__stat">
-              <dt>학기</dt>
-              <dd>${semesterLabel || "-"}</dd>
-            </div>
-            <div class="courses-mobile-card__stat">
-              <dt>학점</dt>
-              <dd>${escapeHtml(String(course.earnedCredits ?? ""))}학점</dd>
-            </div>
-            <div class="courses-mobile-card__stat">
-              <dt>세부구분</dt>
-              <dd>${escapeHtml(course.courseSubcategory || "-")}</dd>
-            </div>
-          </dl>
-
-          <div class="courses-mobile-card__actions">
-            <button
-              type="button"
-              class="btn btn--secondary courses-mobile-card__action"
-              data-edit-taken-course="${courseId}"
-            >
-              <img class="courses-mobile-card__button-icon" src="${getFluentIconPath("edit")}" alt="" aria-hidden="true" />
-              <span>수정</span>
-            </button>
-            <button
-              type="button"
-              class="btn btn--ghost courses-mobile-card__action courses-mobile-card__action--danger"
-              aria-label="${escapeHtml(course.name || "과목")} 삭제"
-              data-delete-taken-course="${courseId}"
-            >
-              <img class="courses-mobile-card__button-icon" src="${getFluentIconPath("delete")}" alt="" aria-hidden="true" />
-              <span>삭제</span>
-            </button>
-          </div>
+          <div class="courses-mobile-card__meta">${metaHtml}</div>
         </article>
       `;
     })
@@ -190,6 +221,7 @@ export function renderSearchResults(page) {
 
   clearChildren(searchCourseRows);
   clearChildren(searchMobileList);
+  syncMobileListScrollState(searchMobileList, 0);
 
   searchStatePanel.hidden = hasSearchResults;
   searchStatePanel.setAttribute("aria-hidden", String(hasSearchResults));
@@ -203,6 +235,7 @@ export function renderSearchResults(page) {
     searchStatePanel.innerHTML = "";
     searchCourseRows.innerHTML = renderSearchCourseTableRows(page.searchResults);
     searchMobileList.innerHTML = renderSearchCourseMobileCards(page.searchResults);
+    syncMobileListScrollState(searchMobileList, page.searchResults.length);
     return;
   }
 
@@ -268,6 +301,7 @@ export function renderTakenCourses(page) {
   setText(totalCreditsText, String(totalCredits));
   clearChildren(takenCourseRows);
   clearChildren(takenMobileList);
+  syncMobileListScrollState(takenMobileList, 0);
 
   takenEmptyPanel.hidden = hasTakenResults;
   takenEmptyPanel.setAttribute("aria-hidden", String(hasTakenResults));
@@ -338,6 +372,7 @@ export function renderTakenCourses(page) {
   takenMobileList.setAttribute("aria-hidden", "false");
   takenCourseRows.innerHTML = renderTakenCourseTableRows(page.takenCourses);
   takenMobileList.innerHTML = renderTakenCourseMobileCards(page.takenCourses);
+  syncMobileListScrollState(takenMobileList, page.takenCourses.length);
 }
 
 // Edit Course 모달 렌더링

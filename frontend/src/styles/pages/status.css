@@ -603,8 +603,14 @@ body[data-page="grad-status"] .page-section {
 
 @media (max-width: 760px) {
   .status-summary-card__top {
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .status-summary-card__left {
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   .status-summary-card__title,
@@ -619,7 +625,9 @@ body[data-page="grad-status"] .page-section {
   }
 
   .status-summary-card__right {
-    text-align: left;
+    margin-left: auto;
+    text-align: right;
+    flex: none;
   }
 
   .status-summary-card,
@@ -636,8 +644,17 @@ body[data-page="grad-status"] .page-section {
     grid-template-columns: 1fr;
   }
 
+  .status-applied-card {
+    display: none;
+  }
+
   .status-micro-major-card__header {
     align-items: flex-start;
+  }
+
+  .status-micro-major-card {
+    grid-template-rows: auto auto auto auto;
+    min-height: 0;
   }
 
   .status-unevaluable-card__actions .btn {

@@ -380,6 +380,24 @@ async function handleFileDelete(fileId, page) {
   }
 }
 
+function bindFileActionEvents(container, page) {
+  container?.addEventListener("click", async (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const downloadButton = target.closest("[data-storage-download]");
+    if (downloadButton instanceof HTMLButtonElement) {
+      await handleFileDownload(downloadButton.dataset.storageDownload || "", page);
+      return;
+    }
+
+    const deleteButton = target.closest("[data-storage-delete]");
+    if (deleteButton instanceof HTMLButtonElement) {
+      await handleFileDelete(deleteButton.dataset.storageDelete || "", page);
+    }
+  });
+}
+
 // Storage 페이지에서 사용하는 클릭/드래그/업로드 이벤트를 바인딩
 export function bindStorageEvents(page) {
   // 카테고리 탭 클릭 시 해당 enum 기준으로 파일 목록을 다시 조회
@@ -450,25 +468,9 @@ export function bindStorageEvents(page) {
     await handleUploadSubmit(page);
   });
 
-  // 파일 목록의 다운로드/삭제 버튼 클릭을 이벤트 위임으로 처리
-  page.elements.fileRows?.addEventListener("click", async (event) => {
-    const target = event.target;
-    // 버튼이 아닌 영역 클릭은 무시
-    if (!(target instanceof Element)) return;
-
-    const downloadButton = target.closest("[data-storage-download]");
-    // 다운로드 버튼이면 다운로드 흐름만 처리하고 종료
-    if (downloadButton instanceof HTMLButtonElement) {
-      await handleFileDownload(downloadButton.dataset.storageDownload || "", page);
-      return;
-    }
-
-    const deleteButton = target.closest("[data-storage-delete]");
-    // 삭제 버튼이면 삭제 확인 흐름을 처리
-    if (deleteButton instanceof HTMLButtonElement) {
-      await handleFileDelete(deleteButton.dataset.storageDelete || "", page);
-    }
-  });
+  // 파일 목록의 다운로드/삭제 버튼 클릭은 데스크톱 테이블과 모바일 카드에서 공통 처리
+  bindFileActionEvents(page.elements.fileRows, page);
+  bindFileActionEvents(page.elements.mobileList, page);
 
   // 업로드 모달이 열린 상태에서 Escape를 누르면 모달 닫기
   document.addEventListener("keydown", (event) => {

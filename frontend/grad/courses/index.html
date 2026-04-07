@@ -104,7 +104,6 @@
                         <th scope="col">과목코드</th>
                         <th scope="col">과목명</th>
                         <th scope="col">학점</th>
-                        <th scope="col">카테고리</th>
                         <th scope="col">세부구분</th>
                         <th scope="col">추가</th>
                       </tr>
@@ -204,7 +203,7 @@
 
                 <form class="courses-modal__body courses-edit-form" data-edit-course-form autocomplete="off">
                   <div class="form-grid form-grid--2 courses-modal__grid">
-                    <label class="field">
+                    <label class="field courses-modal__field courses-modal__field--full courses-modal__field--code">
                       <span class="field__label">과목코드</span>
                       <input
                         class="input courses-input--readonly"
@@ -215,12 +214,12 @@
                       />
                     </label>
 
-                    <label class="field">
+                    <label class="field courses-modal__field courses-modal__field--full courses-modal__field--name">
                       <span class="field__label">과목명</span>
                       <input class="input" type="text" name="name" data-edit-course-name-input />
                     </label>
 
-                    <label class="field">
+                    <label class="field courses-modal__field">
                       <span class="field__label">학점</span>
                       <input
                         class="input"
@@ -232,7 +231,7 @@
                       />
                     </label>
 
-                    <label class="field">
+                    <label class="field courses-modal__field">
                       <span class="field__label">성적</span>
                       <select class="select" name="grade" data-edit-course-grade-select>
                         <option value="">성적 선택</option>
@@ -250,7 +249,7 @@
                       </select>
                     </label>
 
-                    <label class="field">
+                    <label class="field courses-modal__field">
                       <span class="field__label">연도</span>
                       <input
                         class="input"
@@ -263,7 +262,7 @@
                       />
                     </label>
 
-                    <label class="field">
+                    <label class="field courses-modal__field">
                       <span class="field__label">학기</span>
                       <select class="select" name="term" data-edit-course-term-select>
                         <option value="">학기 선택</option>
@@ -274,7 +273,7 @@
                       </select>
                     </label>
 
-                    <label class="field">
+                    <label class="field courses-modal__field">
                       <span class="field__label">세부구분</span>
                       <select class="select" name="subcategory" data-edit-course-subcategory-select>
                         <option value="">세부구분 선택</option>
@@ -289,17 +288,17 @@
                       </select>
                     </label>
 
-                    <label class="field">
+                    <label class="field courses-modal__field">
                       <span class="field__label">귀속 전공</span>
                       <select class="select" name="attributedMajorId" data-edit-course-major-select></select>
                     </label>
 
-                    <label class="field">
+                    <label class="field courses-modal__field">
                       <span class="field__label">귀속 학부</span>
                       <select class="select" name="attributedDepartmentId" data-edit-course-department-select></select>
                     </label>
 
-                    <label class="field">
+                    <label class="field courses-modal__field">
                       <span class="field__label">재수강 과목</span>
                       <select class="select" name="retakeCourseId" data-edit-course-retake-select></select>
                     </label>

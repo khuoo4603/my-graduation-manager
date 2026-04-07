@@ -188,8 +188,7 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-// 파일 타입에 맞는 아이콘과 관리 버튼을 포함한 row HTML 생성
-function buildStorageFileRow(file, isActionDisabled) {
+function resolveFilePresentation(file) {
   const extension =
     String(file.name || "")
       .split(".")
@@ -223,6 +222,23 @@ function buildStorageFileRow(file, isActionDisabled) {
 
   const className = `storage-file-icon--${fileType}`;
   const iconSvg = FILE_TYPE_ICON_SVGS[fileType] || FILE_TYPE_ICON_SVGS.generic;
+
+  return {
+    className,
+    iconSvg,
+  };
+}
+
+function buildStorageMetaItems(items) {
+  return items
+    .filter((item) => String(item || "").trim())
+    .map((item) => `<span class="storage-mobile-card__meta-item">${escapeHtml(item)}</span>`)
+    .join("");
+}
+
+// 파일 타입에 맞는 아이콘과 관리 버튼을 포함한 row HTML 생성
+function buildStorageFileRow(file, isActionDisabled) {
+  const { className, iconSvg } = resolveFilePresentation(file);
   const disabledAttr = isActionDisabled ? " disabled" : "";
 
   return `
@@ -261,6 +277,44 @@ function buildStorageFileRow(file, isActionDisabled) {
         </div>
       </td>
     </tr>
+  `;
+}
+
+function buildStorageFileCard(file, isActionDisabled) {
+  const { className, iconSvg } = resolveFilePresentation(file);
+  const disabledAttr = isActionDisabled ? " disabled" : "";
+  const metaHtml = buildStorageMetaItems([file.categoryLabel, file.sizeLabel, file.uploadedAtCompact || file.uploadedAt]);
+
+  return `
+    <article class="storage-mobile-card">
+      <div class="storage-mobile-card__top">
+        <div class="storage-mobile-card__main">
+          <span class="storage-file-icon ${className}" aria-hidden="true">${iconSvg}</span>
+          <strong class="storage-mobile-card__title" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</strong>
+        </div>
+        <div class="storage-mobile-card__actions">
+          <button
+            class="btn btn--ghost btn--icon storage-action-button"
+            type="button"
+            aria-label="다운로드"
+            title="다운로드"
+            data-storage-download="${escapeHtml(file.id)}"${disabledAttr}
+          >
+            ${DOWNLOAD_ICON_SVG}
+          </button>
+          <button
+            class="btn btn--ghost btn--icon storage-action-button storage-action-button--danger"
+            type="button"
+            aria-label="삭제"
+            title="삭제"
+            data-storage-delete="${escapeHtml(file.id)}"${disabledAttr}
+          >
+            ${DELETE_ICON_SVG}
+          </button>
+        </div>
+      </div>
+      <div class="storage-mobile-card__meta">${metaHtml}</div>
+    </article>
   `;
 }
 
@@ -306,6 +360,14 @@ export function renderStorageFiles(page) {
     page.elements.fileRows.innerHTML = hasFiles
       ? visibleFiles.map((file) => buildStorageFileRow(file, isActionDisabled)).join("")
       : "";
+  }
+
+  if (page.elements.mobileList) {
+    page.elements.mobileList.innerHTML = hasFiles
+      ? visibleFiles.map((file) => buildStorageFileCard(file, isActionDisabled)).join("")
+      : "";
+    page.elements.mobileList.hidden = !hasFiles;
+    page.elements.mobileList.setAttribute("aria-hidden", String(!hasFiles));
   }
 
   // 빈 목록이면 empty 문구를 노출

@@ -9,7 +9,13 @@ import { qs } from "/src/scripts/utils/dom.js";
 import { resolveErrorInfo } from "/src/scripts/utils/error.js";
 
 import { bindCoursesPageEvents } from "./events.js";
-import { renderEditModal, renderMajorModal, renderSearchResults, renderTakenCourses } from "./render.js";
+import {
+  renderEditModal,
+  renderMajorModal,
+  renderSearchResults,
+  renderTakenCourses,
+  syncCoursesMobileListScroll,
+} from "./render.js";
 
 function createCoursesOnboardingSteps() {
   return [
@@ -366,6 +372,9 @@ export async function initCoursesPage() {
   renderEditModal(page);
   renderMajorModal(page);
   bindCoursesPageEvents(page);
+  window.addEventListener("resize", () => {
+    syncCoursesMobileListScroll(page);
+  });
   page.tutorial = initTutorial({
     pageKey: "courses",
     onboardingSteps: createCoursesOnboardingSteps(),

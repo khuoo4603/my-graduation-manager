@@ -56,6 +56,17 @@ const CHART_SIZE = {
   paddingLeft: 64,
 };
 
+const MOBILE_BREAKPOINT = 760;
+const MOBILE_CHART_SIZE = {
+  width: 1000,
+  height: 620,
+  paddingTop: 18,
+  paddingRight: 20,
+  paddingBottom: 76,
+  paddingLeft: 84,
+};
+const CHART_TICKS = [1, 2, 3, 4, 4.5];
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 const DONUT_CHART = {
   size: 220,
@@ -77,6 +88,14 @@ function formatGpa(value) {
 // 개수 표시용 문자열 포맷
 function formatCount(value) {
   return String(toSafeNumber(value));
+}
+
+function getChartMetrics() {
+  if (typeof window !== "undefined" && window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches) {
+    return MOBILE_CHART_SIZE;
+  }
+
+  return CHART_SIZE;
 }
 
 // 진행률 바 너비 계산
@@ -453,6 +472,8 @@ function setGradeSummaryState(gradeSummary, state, payload = {}) {
 export function renderSemesterGpaChart(gradeSummary, viewModel) {
   if (
     !gradeSummary.chartSvg ||
+    !gradeSummary.chartPlot ||
+    !gradeSummary.chartPlotInner ||
     !gradeSummary.chartGrid ||
     !gradeSummary.chartArea ||
     !gradeSummary.chartLines?.overall ||
@@ -476,6 +497,8 @@ export function renderSemesterGpaChart(gradeSummary, viewModel) {
 
   // 그릴 학기 데이터가 없으면 기존 path와 포인트를 비움
   if (isEmpty) {
+    gradeSummary.chartPlot.classList.remove("grad-gpa-chart__plot--scrollable");
+    gradeSummary.chartPlotInner.style.removeProperty("--grad-gpa-chart-plot-inner-width");
     gradeSummary.chartArea.setAttribute("d", "");
     gradeSummary.chartLines.overall.setAttribute("d", "");
     gradeSummary.chartLines.major.setAttribute("d", "");
@@ -485,24 +508,36 @@ export function renderSemesterGpaChart(gradeSummary, viewModel) {
     return;
   }
 
-  const plotWidth = CHART_SIZE.width - CHART_SIZE.paddingLeft - CHART_SIZE.paddingRight;
-  const plotHeight = CHART_SIZE.height - CHART_SIZE.paddingTop - CHART_SIZE.paddingBottom;
-  const baselineY = CHART_SIZE.paddingTop + plotHeight;
-  const maxValue = Math.max(
-    4.5,
-    Math.ceil(
-      viewModel.termSummaries.reduce((highest, item) => {
-        return Math.max(highest, item.overallGpa, item.majorGpa);
-      }, 0) * 2
-    ) / 2
-  );
+  const chartMetrics = getChartMetrics();
+  const plotWidth = chartMetrics.width - chartMetrics.paddingLeft - chartMetrics.paddingRight;
+  const plotHeight = chartMetrics.height - chartMetrics.paddingTop - chartMetrics.paddingBottom;
+  const baselineY = chartMetrics.paddingTop + plotHeight;
+  const maxValue = 4.5;
+  const isMobile = typeof window !== "undefined" && window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
+
+  gradeSummary.chartPlot.classList.remove("grad-gpa-chart__plot--scrollable");
+  gradeSummary.chartPlotInner.style.removeProperty("--grad-gpa-chart-plot-inner-width");
+
+  if (isMobile && viewModel.termSummaries.length > 5) {
+    const visibleWidth = Math.max(gradeSummary.chartPlot.getBoundingClientRect().width, 1);
+    const extraTerms = viewModel.termSummaries.length - 5;
+    const scrollWidth = Math.max(visibleWidth, 420 + extraTerms * 92);
+
+    gradeSummary.chartPlotInner.style.setProperty("--grad-gpa-chart-plot-inner-width", `${Math.ceil(scrollWidth)}px`);
+    gradeSummary.chartPlot.classList.add("grad-gpa-chart__plot--scrollable");
+  }
+
+  gradeSummary.chartSvg.setAttribute("viewBox", `0 0 ${chartMetrics.width} ${chartMetrics.height}`);
   const toPointY = (value) => {
     const ratio = Math.max(0, Math.min(1, value / (maxValue || 1)));
-    return CHART_SIZE.paddingTop + plotHeight - ratio * plotHeight;
+    return chartMetrics.paddingTop + plotHeight - ratio * plotHeight;
   };
   const pointStep = viewModel.termSummaries.length > 1 ? plotWidth / (viewModel.termSummaries.length - 1) : 0;
   const chartPoints = viewModel.termSummaries.map((term, index) => {
-    const x = CHART_SIZE.paddingLeft + pointStep * index;
+    const x =
+      viewModel.termSummaries.length === 1
+        ? chartMetrics.paddingLeft + plotWidth / 2
+        : chartMetrics.paddingLeft + pointStep * index;
 
     return {
       ...term,
@@ -511,26 +546,22 @@ export function renderSemesterGpaChart(gradeSummary, viewModel) {
       majorY: toPointY(term.majorGpa),
     };
   });
-  const ticks = [];
-
-  for (let tick = 0; tick <= maxValue + 0.25; tick += 0.5) {
-    ticks.push(Number(tick.toFixed(1)));
-  }
+  const ticks = CHART_TICKS;
 
   const overallPath = chartPoints.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.overallY}`).join(" ");
   const majorPath = chartPoints.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.majorY}`).join(" ");
 
   if (gradeSummary.chartAxes?.x) {
-    gradeSummary.chartAxes.x.setAttribute("x1", String(CHART_SIZE.paddingLeft));
+    gradeSummary.chartAxes.x.setAttribute("x1", String(chartMetrics.paddingLeft));
     gradeSummary.chartAxes.x.setAttribute("y1", String(baselineY));
-    gradeSummary.chartAxes.x.setAttribute("x2", String(CHART_SIZE.width - CHART_SIZE.paddingRight));
+    gradeSummary.chartAxes.x.setAttribute("x2", String(chartMetrics.width - chartMetrics.paddingRight));
     gradeSummary.chartAxes.x.setAttribute("y2", String(baselineY));
   }
 
   if (gradeSummary.chartAxes?.y) {
-    gradeSummary.chartAxes.y.setAttribute("x1", String(CHART_SIZE.paddingLeft));
-    gradeSummary.chartAxes.y.setAttribute("y1", String(CHART_SIZE.paddingTop));
-    gradeSummary.chartAxes.y.setAttribute("x2", String(CHART_SIZE.paddingLeft));
+    gradeSummary.chartAxes.y.setAttribute("x1", String(chartMetrics.paddingLeft));
+    gradeSummary.chartAxes.y.setAttribute("y1", String(chartMetrics.paddingTop));
+    gradeSummary.chartAxes.y.setAttribute("x2", String(chartMetrics.paddingLeft));
     gradeSummary.chartAxes.y.setAttribute("y2", String(baselineY));
   }
 
@@ -551,13 +582,13 @@ export function renderSemesterGpaChart(gradeSummary, viewModel) {
     const line = document.createElementNS(SVG_NS, "line");
     const label = document.createElementNS(SVG_NS, "text");
 
-    line.setAttribute("x1", String(CHART_SIZE.paddingLeft));
+    line.setAttribute("x1", String(chartMetrics.paddingLeft));
     line.setAttribute("y1", String(y));
-    line.setAttribute("x2", String(CHART_SIZE.width - CHART_SIZE.paddingRight));
+    line.setAttribute("x2", String(chartMetrics.width - chartMetrics.paddingRight));
     line.setAttribute("y2", String(y));
     line.setAttribute("class", "grad-gpa-chart__grid-line");
 
-    label.setAttribute("x", String(CHART_SIZE.paddingLeft - 14));
+    label.setAttribute("x", String(chartMetrics.paddingLeft - 12));
     label.setAttribute("y", String(y + 4));
     label.setAttribute("class", "grad-gpa-chart__axis-label");
     label.setAttribute("text-anchor", "end");
@@ -573,7 +604,7 @@ export function renderSemesterGpaChart(gradeSummary, viewModel) {
     const label = document.createElementNS(SVG_NS, "text");
 
     label.setAttribute("x", String(point.x));
-    label.setAttribute("y", String(CHART_SIZE.height - 16));
+    label.setAttribute("y", String(chartMetrics.height - 14));
     label.setAttribute("class", "grad-gpa-chart__axis-label grad-gpa-chart__axis-label--x");
     label.setAttribute("text-anchor", "middle");
     label.textContent = point.label;
@@ -604,15 +635,15 @@ export function renderSemesterGpaChart(gradeSummary, viewModel) {
 
       button.type = "button";
       button.className = series.className;
-      button.style.left = `${(term.x / CHART_SIZE.width) * 100}%`;
-      button.style.top = `${(series.y / CHART_SIZE.height) * 100}%`;
+      button.style.left = `${(term.x / chartMetrics.width) * 100}%`;
+      button.style.top = `${(series.y / chartMetrics.height) * 100}%`;
       button.setAttribute("aria-label", `${term.label} ${series.seriesName} ${formatGpa(series.seriesValue)}`);
       button.dataset.termLabel = term.label;
       button.dataset.overallGpa = formatGpa(term.overallGpa);
       button.dataset.majorGpa = formatGpa(term.majorGpa);
-      button.dataset.tooltipLeft = `${(term.x / CHART_SIZE.width) * 100}%`;
-      button.dataset.tooltipTop = `${(series.y / CHART_SIZE.height) * 100}%`;
-      button.dataset.tooltipPosition = series.y <= CHART_SIZE.paddingTop + 56 ? "below" : "above";
+      button.dataset.tooltipLeft = `${(term.x / chartMetrics.width) * 100}%`;
+      button.dataset.tooltipTop = `${(series.y / chartMetrics.height) * 100}%`;
+      button.dataset.tooltipPosition = series.y <= chartMetrics.paddingTop + 64 ? "below" : "above";
 
       core.className = "grad-gpa-chart__point-core";
       button.append(core);
@@ -726,6 +757,8 @@ export function renderGradeSummarySection(page, payload) {
 
   // 성적 요약 DOM이 없으면 렌더를 중단
   if (!gradeSummary?.root) return;
+
+  page.lastGradeSummaryPayload = payload;
 
   const requestedState = payload?.state === "loading" || payload?.state === "error" ? payload.state : "success";
 

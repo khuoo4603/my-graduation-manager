@@ -170,6 +170,8 @@ function collectGradeSummaryElements(pageRoot) {
     gpaValues,
     summaryStats,
     chartSvg: qs("[data-grade-trend-svg]", root),
+    chartPlot: qs("[data-grade-trend-plot]", root),
+    chartPlotInner: qs("[data-grade-trend-plot-inner]", root),
     chartGrid: qs("[data-grade-trend-grid]", root),
     chartAxes: {
       x: qs('[data-grade-trend-axis="x"]', root),
@@ -253,6 +255,8 @@ function createGradPage(pageRoot, authResult) {
     elements: collectGradElements(pageRoot),
     viewer: resolveGradViewer(authResult?.profile),
     profile: authResult?.profile || null,
+    lastGradeSummaryPayload: null,
+    gradeSummaryResizeTimerId: 0,
     tutorial: null,
   };
 }
@@ -329,6 +333,14 @@ export async function initGradPage() {
     getContext: () => ({
       profile: page.profile,
     }),
+  });
+
+  window.addEventListener("resize", () => {
+    window.clearTimeout(page.gradeSummaryResizeTimerId);
+    page.gradeSummaryResizeTimerId = window.setTimeout(() => {
+      if (!page.lastGradeSummaryPayload) return;
+      renderGradeSummarySection(page, page.lastGradeSummaryPayload);
+    }, 120);
   });
 
   await loadDashboardData(page);

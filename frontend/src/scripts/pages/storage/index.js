@@ -143,6 +143,7 @@ function collectStorageElements(pageRoot) {
     categoryButtons: Array.from(pageRoot.querySelectorAll("[data-storage-category]")),
     fileCount: qs("[data-storage-file-count]", pageRoot),
     fileRows: qs("[data-storage-file-rows]", pageRoot),
+    mobileList: qs("[data-storage-mobile-list]", pageRoot),
     emptyState: qs("[data-storage-empty]", pageRoot),
     tableWrap: qs("[data-storage-table-wrap]", pageRoot),
     openUploadModalButton: qs("[data-open-upload-modal]", pageRoot),
@@ -223,6 +224,22 @@ function formatUploadedAt(value) {
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
+function formatUploadedAtCompact(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value || "");
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}.${month}.${day} ${hours}:${minutes}`;
+}
+
 // storage usage 응답을 화면에서 바로 쓸 수 있는 형태로 정리
 function normalizeStorageUsage(response) {
   const usedBytes = Math.max(0, Number(response?.usedBytes) || 0);
@@ -274,6 +291,7 @@ function normalizeStorageFiles(response) {
         sizeBytes: Math.max(0, Number(item?.sizeBytes) || 0),
         sizeLabel: formatBytes(item?.sizeBytes),
         uploadedAt: formatUploadedAt(uploadedAtValue),
+        uploadedAtCompact: formatUploadedAtCompact(uploadedAtValue),
         uploadedAtValue,
       };
     })

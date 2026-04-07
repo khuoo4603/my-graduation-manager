@@ -315,6 +315,81 @@ body.is-modal-open {
   color: var(--color-danger);
 }
 
+.storage-mobile-list {
+  display: none;
+}
+
+.storage-mobile-card {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.84rem 0.9rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.95rem;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.storage-mobile-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.storage-mobile-card__main {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.72rem;
+}
+
+.storage-mobile-card__title {
+  min-width: 0;
+  color: var(--color-text-subtle);
+  font-size: 0.98rem;
+  line-height: 1.35;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.storage-mobile-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.storage-mobile-card__meta-item {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.storage-mobile-card__meta-item:not(:first-child)::before {
+  content: "/";
+  margin: 0 0.36rem;
+  color: #94a3b8;
+}
+
+.storage-mobile-card__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
+.storage-mobile-card__actions .storage-action-button {
+  width: 2rem;
+  height: 2rem;
+}
+
 .storage-guide {
   display: grid;
   gap: 0.75rem;
@@ -500,7 +575,7 @@ body.is-modal-open {
   .storage-usage-card,
   .storage-list-card,
   .storage-guide {
-    padding: 1rem;
+    padding: 0.88rem;
   }
 
   .storage-list-card__title,
@@ -516,6 +591,39 @@ body.is-modal-open {
 
   .storage-usage-card__button {
     width: 100%;
+  }
+
+  .storage-table-wrap {
+    display: none;
+  }
+
+  .storage-mobile-list {
+    display: grid;
+    gap: 0.58rem;
+  }
+
+  .storage-mobile-card {
+    gap: 0.48rem;
+    padding: 0.76rem 0.8rem;
+  }
+
+  .storage-file-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+  }
+
+  .storage-file-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .storage-mobile-card__title {
+    font-size: 0.92rem;
+  }
+
+  .storage-mobile-card__meta {
+    font-size: 0.74rem;
   }
 
   .storage-modal-overlay {
