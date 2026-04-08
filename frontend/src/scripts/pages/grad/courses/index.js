@@ -322,7 +322,12 @@ export async function initCoursesPage() {
   if (!pageRoot) return;
 
   const page = createCoursesPageState(collectCoursesPageElements(pageRoot), authResult);
-  page.elements.searchYearInput.value = String(new Date().getFullYear());
+  const currentYear = String(new Date().getFullYear());
+  page.elements.searchYearInput.value = currentYear;
+  if (page.elements.takenYearInput) {
+    page.elements.takenYearInput.value = currentYear;
+  }
+  page.takenFilters.year = currentYear;
 
   // Search Courses는 검색 시점마다 서버 응답을 정규화해서 사용
   page.searchCourseMasters = async (params) => {

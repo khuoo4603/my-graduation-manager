@@ -1,20 +1,27 @@
 body[data-page="storage"] .page-section {
   justify-items: stretch;
+  min-width: 0;
 }
 
 body.is-modal-open {
   overflow: hidden;
 }
 
+body[data-page="storage"] {
+  overflow-x: hidden;
+}
+
 .storage-page {
   width: 100%;
   display: grid;
   gap: 1rem;
+  min-width: 0;
 }
 
 .storage-page__header {
   display: grid;
   gap: 0.3rem;
+  min-width: 0;
 }
 
 .storage-page__title {
@@ -35,6 +42,7 @@ body.is-modal-open {
 .storage-usage-card {
   display: grid;
   gap: 0.85rem;
+  min-width: 0;
 }
 
 .storage-usage-card__header {
@@ -42,11 +50,13 @@ body.is-modal-open {
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.9rem;
+  min-width: 0;
 }
 
 .storage-usage-card__summary {
   display: grid;
   gap: 0.2rem;
+  min-width: 0;
 }
 
 .storage-usage-card__label {
@@ -87,10 +97,16 @@ body.is-modal-open {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .storage-tabs__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 2rem;
+  max-width: 100%;
   padding: 0.38rem 0.8rem;
   border: 1px solid var(--color-border);
   border-radius: 0.7rem;
@@ -98,6 +114,9 @@ body.is-modal-open {
   color: var(--color-text-muted);
   font-size: 0.82rem;
   font-weight: 700;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
   cursor: pointer;
   transition:
     border-color 0.2s ease,
@@ -119,6 +138,7 @@ body.is-modal-open {
 .storage-list-card {
   display: grid;
   gap: 0.9rem;
+  min-width: 0;
 }
 
 .storage-list-card__header {
@@ -126,6 +146,7 @@ body.is-modal-open {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+  min-width: 0;
 }
 
 .storage-list-card__title {
@@ -147,12 +168,14 @@ body.is-modal-open {
   border: 1px solid #edf2f8;
   border-radius: 0.95rem;
   overflow: hidden;
+  min-width: 0;
 }
 
 .storage-table-scroll {
   max-height: 760px;
   overflow-x: auto;
   overflow-y: auto;
+  min-width: 0;
 }
 
 .storage-table {
@@ -204,6 +227,7 @@ body.is-modal-open {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -278,11 +302,15 @@ body.is-modal-open {
 }
 
 .storage-file-name {
+  display: block;
+  flex: 1 1 auto;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
   font-weight: 700;
+  line-height: 1.4;
   color: var(--color-text-subtle);
 }
 
@@ -317,6 +345,7 @@ body.is-modal-open {
 
 .storage-mobile-list {
   display: none;
+  min-width: 0;
 }
 
 .storage-mobile-card {
@@ -327,6 +356,7 @@ body.is-modal-open {
   border-radius: 0.95rem;
   background: #fff;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+  min-width: 0;
 }
 
 .storage-mobile-card__top {
@@ -334,9 +364,11 @@ body.is-modal-open {
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
+  min-width: 0;
 }
 
 .storage-mobile-card__main {
+  flex: 1 1 auto;
   min-width: 0;
   display: flex;
   align-items: flex-start;
@@ -344,32 +376,34 @@ body.is-modal-open {
 }
 
 .storage-mobile-card__title {
+  flex: 1 1 auto;
   min-width: 0;
+  max-width: 100%;
   color: var(--color-text-subtle);
   font-size: 0.98rem;
   line-height: 1.35;
   font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .storage-mobile-card__meta {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0;
   min-width: 0;
   color: var(--color-text-muted);
   font-size: 0.78rem;
   font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
+  white-space: normal;
 }
 
 .storage-mobile-card__meta-item {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .storage-mobile-card__meta-item:not(:first-child)::before {
@@ -394,6 +428,7 @@ body.is-modal-open {
   display: grid;
   gap: 0.75rem;
   padding: 1rem 1.1rem;
+  min-width: 0;
 }
 
 .storage-guide__title {
@@ -439,10 +474,12 @@ body.is-modal-open {
 
 .storage-modal {
   width: min(100%, 41rem);
+  max-width: 100%;
   border: 1px solid rgba(219, 227, 239, 0.92);
   border-radius: 1.1rem;
   background: rgba(255, 255, 255, 0.98);
   box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18);
+  min-width: 0;
 }
 
 .storage-modal__header {
@@ -452,6 +489,7 @@ body.is-modal-open {
   gap: 1rem;
   padding: 1.25rem 1.25rem 1rem;
   border-bottom: 1px solid #eef3f8;
+  min-width: 0;
 }
 
 .storage-modal__title {
@@ -459,6 +497,8 @@ body.is-modal-open {
   font-size: 1.4rem;
   line-height: 1.2;
   letter-spacing: -0.02em;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .storage-modal__close {
@@ -484,6 +524,7 @@ body.is-modal-open {
   display: grid;
   gap: 1rem;
   padding: 1.1rem 1.25rem;
+  min-width: 0;
 }
 
 .storage-dropzone {
@@ -497,6 +538,7 @@ body.is-modal-open {
   gap: 0.55rem;
   padding: 1.25rem;
   text-align: center;
+  min-width: 0;
   transition:
     border-color 0.2s ease,
     background-color 0.2s ease,
@@ -532,6 +574,7 @@ body.is-modal-open {
 .storage-dropzone__title {
   margin: 0;
   color: var(--color-text-muted);
+  overflow-wrap: anywhere;
 }
 
 .storage-dropzone__button {
@@ -553,9 +596,10 @@ body.is-modal-open {
   background: var(--color-surface-soft);
   color: var(--color-text-subtle);
   font-size: 0.9rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .storage-modal__footer {
@@ -564,6 +608,7 @@ body.is-modal-open {
   gap: 0.6rem;
   padding: 1rem 1.25rem 1.25rem;
   border-top: 1px solid #eef3f8;
+  min-width: 0;
 }
 
 .storage-modal__footer [data-upload-submit] .loading-state__spinner {
@@ -591,6 +636,12 @@ body.is-modal-open {
 
   .storage-usage-card__button {
     width: 100%;
+    min-width: 0;
+  }
+
+  .storage-tabs__button {
+    flex: 1 1 calc(50% - 0.4rem);
+    min-width: 0;
   }
 
   .storage-table-wrap {

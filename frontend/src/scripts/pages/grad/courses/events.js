@@ -256,8 +256,9 @@ async function handleTakenFilterSubmit(event, page) {
 // Taken Courses 필터 초기화
 async function handleTakenFilterReset(page) {
   // 필터 입력값을 화면에서도 함께 비운다.
+  const currentYear = String(new Date().getFullYear());
   if (page.elements.takenYearInput) {
-    page.elements.takenYearInput.value = "";
+    page.elements.takenYearInput.value = currentYear;
   }
 
   // 필터 입력값을 화면에서도 함께 비운다.
@@ -265,7 +266,7 @@ async function handleTakenFilterReset(page) {
     page.elements.takenTermSelect.value = "";
   }
 
-  page.takenFilters = { year: "", term: "" };
+  page.takenFilters = { year: currentYear, term: "" };
   await page.refreshTakenCourses();
 }
 

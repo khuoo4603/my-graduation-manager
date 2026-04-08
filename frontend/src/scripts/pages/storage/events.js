@@ -3,7 +3,7 @@ import { buildStorageDownloadUrl, deleteStorageFile, uploadStorageFile } from "/
 import { UI_MESSAGES } from "/src/scripts/utils/constants.js";
 import { redirectToErrorPageByError } from "/src/scripts/utils/error.js";
 
-import { renderSelectedUploadFile, renderStorageFiles, renderStorageTabs, renderUploadPendingState } from "./render.js";
+import { renderSelectedUploadFile, renderStorageFiles, renderStorageTabs, renderStorageUsage, renderUploadPendingState } from "./render.js";
 
 const DELETE_CONFIRM_MESSAGE = "이 파일을 삭제하시겠습니까?\n삭제 후 되돌릴 수 없습니다.";
 const UPLOAD_SUCCESS_MESSAGE = "파일이 업로드되었습니다.";
@@ -242,6 +242,7 @@ async function handleUploadSubmit(page) {
   }
 
   page.pending.isUploadSubmitting = true;
+  renderStorageUsage(page);
   renderUploadPendingState(page);
 
   try {
@@ -265,6 +266,7 @@ async function handleUploadSubmit(page) {
     window.alert(resolveUploadErrorMessage(error));
   } finally {
     page.pending.isUploadSubmitting = false;
+    renderStorageUsage(page);
     renderUploadPendingState(page);
   }
 }
