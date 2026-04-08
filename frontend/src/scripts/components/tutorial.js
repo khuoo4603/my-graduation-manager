@@ -2,7 +2,8 @@ import "/src/styles/tutorial.css";
 
 import { PAGE_PATHS } from "/src/scripts/utils/constants.js";
 
-const ONBOARDING_SESSION_KEY = "mgm-active-onboarding";
+const SIMPLE_ONBOARDING_SESSION_KEY = "mgm-active-simple-onboarding";
+const DETAILED_TUTORIAL_SESSION_KEY = "mgm-active-detailed-tutorial";
 const OVERLAY_ROOT_ID = "tutorial-overlay-root";
 const TUTORIAL_SPACER_ID = "tutorial-overlay-spacer";
 const TUTORIAL_ACTION_TYPES = new Set(["next", "navigate", "close"]);
@@ -44,10 +45,10 @@ function resolvePageKeyFromHref(href) {
   }
 }
 
-// sessionStorage에 저장된 온보딩 이어보기 상태를 복원
-function readOnboardingSession() {
+// sessionStorage에 저장된 튜토리얼 이어보기 상태를 복원
+function readTutorialSession(storageKey) {
   try {
-    const rawValue = sessionStorage.getItem(ONBOARDING_SESSION_KEY);
+    const rawValue = sessionStorage.getItem(storageKey);
     if (!rawValue) return null;
 
     const parsed = JSON.parse(rawValue);
@@ -62,11 +63,11 @@ function readOnboardingSession() {
   }
 }
 
-// 현재 온보딩 pageKey와 stepIndex를 sessionStorage에 저장
-function writeOnboardingSession(session) {
+// 현재 튜토리얼 pageKey와 stepIndex를 sessionStorage에 저장
+function writeTutorialSession(storageKey, session) {
   try {
     sessionStorage.setItem(
-      ONBOARDING_SESSION_KEY,
+      storageKey,
       JSON.stringify({
         pageKey: String(session?.pageKey || ""),
         stepIndex: Number.isInteger(session?.stepIndex) ? session.stepIndex : 0,
@@ -77,31 +78,40 @@ function writeOnboardingSession(session) {
   }
 }
 
-// 온보딩 종료 시 sessionStorage에 남은 이어보기 상태를 정리
-function clearOnboardingSession() {
+// 튜토리얼 종료 시 sessionStorage에 남은 이어보기 상태를 정리
+function clearTutorialSession(storageKey) {
   try {
-    sessionStorage.removeItem(ONBOARDING_SESSION_KEY);
+    sessionStorage.removeItem(storageKey);
   } catch {
     // Ignore storage remove failures.
   }
 }
 
 // 설명 텍스트를 튜토리얼 카드 본문 HTML로 변환
-function resolveDescriptionHtml(description) {
+function resolveDescriptionHtml(description, warning = "") {
+  let descriptionHtml = "";
+
   if (Array.isArray(description)) {
     const items = description.map((item) => String(item || "").trim()).filter(Boolean);
-    if (items.length === 0) return "";
-
-    return `
-      <div class="tutorial-card__copy">
-        ${items.map((item) => `<p class="tutorial-card__description">${escapeHtml(item)}</p>`).join("")}
-      </div>
-    `;
+    if (items.length > 0) {
+      descriptionHtml = `
+        <div class="tutorial-card__copy">
+          ${items.map((item) => `<p class="tutorial-card__description">${escapeHtml(item)}</p>`).join("")}
+        </div>
+      `;
+    }
+  } else {
+    const text = String(description || "").trim();
+    if (text) {
+      descriptionHtml = `<p class="tutorial-card__description">${escapeHtml(text)}</p>`;
+    }
   }
 
-  const text = String(description || "").trim();
-  if (!text) return "";
-  return `<p class="tutorial-card__description">${escapeHtml(text)}</p>`;
+  const warningText = String(warning || "").trim();
+  if (!warningText) return descriptionHtml;
+
+  const warningHtml = `<p class="tutorial-card__description tutorial-card__description--danger">${escapeHtml(warningText)}</p>`;
+  return `${descriptionHtml}${warningHtml}`;
 }
 
 // 하이라이트 대상으로 사용할 수 있는 표시 중인 요소인지 확인
@@ -234,7 +244,7 @@ function shouldWarnBeforeDismiss(profile) {
 
 // 현재 모드와 프로필 상태를 바탕으로 X 닫기 경고 필요 여부를 계산
 function isDismissWarningRequired(mode, context) {
-  if (mode !== "onboarding") return false;
+  if (mode !== "simpleOnboarding") return false;
 
   const profile = context?.profile;
   if (!profile || typeof profile !== "object") return false;
@@ -247,17 +257,35 @@ function resolveActionType(actionType, fallbackActionType) {
   return TUTORIAL_ACTION_TYPES.has(actionType) ? actionType : fallbackActionType;
 }
 
+function resolveSessionKey(mode) {
+  if (mode === "simpleOnboarding") return SIMPLE_ONBOARDING_SESSION_KEY;
+  if (mode === "detailedTutorial") return DETAILED_TUTORIAL_SESSION_KEY;
+  return "";
+}
+
 // 페이지별 튜토리얼 오버레이와 상태를 제어하는 컨트롤러 생성
 function createTutorialController(options = {}) {
   const overlay = createOverlayRefs();
 
   const state = {
     pageKey: String(options.pageKey || ""),
-    onboardingSteps: Array.isArray(options.onboardingSteps) ? options.onboardingSteps : [],
-    pageSteps: Array.isArray(options.pageSteps) ? options.pageSteps : [],
+    simpleOnboardingSteps: Array.isArray(options.simpleOnboardingSteps)
+      ? options.simpleOnboardingSteps
+      : Array.isArray(options.onboardingSteps)
+        ? options.onboardingSteps
+        : [],
+    detailedTutorialSteps: Array.isArray(options.detailedTutorialSteps)
+      ? options.detailedTutorialSteps
+      : Array.isArray(options.pageSteps)
+        ? options.pageSteps
+        : [],
     getContext: typeof options.getContext === "function" ? options.getContext : () => ({}),
-    shouldAutoStartOnboarding:
-      typeof options.shouldAutoStartOnboarding === "function" ? options.shouldAutoStartOnboarding : null,
+    shouldAutoStartSimpleOnboarding:
+      typeof options.shouldAutoStartSimpleOnboarding === "function"
+        ? options.shouldAutoStartSimpleOnboarding
+        : typeof options.shouldAutoStartOnboarding === "function"
+          ? options.shouldAutoStartOnboarding
+          : null,
     active: false,
     mode: "",
     steps: [],
@@ -333,6 +361,7 @@ function createTutorialController(options = {}) {
       skipAllowed: guardResult?.skipAllowed ?? step?.skipAllowed ?? true,
       placement: guardResult?.placement || step?.placement || "bottom",
       description: guardResult?.description || step?.description || "",
+      warning: guardResult?.warning || step?.warning || "",
       target: guardResult?.target || step?.target || null,
       actionHref: guardResult?.actionHref || step?.actionHref || "",
       nextOnboardingPageKey:
@@ -380,6 +409,17 @@ function createTutorialController(options = {}) {
 
   function getViewportMargin() {
     return window.innerWidth <= 760 ? 12 : 16;
+  }
+
+  function clampScrollTop(value) {
+    const maxScrollTop = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
+    return Math.max(0, Math.min(value, maxScrollTop));
+  }
+
+  function resolveViewportAnchorRatio(placement = "bottom") {
+    if (placement === "bottom") return 0.42;
+    if (placement === "top") return 0.58;
+    return 0.5;
   }
 
   function clearCardPosition() {
@@ -430,11 +470,27 @@ function createTutorialController(options = {}) {
   function scrollTargetIntoView(target, placement = "bottom") {
     if (!(target instanceof HTMLElement)) return;
 
-    const block = placement === "bottom" ? "start" : placement === "top" ? "end" : "center";
-    target.scrollIntoView({
+    if (window.innerWidth <= 760) {
+      const block = placement === "bottom" ? "start" : placement === "top" ? "end" : "center";
+      target.scrollIntoView({
+        behavior: "auto",
+        block,
+        inline: "nearest",
+      });
+      return;
+    }
+
+    const rect = target.getBoundingClientRect();
+    const currentScrollTop = window.scrollY || window.pageYOffset || 0;
+    const targetCenter = rect.top + rect.height / 2;
+    const desiredCenter = window.innerHeight * resolveViewportAnchorRatio(placement);
+    const nextScrollTop = clampScrollTop(currentScrollTop + targetCenter - desiredCenter);
+
+    if (Math.abs(nextScrollTop - currentScrollTop) < 4) return;
+
+    window.scrollTo({
+      top: nextScrollTop,
       behavior: "auto",
-      block,
-      inline: "nearest",
     });
   }
 
@@ -514,11 +570,12 @@ function createTutorialController(options = {}) {
     card.style.left = `${left}px`;
   }
 
-  // 온보딩 중 현재 페이지와 step 위치를 이어보기 세션에 동기화
-  function syncOnboardingSession() {
-    if (state.mode !== "onboarding") return;
+  // 현재 튜토리얼 페이지와 step 위치를 이어보기 세션에 동기화
+  function syncActiveSession() {
+    const sessionKey = resolveSessionKey(state.mode);
+    if (!sessionKey) return;
 
-    writeOnboardingSession({
+    writeTutorialSession(sessionKey, {
       pageKey: state.pageKey,
       stepIndex: state.currentIndex,
     });
@@ -552,27 +609,35 @@ function createTutorialController(options = {}) {
     overlay.root.classList.add("is-active");
     overlay.progress.textContent = `${state.currentIndex + 1} / ${state.steps.length}`;
     overlay.title.textContent = resolvedStep.title || "";
-    overlay.body.innerHTML = resolveDescriptionHtml(resolvedStep.description);
+    overlay.body.innerHTML = resolveDescriptionHtml(resolvedStep.description, resolvedStep.warning);
     overlay.dismissButton.hidden = resolvedStep.skipAllowed === false;
     overlay.prevButton.hidden = state.currentIndex <= 0;
     overlay.primaryButton.textContent = resolvedStep.actionLabel || "다음";
 
-    const cardPlacement = resolveCardPlacement(target, resolvedStep.placement);
-    state.currentPlacement = cardPlacement;
+    const initialPlacement = resolveCardPlacement(target, resolvedStep.placement);
+    state.currentPlacement = initialPlacement;
 
     if (!skipScroll) {
-      scrollTargetIntoView(target, cardPlacement);
+      scrollTargetIntoView(target, initialPlacement);
     }
 
     requestAnimationFrame(() => {
-      ensureCardViewportSpace(target, cardPlacement, {
+      const updatedTarget = resolveTargetElement(resolvedStep.target);
+      const updatedPlacement = resolveCardPlacement(updatedTarget, resolvedStep.placement);
+
+      state.currentTarget = updatedTarget;
+      state.currentPlacement = updatedPlacement;
+
+      ensureCardViewportSpace(updatedTarget, updatedPlacement, {
         allowScrollAdjust: !skipScroll,
       });
-      highlightTarget(target);
-      positionCard(target, cardPlacement);
+      const positionedTarget = resolveTargetElement(resolvedStep.target);
+      state.currentTarget = positionedTarget;
+      highlightTarget(positionedTarget);
+      positionCard(positionedTarget, updatedPlacement);
     });
 
-    syncOnboardingSession();
+    syncActiveSession();
   }
 
   // 튜토리얼 활성화 시 공통 이벤트 리스너와 오버레이를 연결
@@ -597,7 +662,9 @@ function createTutorialController(options = {}) {
   }
 
   // 튜토리얼 종료 시 이벤트와 상태를 정리하고 화면을 원복
-  function deactivate({ clearSession = state.mode === "onboarding" } = {}) {
+  function deactivate({ clearSession = state.mode === "simpleOnboarding" || state.mode === "detailedTutorial" } = {}) {
+    const previousMode = state.mode;
+
     if (state.resizeHandler) {
       window.removeEventListener("resize", state.resizeHandler);
       state.resizeHandler = null;
@@ -628,7 +695,10 @@ function createTutorialController(options = {}) {
     state.currentPlacement = "center";
 
     if (clearSession) {
-      clearOnboardingSession();
+      const sessionKey = resolveSessionKey(previousMode);
+      if (sessionKey) {
+        clearTutorialSession(sessionKey);
+      }
     }
   }
 
@@ -660,13 +730,13 @@ function createTutorialController(options = {}) {
     }
 
     if (step.actionType === "navigate" && step.actionHref) {
-      if (state.mode === "onboarding") {
-        writeOnboardingSession({
+      if (state.mode === "simpleOnboarding") {
+        writeTutorialSession(SIMPLE_ONBOARDING_SESSION_KEY, {
           pageKey: step.nextOnboardingPageKey || resolvePageKeyFromHref(step.actionHref),
           stepIndex: step.nextOnboardingStepIndex || 0,
         });
       } else {
-        clearOnboardingSession();
+        clearTutorialSession(DETAILED_TUTORIAL_SESSION_KEY);
       }
 
       window.location.href = step.actionHref;
@@ -707,22 +777,22 @@ function createTutorialController(options = {}) {
 
       const trigger = document.querySelector(`[data-tutorial-trigger="${state.pageKey}"]`);
       trigger?.addEventListener("click", () => {
-        controller.startPageTutorial();
+        controller.startDetailedTutorial();
       });
 
-      const pendingOnboarding = readOnboardingSession();
+      const pendingOnboarding = readTutorialSession(SIMPLE_ONBOARDING_SESSION_KEY);
 
-      if (pendingOnboarding?.pageKey === state.pageKey && state.onboardingSteps.length > 0) {
+      if (pendingOnboarding?.pageKey === state.pageKey && state.simpleOnboardingSteps.length > 0) {
         controller.startOnboarding(pendingOnboarding.stepIndex || 0);
         return controller;
       }
 
       const shouldAutoStart =
-        typeof state.shouldAutoStartOnboarding === "function"
-          ? state.shouldAutoStartOnboarding()
+        typeof state.shouldAutoStartSimpleOnboarding === "function"
+          ? state.shouldAutoStartSimpleOnboarding()
           : state.pageKey === "dashboard" && shouldAutoStartByProfile(getContext().profile);
 
-      if (!pendingOnboarding && state.onboardingSteps.length > 0 && shouldAutoStart) {
+      if (!pendingOnboarding && state.simpleOnboardingSteps.length > 0 && shouldAutoStart) {
         controller.startOnboarding(0);
       }
 
@@ -732,8 +802,8 @@ function createTutorialController(options = {}) {
     // 여러 페이지를 이동하는 온보딩 흐름을 지정한 step부터 시작
     startOnboarding(startIndex = 0) {
       deactivate({ clearSession: false });
-      state.mode = "onboarding";
-      state.steps = state.onboardingSteps;
+      state.mode = "simpleOnboarding";
+      state.steps = state.simpleOnboardingSteps;
 
       if (state.steps.length === 0) return controller;
 
@@ -743,16 +813,28 @@ function createTutorialController(options = {}) {
     },
 
     // 현재 페이지 설명형 다시보기 튜토리얼을 지정한 step부터 시작
-    startPageTutorial(startIndex = 0) {
+    startDetailedTutorial(startIndex = null) {
       deactivate({ clearSession: false });
-      state.mode = "page";
-      state.steps = state.pageSteps;
+      state.mode = "detailedTutorial";
+      state.steps = state.detailedTutorialSteps;
 
       if (state.steps.length === 0) return controller;
 
+      const pendingDetailedTutorial = readTutorialSession(DETAILED_TUTORIAL_SESSION_KEY);
+      const nextIndex =
+        Number.isInteger(startIndex) && startIndex >= 0
+          ? startIndex
+          : pendingDetailedTutorial?.pageKey === state.pageKey
+            ? pendingDetailedTutorial.stepIndex || 0
+            : 0;
+
       activate();
-      controller.goToStep(startIndex);
+      controller.goToStep(nextIndex);
       return controller;
+    },
+
+    startPageTutorial(startIndex = 0) {
+      return controller.startDetailedTutorial(startIndex);
     },
 
     // 다음으로 표시 가능한 step을 찾아 이동
@@ -782,7 +864,7 @@ function createTutorialController(options = {}) {
 
     // 현재 튜토리얼을 종료하고 오버레이 상태를 정리
     closeTutorial() {
-      deactivate({ clearSession: state.mode === "onboarding" });
+      deactivate({ clearSession: state.mode === "simpleOnboarding" || state.mode === "detailedTutorial" });
       return controller;
     },
 

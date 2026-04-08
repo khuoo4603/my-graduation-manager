@@ -29,54 +29,19 @@ const STORAGE_CATEGORY_LABELS = {
   CLASS_MATERIALS: "수업자료",
 };
 
-function createStorageOnboardingSteps() {
+function createStorageSimpleOnboardingSteps() {
   return [
     {
-      target: '[data-tutorial="storage-title"]',
-      title: "자료함 안내",
-      description: [
-        "자료함에서는 카테고리별로 파일을 업로드하고 확인할 수 있습니다.",
-        "졸업 관련 자료를 정리하는 보조 기능으로 활용하면 좋습니다.",
-      ],
-    },
-    {
       target: '[data-tutorial="storage-usage-card"]',
-      title: "저장 용량 카드",
-      description: [
-        "현재 사용 중인 용량과 전체 한도를 한눈에 확인할 수 있습니다.",
-        "업로드 가능 여부도 이 카드 기준으로 안내됩니다.",
-      ],
-    },
-    {
-      target: '[data-tutorial="storage-upload-button"]',
-      title: "파일 업로드 버튼",
-      description: [
-        "새 파일을 올릴 때는 이 버튼으로 업로드 모달을 엽니다.",
-        "카테고리를 선택한 뒤 필요한 졸업 자료를 분류해서 저장해 주세요.",
-      ],
-    },
-    {
-      target: '[data-tutorial="storage-tabs"]',
-      title: "카테고리 탭",
-      description: [
-        "파일은 카테고리별로 나눠서 볼 수 있습니다.",
-        "필요한 자료만 빠르게 찾아볼 때 유용합니다.",
-      ],
+      title: "졸업 자료 저장",
+      description: "수업/포트폴리오/졸업 서류 등 카테고리로 파일을 저장할 수 있습니다.",
     },
     {
       target: '[data-tutorial="storage-file-list"]',
-      title: "파일 목록",
+      title: "현재 파일",
       description: [
-        "업로드한 파일은 목록에서 다시 확인하고 다운로드하거나 삭제할 수 있습니다.",
-        "아직 파일이 없어도 온보딩 흐름은 계속 진행됩니다.",
-      ],
-    },
-    {
-      target: '[data-tutorial="storage-guide-card"]',
-      title: "업로드 안내",
-      description: [
-        "지원 형식과 업로드 제한은 이 안내 박스에서 다시 확인할 수 있습니다.",
-        "이제 마지막으로 대시보드로 돌아가 기본 흐름을 마무리합니다.",
+        "업로드된 파일을 확인하고 다운로드하거나 삭제할 수 있습니다.",
+        "위 카테고리 버튼을 통해 카테고리별 파일을 확인할 수 있습니다.",
       ],
       actionType: "navigate",
       actionLabel: "대시보드로 돌아가기",
@@ -87,7 +52,7 @@ function createStorageOnboardingSteps() {
   ];
 }
 
-function createStoragePageTutorialSteps() {
+function createStorageDetailedTutorialSteps() {
   return [
     {
       target: '[data-tutorial="storage-usage-card"]',
@@ -100,17 +65,15 @@ function createStoragePageTutorialSteps() {
     {
       target: '[data-tutorial="storage-upload-button"]',
       title: "업로드 시작",
-      description: [
-        "업로드 버튼으로 새 파일을 추가합니다.",
-        "카테고리를 먼저 정하면 정리하기가 더 쉽습니다.",
-      ],
+      description: "업로드 버튼으로 새 파일을 추가합니다.",
+      warning: "업로드 시 카테고리 선택은 필수입니다.",
     },
     {
       target: '[data-tutorial="storage-tabs"]',
       title: "카테고리 탭",
       description: [
         "카테고리별로 필요한 파일만 골라서 볼 수 있습니다.",
-        "전체 보기와 세부 분류를 오가며 자료를 정리해 보세요.",
+        "전체 보기와 세부 분류를 오가며 자료를 정리할 수 있습니다.",
       ],
     },
     {
@@ -118,7 +81,7 @@ function createStoragePageTutorialSteps() {
       title: "파일 목록",
       description: [
         "업로드된 파일의 이름, 카테고리, 크기, 업로드 시점을 확인합니다.",
-        "다운로드와 삭제 액션도 이 영역에서 처리합니다.",
+        "오른쪽 아이콘으로 다운로드와 삭제가 가능합니다.",
       ],
     },
     {
@@ -126,7 +89,7 @@ function createStoragePageTutorialSteps() {
       title: "업로드 안내",
       description: [
         "용량 제한과 업로드 규칙을 다시 확인할 수 있습니다.",
-        "파일 관리 정책이 헷갈릴 때 가장 먼저 보면 좋은 영역입니다.",
+        "파일 관리 정책이 헷갈릴 때 확인할 수 있습니다.",
       ],
       actionType: "close",
       actionLabel: "튜토리얼 종료",
@@ -401,8 +364,8 @@ export async function initStoragePage() {
   bindStorageEvents(page);
   page.tutorial = initTutorial({
     pageKey: "storage",
-    onboardingSteps: createStorageOnboardingSteps(),
-    pageSteps: createStoragePageTutorialSteps(),
+    simpleOnboardingSteps: createStorageSimpleOnboardingSteps(),
+    detailedTutorialSteps: createStorageDetailedTutorialSteps(),
   });
 
   try {

@@ -14,14 +14,14 @@ import {
   renderGradeSummarySection,
 } from "./render.js";
 
-function createDashboardOnboardingSteps() {
+function createDashboardSimpleOnboardingSteps() {
   return [
     {
       target: '[data-tutorial="dashboard-title"]',
       title: "사용 시작 안내",
       description: [
-        "이 사이트는 졸업 요건 확인, 수강내역 관리, 자료 관리를 위한 시스템입니다.",
-        "먼저 학부와 졸업요건 템플릿을 설정하러 프로필 페이지로 이동해 주세요.",
+        "SKHU Track는 졸업에 필요한 요건 관리, 자료 정리 시스템입니다.",
+        "먼저 프로필에서 학부 및 템플릿을 설정해야 원할한 진행이 가능합니다.",
       ],
       actionType: "navigate",
       actionLabel: "프로필 설정하러 가기",
@@ -30,11 +30,11 @@ function createDashboardOnboardingSteps() {
       nextOnboardingStepIndex: 0,
     },
     {
-      target: '[data-tutorial="dashboard-status"]',
-      title: "온보딩 완료",
+      target: '[data-tutorial="dashboard-title"]',
+      title: "대시보드 소개",
       description: [
-        "기본 사용 흐름을 모두 확인했습니다.",
-        "이제 필요한 페이지로 이동해 계속 사용할 수 있습니다.",
+        "대시보드에서는 학업 정보 통계를 확인할 수 있습니다.",
+        "더 자세한 설명은 각 페이지의 '튜토리얼 보기'에서 확인할 수 있습니다.",
       ],
       actionType: "close",
       actionLabel: "튜토리얼 종료",
@@ -42,7 +42,7 @@ function createDashboardOnboardingSteps() {
   ];
 }
 
-function createDashboardPageTutorialSteps() {
+function createDashboardDetailedTutorialSteps() {
   return [
     {
       target: '[data-tutorial="dashboard-gpa-summary"]',
@@ -108,7 +108,9 @@ function createEmptyGradeSummaryData() {
 
 // local 브라우저 환경에서만 네트워크 alert 노출
 function shouldAlertGradeSummaryNetworkError() {
-  const hostname = String(window.location.hostname || "").trim().toLowerCase();
+  const hostname = String(window.location.hostname || "")
+    .trim()
+    .toLowerCase();
   return hostname === "localhost" || hostname === "127.0.0.1";
 }
 
@@ -328,8 +330,8 @@ export async function initGradPage() {
   const page = createGradPage(pageRoot, authResult);
   page.tutorial = initTutorial({
     pageKey: "dashboard",
-    onboardingSteps: createDashboardOnboardingSteps(),
-    pageSteps: createDashboardPageTutorialSteps(),
+    simpleOnboardingSteps: createDashboardSimpleOnboardingSteps(),
+    detailedTutorialSteps: createDashboardDetailedTutorialSteps(),
     getContext: () => ({
       profile: page.profile,
     }),

@@ -11,76 +11,41 @@ import { bindProfileEvents } from "./events.js";
 import { renderProfilePage } from "./render.js";
 
 const DEFAULT_MAJOR_TYPE = "복수전공";
-const PROFILE_ONBOARDING_SAVE_STEP_INDEX = 3;
-const PROFILE_SETUP_TUTORIAL_NOTICE =
-  "튜토리얼이 잠시 종료되고 학부/템플릿을 설정한 후 저장을 누르면 다음 튜토리얼로 이어갑니다.";
-
-function createProfileOnboardingSteps(page) {
+function createProfileSimpleOnboardingSteps() {
   return [
     {
       target: '[data-tutorial="profile-title"]',
-      title: "프로필 설정 시작",
-      description: [
-        "졸업 판정과 대시보드 기능이 정확하게 동작하려면 먼저 프로필 설정이 필요합니다.",
-        "학부와 졸업요건 템플릿부터 차례대로 확인해 주세요.",
-      ],
+      title: "프로필 페이지",
+      description: "이곳에서 졸업 판정에 필요한 기본 정보를 설정합니다.",
     },
     {
       target: '[data-tutorial="profile-template-card"]',
-      title: "학부와 템플릿이 가장 중요합니다",
-      description: [
-        "먼저 학부와 졸업요건 템플릿을 설정해야 합니다.",
-        "이 정보가 있어야 졸업 판정과 대시보드 기능이 정확히 동작합니다.",
-      ],
+      title: "학부 및 템플릿",
+      description: "본인 학부와 학번에 맞는 졸업요건을 선택합니다.",
+      warning: "학부 및 템플릿 설정이 없으면 재접속 시 튜토리얼이 계속 반복됩니다.",
     },
     {
       target: '[data-tutorial="profile-major-card"]',
-      title: "전공은 선택 항목입니다",
+      title: "전공",
       description: [
-        "전공은 있으면 추가하고, 없으면 나중에 추가해도 됩니다.",
-        "초기 온보딩에서는 학부와 템플릿 완료가 우선입니다.",
-      ],
-    },
-    {
-      target: '[data-tutorial="profile-save-area"]',
-      title: "저장 후 다음 단계로 이동합니다",
-      description: [
-        "학부와 템플릿을 선택한 뒤 저장해 주세요.",
-        "저장이 끝나면 수강내역 페이지로 이동해 실제 과목 등록 흐름을 확인합니다.",
+        "본인의 전공/전공 구분을 선택하고 전공추가 버튼으로 전공을 추가할 수 있습니다. ",
+        "전공이 없다면 추가하지 않아도 됩니다.",
       ],
       actionType: "navigate",
       actionLabel: "수강내역으로 이동",
       actionHref: PAGE_PATHS.GRAD_COURSES,
       nextOnboardingPageKey: "courses",
       nextOnboardingStepIndex: 0,
-      guard: ({ context, mode }) => {
-        if (mode !== "onboarding" || context.profileComplete) return null;
-
-        return {
-          actionType: "next",
-          actionLabel: "학부/템플릿 설정하기",
-          blockAdvance: true,
-          pauseOnBlock: true,
-          pauseMessage: PROFILE_SETUP_TUTORIAL_NOTICE,
-          onBlockedAction: () => {
-            page.ui.resumeOnboardingAfterBaseSettingsSave = true;
-            page.ui.resumeOnboardingStepIndex = PROFILE_ONBOARDING_SAVE_STEP_INDEX;
-          },
-        };
-      },
     },
   ];
 }
 
-function createProfilePageTutorialSteps() {
+function createProfileDetailedTutorialSteps() {
   return [
     {
       target: '[data-tutorial="profile-user-card"]',
       title: "사용자 정보 카드",
-      description: [
-        "이름을 수정하고 현재 계정 정보를 확인할 수 있습니다.",
-        "이메일은 읽기 전용으로 표시됩니다.",
-      ],
+      description: ["이름을 수정하고 현재 계정 정보를 확인할 수 있습니다.", "이메일은 읽기 전용으로 표시됩니다."],
     },
     {
       target: '[data-tutorial="profile-template-card"]',
@@ -183,8 +148,6 @@ function createProfilePage(elements, authResult) {
       userNameFeedbackMessage: consumeUserNameSaveFeedbackMessage(),
       baseSettingsFeedbackMessage: "",
       majorFeedbackMessage: "",
-      resumeOnboardingAfterBaseSettingsSave: false,
-      resumeOnboardingStepIndex: PROFILE_ONBOARDING_SAVE_STEP_INDEX,
     },
     defaultMajorType: DEFAULT_MAJOR_TYPE,
     majorDraftSequence: 0,
@@ -364,8 +327,8 @@ export async function initProfilePage() {
   bindProfileEvents(page);
   page.tutorial = initTutorial({
     pageKey: "profile",
-    onboardingSteps: createProfileOnboardingSteps(page),
-    pageSteps: createProfilePageTutorialSteps(),
+    simpleOnboardingSteps: createProfileSimpleOnboardingSteps(),
+    detailedTutorialSteps: createProfileDetailedTutorialSteps(),
     getContext: () => ({
       profile: page.profile,
     }),

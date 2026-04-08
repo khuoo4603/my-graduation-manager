@@ -17,38 +17,20 @@ import {
   syncCoursesMobileListScroll,
 } from "./render.js";
 
-function createCoursesOnboardingSteps() {
+function createCoursesSimpleOnboardingSteps() {
   return [
     {
-      target: '[data-tutorial="courses-title"]',
-      title: "수강내역 안내",
-      description: [
-        "수강 내역을 등록해야 졸업 판정과 대시보드 기능을 제대로 사용할 수 있습니다.",
-        "이 페이지에서는 과목을 검색하고 실제 수강내역으로 등록하는 흐름을 관리합니다.",
-      ],
-    },
-    {
       target: '[data-tutorial="courses-search-card"]',
-      title: "과목 검색 카드",
-      description: [
-        "연도와 학기로 과목을 검색해서 등록합니다.",
-        "미래 학기의 수강신청 계획도 같은 방식으로 미리 등록할 수 있습니다.",
-      ],
-    },
-    {
-      target: '[data-tutorial="courses-search-form"]',
-      title: "세부 검색 조건",
-      description: [
-        "세부구분, 학기, 과목명을 조합해서 원하는 과목을 빠르게 찾을 수 있습니다.",
-        "원하는 과목이 없으면 비슷한 과목을 등록한 뒤 수정해서 사용할 수도 있습니다.",
-      ],
+      title: "과목검색",
+      description: "과목을 검색해 수강내역으로 추가합니다.",
+      warning: "연도/학기는 필수 선택입니다.",
     },
     {
       target: '[data-tutorial="courses-taken-card"]',
-      title: "수강 내역 목록",
+      title: "수강내역",
       description: [
-        "등록된 과목은 표에서 다시 확인합니다.",
-        "행을 클릭해 수정하고, 우측 액션으로 삭제할 수 있습니다.",
+        "등록한 과목을 확인하고 수정하거나 삭제할 수 있습니다.",
+        "과목을 클릭하면 과목 수정 모달에서 수정이 가능합니다.",
       ],
       actionType: "navigate",
       actionLabel: "졸업 현황으로 이동",
@@ -59,7 +41,7 @@ function createCoursesOnboardingSteps() {
   ];
 }
 
-function createCoursesPageTutorialSteps() {
+function createCoursesDetailedTutorialSteps() {
   return [
     {
       target: '[data-tutorial="courses-search-card"]',
@@ -68,13 +50,14 @@ function createCoursesPageTutorialSteps() {
         "수강할 과목을 연도와 학기로 검색해서 추가하는 영역입니다.",
         "세부구분과 과목명까지 함께 사용하면 더 빠르게 찾을 수 있습니다.",
       ],
+      warning: "연도/학기는 필수 선택입니다.",
     },
     {
       target: '[data-tutorial="courses-taken-filter"]',
       title: "수강 내역 필터",
       description: [
-        "이미 등록한 수강내역은 연도와 학기 기준으로 다시 좁혀서 볼 수 있습니다.",
-        "필터를 비우면 전체 학기 목록을 다시 확인합니다.",
+        "필터 적용없이 검색 시 모든 수강내역을 확인할 수 있습니다.",
+        "필터 적용을 통해 필요한 학기의 정보만 확인 가능합니다.",
       ],
     },
     {
@@ -90,8 +73,9 @@ function createCoursesPageTutorialSteps() {
       title: "수정과 삭제",
       description: [
         "행을 클릭하면 수정 모달이 열리고, 우측 버튼으로 삭제할 수 있습니다.",
-        "원하는 과목이 없을 때는 비슷한 과목을 추가한 뒤 수정해서 맞춰 쓰면 됩니다.",
+        "과목 수정 시 재수강 과목은 해당 과목의 이전 학기의 과목들만 선택할 수 있습니다.",
       ],
+      warning: "재수강은 가장 처음 수강했던, 재수강으로 대체하고 싶은 과목을 선택해야합니다.",
       actionType: "close",
       actionLabel: "튜토리얼 종료",
     },
@@ -377,8 +361,8 @@ export async function initCoursesPage() {
   });
   page.tutorial = initTutorial({
     pageKey: "courses",
-    onboardingSteps: createCoursesOnboardingSteps(),
-    pageSteps: createCoursesPageTutorialSteps(),
+    simpleOnboardingSteps: createCoursesSimpleOnboardingSteps(),
+    detailedTutorialSteps: createCoursesDetailedTutorialSteps(),
     getContext: () => ({
       profile: page.profile,
     }),

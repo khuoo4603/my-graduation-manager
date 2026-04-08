@@ -108,38 +108,19 @@ function createStatusPage(pageRoot) {
   };
 }
 
-function createStatusOnboardingSteps() {
+function createStatusSimpleOnboardingSteps() {
   return [
     {
-      target: '[data-tutorial="status-title"]',
-      title: "졸업 현황 페이지",
-      description: [
-        "이 페이지는 입력보다 확인에 가까운 화면입니다.",
-        "현재 졸업 진행 상황과 부족한 항목을 빠르게 점검할 수 있습니다.",
-      ],
-    },
-    {
-      target: '[data-tutorial="status-overall-card"]',
-      title: "전체 현황 카드",
-      description: [
-        "전체 취득 학점과 적용 중인 학부, 템플릿, 전공 정보를 함께 보여 줍니다.",
-        "먼저 이 카드에서 현재 기준이 무엇인지 확인하면 좋습니다.",
-      ],
-    },
-    {
       target: '[data-tutorial="status-rule-section"]',
-      title: "영역별 판정 카드",
-      description: [
-        "교양, SEED, 전공, 전공탐색 영역별 진행 상태를 확인하는 구역입니다.",
-        "어느 영역이 부족한지 먼저 파악한 뒤 이후 수강 계획에 반영하면 됩니다.",
-      ],
+      title: "영역별 판정",
+      description: "교양, SEED, 전공, 전공탐색의 충족 여부를 확인합니다.",
     },
     {
-      target: '[data-tutorial="status-missing-section"]',
-      title: "부족 항목 확인",
+      target: "[data-micro-major-section]",
+      title: "마이크로전공",
       description: [
-        "부족한 항목은 이 영역에서 다시 한 번 정리해서 보여 줍니다.",
-        "다음으로 자료함을 확인하면서 관련 파일 관리 흐름도 함께 익혀 보겠습니다.",
+        "본인의 이수 가능한 마이크로전공을 확인 가능합니다",
+        "이수한 과목 중 마이크로전공에 포함되는 과목이 있으면 파란색으로 표시됩니다.",
       ],
       actionType: "navigate",
       actionLabel: "자료함으로 이동",
@@ -150,7 +131,7 @@ function createStatusOnboardingSteps() {
   ];
 }
 
-function createStatusPageTutorialSteps() {
+function createStatusDetailedTutorialSteps() {
   return [
     {
       target: '[data-tutorial="status-overall-card"]',
@@ -167,6 +148,7 @@ function createStatusPageTutorialSteps() {
         "교양, SEED, 전공, 전공탐색 영역의 충족 여부를 비교할 수 있습니다.",
         "각 카드의 부족 학점을 기준으로 이후 수강 계획을 세우면 됩니다.",
       ],
+      warning: "교양카드안에 SEED학점이 포함되어 있습니다. SEED카드는 학부별 영역 이수 여부를 판단합니다.",
     },
     {
       target: '[data-tutorial="status-missing-section"]',
@@ -174,6 +156,14 @@ function createStatusPageTutorialSteps() {
       description: [
         "부족한 항목을 모아 보여 주는 영역입니다.",
         "우선순위를 정할 때 가장 먼저 확인하면 좋은 요약입니다.",
+      ],
+    },
+    {
+      target: "[data-micro-major-section]",
+      title: "마이크로전공",
+      description: [
+        "이수 가능 대상 마이크로전공의 진행 상태를 따로 확인할 수 있습니다.",
+        "마이크로전공별 인정 과목을 확인하고 본인 수강이력 중 인정 과목이 있으면 파란색으로 표시됩니다.",
       ],
       actionType: "close",
       actionLabel: "튜토리얼 종료",
@@ -583,8 +573,8 @@ async function initStatusPage() {
   await loadStatusPage(page, authResult);
   page.tutorial = initTutorial({
     pageKey: "status",
-    onboardingSteps: createStatusOnboardingSteps(),
-    pageSteps: createStatusPageTutorialSteps(),
+    simpleOnboardingSteps: createStatusSimpleOnboardingSteps(),
+    detailedTutorialSteps: createStatusDetailedTutorialSteps(),
     getContext: () => ({
       profile: page.profile,
     }),

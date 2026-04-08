@@ -123,6 +123,11 @@ body .tutorial-overlay[hidden] {
   line-height: 1.55;
 }
 
+.tutorial-card__description--danger {
+  color: #dc2626;
+  font-weight: 700;
+}
+
 .tutorial-actions {
   display: flex;
   align-items: center;

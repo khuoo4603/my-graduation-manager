@@ -65,15 +65,6 @@ function persistUserNameSavedMessage() {
   }
 }
 
-// 학부/템플릿 저장 후 일시 종료한 온보딩을 같은 단계부터 다시 시작
-function resumeProfileOnboardingAfterBaseSettingsSave(page) {
-  if (!page.ui.resumeOnboardingAfterBaseSettingsSave) return;
-  if (!page.profile.department?.id || !page.profile.template?.id) return;
-
-  page.ui.resumeOnboardingAfterBaseSettingsSave = false;
-  page.tutorial?.startOnboarding(page.ui.resumeOnboardingStepIndex || 0);
-}
-
 // Profile 페이지 이벤트 바인딩
 export function bindProfileEvents(page) {
   // 이름 입력 필드 input 이벤트
@@ -324,7 +315,6 @@ async function handleBaseSettingsSave(page) {
     await page.loadProfile();
     page.ui.baseSettingsFeedbackMessage = BASE_SETTINGS_SAVED_MESSAGE;
     page.render();
-    resumeProfileOnboardingAfterBaseSettingsSave(page);
   } catch (error) {
     if (hasMutation) {
       try {
