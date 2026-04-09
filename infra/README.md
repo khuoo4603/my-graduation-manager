@@ -1,7 +1,18 @@
-﻿# Infra
+# SKHU Track Infra
 
-My Graduation Manager 인프라 설정 디렉토리.
+`infra/`는 SKHU Track의 배포와 운영 설정 디렉토리입니다.
 
-- Kubernetes(k3s) 배포 파일
-- Ingress, Service, Deployment 설정
-- 운영 및 배포 관련 구성 파일
+## 구성
+
+- `argocd/apps/`: backend/frontend dev·prod 설정
+- `db/postgres/`: 로컬 PostgreSQL Compose 설정
+- `k8s/backend/`: backend - dev, prod 설정
+- `k8s/frontend/`: frontend - dev, prod 설정
+
+## 기술 스택
+
+- Docker
+- k3s
+- GitHub Actions
+- GHCR
+- ArgoCD
