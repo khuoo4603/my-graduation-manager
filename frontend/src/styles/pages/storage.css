@@ -653,6 +653,16 @@ body[data-page="storage"] {
     gap: 0.58rem;
   }
 
+  .storage-mobile-list[data-storage-mobile-list] {
+    width: calc(100% - 16px);
+    max-height: 32rem;
+    margin-inline: auto;
+    padding-right: 0.18rem;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
   .storage-mobile-card {
     gap: 0.48rem;
     padding: 0.76rem 0.8rem;

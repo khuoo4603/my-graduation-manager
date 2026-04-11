@@ -100,56 +100,61 @@
 
                       <div class="grad-gpa-chart__plot" data-grade-trend-plot>
                         <div class="grad-gpa-chart__plot-inner" data-grade-trend-plot-inner>
-                        <svg class="grad-gpa-chart__svg" viewBox="0 0 1000 320" data-grade-trend-svg aria-hidden="true">
-                          <defs>
-                            <linearGradient id="grad-gpa-fill" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stop-color="#2f7df6" stop-opacity="0.16"></stop>
-                              <stop offset="100%" stop-color="#2f7df6" stop-opacity="0.02"></stop>
-                            </linearGradient>
-                          </defs>
-                          <g data-grade-trend-grid></g>
-                          <line
-                            class="grad-gpa-chart__axis-line"
-                            data-grade-trend-axis="x"
-                            x1="64"
-                            y1="270"
-                            x2="968"
-                            y2="270"
-                          ></line>
-                          <line
-                            class="grad-gpa-chart__axis-line"
-                            data-grade-trend-axis="y"
-                            x1="64"
-                            y1="22"
-                            x2="64"
-                            y2="270"
-                          ></line>
-                          <path class="grad-gpa-chart__area" data-grade-trend-area></path>
-                          <path
-                            class="grad-gpa-chart__line grad-gpa-chart__line--overall"
-                            data-grade-trend-line="overall"
-                          ></path>
-                          <path
-                            class="grad-gpa-chart__line grad-gpa-chart__line--major"
-                            data-grade-trend-line="major"
-                          ></path>
-                          <g data-grade-trend-labels></g>
-                        </svg>
-                        <div class="grad-gpa-chart__points" data-grade-trend-points></div>
-                        <div class="grad-gpa-chart__empty" data-grade-trend-empty hidden>
-                          <p class="grad-gpa-chart__empty-text">표시할 학기별 성적 데이터가 없습니다.</p>
-                        </div>
-                        <div class="grad-gpa-chart__tooltip-shell" data-grade-trend-tooltip hidden aria-hidden="true">
-                          <strong class="grad-gpa-chart__tooltip-title" data-grade-trend-tooltip-label>2024-1</strong>
-                          <span class="grad-gpa-chart__tooltip-row">
-                            <span class="grad-gpa-chart__tooltip-dot grad-gpa-chart__tooltip-dot--overall"></span>
-                            <span>전체 평점: <span data-grade-trend-tooltip-value="overall">0.00</span></span>
-                          </span>
-                          <span class="grad-gpa-chart__tooltip-row">
-                            <span class="grad-gpa-chart__tooltip-dot grad-gpa-chart__tooltip-dot--major"></span>
-                            <span>전공 평점: <span data-grade-trend-tooltip-value="major">0.00</span></span>
-                          </span>
-                        </div>
+                          <svg
+                            class="grad-gpa-chart__svg"
+                            viewBox="0 0 1000 320"
+                            data-grade-trend-svg
+                            aria-hidden="true"
+                          >
+                            <defs>
+                              <linearGradient id="grad-gpa-fill" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#2f7df6" stop-opacity="0.16"></stop>
+                                <stop offset="100%" stop-color="#2f7df6" stop-opacity="0.02"></stop>
+                              </linearGradient>
+                            </defs>
+                            <g data-grade-trend-grid></g>
+                            <line
+                              class="grad-gpa-chart__axis-line"
+                              data-grade-trend-axis="x"
+                              x1="64"
+                              y1="270"
+                              x2="968"
+                              y2="270"
+                            ></line>
+                            <line
+                              class="grad-gpa-chart__axis-line"
+                              data-grade-trend-axis="y"
+                              x1="64"
+                              y1="22"
+                              x2="64"
+                              y2="270"
+                            ></line>
+                            <path class="grad-gpa-chart__area" data-grade-trend-area></path>
+                            <path
+                              class="grad-gpa-chart__line grad-gpa-chart__line--overall"
+                              data-grade-trend-line="overall"
+                            ></path>
+                            <path
+                              class="grad-gpa-chart__line grad-gpa-chart__line--major"
+                              data-grade-trend-line="major"
+                            ></path>
+                            <g data-grade-trend-labels></g>
+                          </svg>
+                          <div class="grad-gpa-chart__points" data-grade-trend-points></div>
+                          <div class="grad-gpa-chart__empty" data-grade-trend-empty hidden>
+                            <p class="grad-gpa-chart__empty-text">표시할 학기별 성적 데이터가 없습니다.</p>
+                          </div>
+                          <div class="grad-gpa-chart__tooltip-shell" data-grade-trend-tooltip hidden aria-hidden="true">
+                            <strong class="grad-gpa-chart__tooltip-title" data-grade-trend-tooltip-label>2024-1</strong>
+                            <span class="grad-gpa-chart__tooltip-row">
+                              <span class="grad-gpa-chart__tooltip-dot grad-gpa-chart__tooltip-dot--overall"></span>
+                              <span>전체 평점: <span data-grade-trend-tooltip-value="overall">0.00</span></span>
+                            </span>
+                            <span class="grad-gpa-chart__tooltip-row">
+                              <span class="grad-gpa-chart__tooltip-dot grad-gpa-chart__tooltip-dot--major"></span>
+                              <span>전공 평점: <span data-grade-trend-tooltip-value="major">0.00</span></span>
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </section>
@@ -212,7 +217,7 @@
                         </article>
 
                         <article class="grad-policy__stat" data-grade-summary-stat="gpaExcluded">
-                          <p class="grad-policy__stat-label">F/NP 제외</p>
+                          <p class="grad-policy__stat-label">P/NP 제외</p>
                           <p class="grad-policy__stat-value">
                             <span data-grade-summary-stat-value>0</span>
                             <span class="grad-policy__stat-unit">개</span>

@@ -185,10 +185,6 @@ body.is-modal-open {
   display: none;
 }
 
-.courses-mobile-list--scrollable {
-  overflow-y: auto;
-}
-
 .courses-mobile-card {
   display: grid;
   gap: 0.58rem;
@@ -592,9 +588,14 @@ body.is-modal-open {
     gap: 0.58rem;
   }
 
-  .courses-mobile-list--scrollable {
-    max-height: var(--courses-mobile-list-max-height);
+  .courses-mobile-list[data-search-mobile-list],
+  .courses-mobile-list[data-taken-mobile-list] {
+    width: calc(100% - 16px);
+    max-height: 32rem;
+    margin-inline: auto;
     padding-right: 0.18rem;
+    box-sizing: border-box;
+    overflow-y: auto;
     overscroll-behavior: contain;
   }
 

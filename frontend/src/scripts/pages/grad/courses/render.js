@@ -3,8 +3,6 @@
 import { getFluentIconPath } from "/src/scripts/components/icon-map.js";
 import { clearChildren, setText } from "/src/scripts/utils/dom.js";
 
-const MOBILE_LIST_SCROLL_THRESHOLD = 10;
-
 const termLabelMap = {
   1: "1학기",
   SUMMER: "여름 계절학기",
@@ -33,41 +31,6 @@ function formatTakenSemesterLabel(year, term) {
   const termLabel = termLabelMap[term] || String(term || "").trim();
   if (!year || !termLabel) return "";
   return `${year}.${termLabel}`;
-}
-
-function syncMobileListScrollState(list, itemCount) {
-  if (!list) return;
-
-  list.classList.remove("courses-mobile-list--scrollable");
-  list.style.removeProperty("--courses-mobile-list-max-height");
-
-  if (window.innerWidth > 760 || itemCount <= MOBILE_LIST_SCROLL_THRESHOLD) {
-    return;
-  }
-
-  const cards = Array.from(list.querySelectorAll(".courses-mobile-card"));
-  if (cards.length <= MOBILE_LIST_SCROLL_THRESHOLD) {
-    return;
-  }
-
-  const firstCard = cards[0];
-  const thresholdCard = cards[MOBILE_LIST_SCROLL_THRESHOLD - 1];
-  if (!firstCard || !thresholdCard) {
-    return;
-  }
-
-  const maxHeight = Math.ceil(thresholdCard.offsetTop - firstCard.offsetTop + thresholdCard.offsetHeight);
-  if (maxHeight <= 0) {
-    return;
-  }
-
-  list.style.setProperty("--courses-mobile-list-max-height", `${maxHeight}px`);
-  list.classList.add("courses-mobile-list--scrollable");
-}
-
-export function syncCoursesMobileListScroll(page) {
-  syncMobileListScrollState(page.elements.searchMobileList, page.searchResults.length);
-  syncMobileListScrollState(page.elements.takenMobileList, page.takenCourses.length);
 }
 
 function renderSearchCourseTableRows(courses) {
@@ -221,7 +184,6 @@ export function renderSearchResults(page) {
 
   clearChildren(searchCourseRows);
   clearChildren(searchMobileList);
-  syncMobileListScrollState(searchMobileList, 0);
 
   searchStatePanel.hidden = hasSearchResults;
   searchStatePanel.setAttribute("aria-hidden", String(hasSearchResults));
@@ -235,7 +197,6 @@ export function renderSearchResults(page) {
     searchStatePanel.innerHTML = "";
     searchCourseRows.innerHTML = renderSearchCourseTableRows(page.searchResults);
     searchMobileList.innerHTML = renderSearchCourseMobileCards(page.searchResults);
-    syncMobileListScrollState(searchMobileList, page.searchResults.length);
     return;
   }
 
@@ -301,7 +262,6 @@ export function renderTakenCourses(page) {
   setText(totalCreditsText, String(totalCredits));
   clearChildren(takenCourseRows);
   clearChildren(takenMobileList);
-  syncMobileListScrollState(takenMobileList, 0);
 
   takenEmptyPanel.hidden = hasTakenResults;
   takenEmptyPanel.setAttribute("aria-hidden", String(hasTakenResults));
@@ -372,7 +332,6 @@ export function renderTakenCourses(page) {
   takenMobileList.setAttribute("aria-hidden", "false");
   takenCourseRows.innerHTML = renderTakenCourseTableRows(page.takenCourses);
   takenMobileList.innerHTML = renderTakenCourseMobileCards(page.takenCourses);
-  syncMobileListScrollState(takenMobileList, page.takenCourses.length);
 }
 
 // Edit Course 모달 렌더링

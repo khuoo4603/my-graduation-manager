@@ -14,7 +14,6 @@ import {
   renderMajorModal,
   renderSearchResults,
   renderTakenCourses,
-  syncCoursesMobileListScroll,
 } from "./render.js";
 
 function createCoursesSimpleOnboardingSteps() {
@@ -361,9 +360,6 @@ export async function initCoursesPage() {
   renderEditModal(page);
   renderMajorModal(page);
   bindCoursesPageEvents(page);
-  window.addEventListener("resize", () => {
-    syncCoursesMobileListScroll(page);
-  });
   page.tutorial = initTutorial({
     pageKey: "courses",
     simpleOnboardingSteps: createCoursesSimpleOnboardingSteps(),
