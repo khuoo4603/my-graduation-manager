@@ -25,7 +25,7 @@ app:
   dev-token:
     enabled: false
   storage:
-    root: /mnt/nas/mgm-files
+    root: /mnt/skhutrack-dev
   jwt:
     secret: "${JWT_SECRET}"
     exp-seconds: 604800 # 7일

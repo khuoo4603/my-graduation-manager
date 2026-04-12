@@ -9,17 +9,17 @@ spec:
         gitops-test: "dev-overlay"
     spec:
       volumes:
-        - name: mgm-files
+        - name: skhutrack-dev
           hostPath:
-            path: /mnt/nas/mgm-files
+            path: /mnt/skhutrack-dev
             type: Directory
       imagePullSecrets:
         - name: ghcr-pull
       containers:
         - name: backend
           volumeMounts:
-            - name: mgm-files
-              mountPath: /mnt/nas/mgm-files
+            - name: skhutrack-dev
+              mountPath: /mnt/skhutrack-dev
           resources:
             requests:
               cpu: "300m"
